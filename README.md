@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dead Angle
 
-## Getting Started
+Dead Angle is a real-time two-player arcade shooter inspired by Tank Trouble. Players navigate a neon maze, firing projectiles that ricochet off walls. Hit your opponent to win the round.
 
-First, run the development server:
+**Frontend:** Next.js (React) — game rendering, UI, real-time state  
+**Backend:** C# (.NET) — multiplayer only; single source of truth for all game outcomes, physics validation, and session state
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Table of Contents
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [Overview](#overview)
+- [Game Screens](#game-screens)
+- [Gameplay](#gameplay)
+- [Scoring](#scoring)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Backend Responsibilities](#backend-responsibilities)
+- [Frontend Responsibilities](#frontend-responsibilities)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Overview
 
-To learn more about Next.js, take a look at the following resources:
+Dead Angle supports two modes:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Singleplayer** — play as Player 1 against a bot, runs entirely client-side. No backend involvement during gameplay
+- **Multiplayer** — Player 1 creates a room and shares the code, Player 2 joins. No login or identity required
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Game Screens
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Screen | Description |
+|---|---|
+| Start | Choose singleplayer or multiplayer |
+| Lobby | Multiplayer only — Player 1 shares a room code, Player 2 joins |
+| Game | Live maze arena — the core experience |
+| Summary | Final scores shown after the session ends |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Gameplay
+
+- Both players move around the maze using keyboard controls (WASD + Q, or Arrow keys + Space)
+- Each player has 7 projectiles. Each projectile expires after 10 seconds. When the last projectile is fired, a 3-second reload begins before 7 new projectiles are granted
+- Projectiles bounce off walls at a true reflection angle
+- A round ends 3 seconds after a player is hit — the new maze generates in the background during this window and is ready the moment the transition ends
+
+---
+
+## Scoring
+
+- Hitting your opponent awards 1 point
+- A 3-second transition begins immediately — the new maze generates in the background
+- Both players respawn at new positions when the new maze loads
+- Rounds are unlimited; the session ends when a player quits
+
+---
+
+## Architecture
+
+### Singleplayer
+
+Runs entirely in the browser. The bot, physics, hit detection, maze generation, and scoring are all client-side. The backend is not contacted.
+
+### Multiplayer — game authority model
+
+The backend is the authoritative source for all game **outcomes** — hit detection, scoring, round resolution, and session state. The frontend is the authoritative source for **rendering**.
+
+Projectile movement is handled by **deterministic client-side simulation**:
+
+1. When a projectile is fired, the server emits a `projectileFired` event containing the projectile's id, owner, start position, angle, velocity, and server timestamp
+2. Both clients simulate the projectile locally using identical deterministic physics — the maze layout is fixed for the duration of a round, so both clients and server always agree on wall positions
+3. The server independently simulates the same projectile for hit detection only
+4. When the server detects a hit, it emits `roundEnded` — the only authoritative signal. Clients never report hits
+
+Player positions are server-authoritative. Clients send input each frame; the server updates positions at ~20Hz and broadcasts the result. Clients interpolate between received positions for smooth rendering.
+
+The maze is generated server-side at the start of each round and sent to both clients once as a static wall grid.
+
+---
+
+## Tech Stack
+
+**Frontend**
+- Next.js (App Router)
+- HTML Canvas — game rendering
+- SignalR client — multiplayer real-time state
+
+**Backend** *(multiplayer only)*
+- ASP.NET Core
+- SignalR hub — player input, game events, state sync
+- REST API — room management
+
+**Integrations**
+- Discord webhook — on multiplayer session end, the .NET backend sends an outbound POST to a Discord webhook URL with a formatted match summary
+
+---
+
+## Backend Responsibilities
+
+*(Multiplayer only — the backend is not involved in singleplayer)*
+
+- Server-side game loop and tick rate (~20Hz)
+- Player position updates from client input
+- Projectile simulation for authoritative hit detection
+- Round resolution and scoring
+- Maze generation — runs async during the 3-second round transition
+- Room creation and join flow
+- Anonymous session ID assignment (Player 1 / Player 2)
+- Emitting all game events to clients via SignalR
+- Outbound Discord webhook on session end
+
+---
+
+## Frontend Responsibilities
+
+**Both modes**
+- Rendering the maze, players, and projectiles on Canvas each frame
+- Deterministic local projectile simulation for smooth 60fps rendering
+- Capturing keyboard input
+
+**Singleplayer only**
+- Bot movement and firing logic
+- Hit detection and scoring
+- Maze generation between rounds
+
+**Multiplayer only**
+- Sending keyboard input to the backend via SignalR
+- Receiving and applying all authoritative game events from the backend
+- Interpolating player positions between server ticks

@@ -1,0 +1,150 @@
+# Dead Angle — File & Folder Structure
+
+---
+
+## Frontend: `dead-angle/`
+
+```
+dead-angle/
+├── public/
+│
+├── src/
+│   ├── app/
+│   │   ├── lobby/
+│   │   │   └── page.tsx
+│   │   ├── game/
+│   │   │   └── page.tsx
+│   │   ├── summary/
+│   │   │   └── page.tsx
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── not-found.tsx
+│   │   └── page.tsx                        # Start screen
+│   │
+│   ├── features/
+│   │   │
+│   │   ├── start/                          # Start screen — mode selection and room join
+│   │   │   ├── components/
+│   │   │   │   ├── ModeSelector.tsx        # Singleplayer / Multiplayer choice
+│   │   │   │   └── RoomCodeInput.tsx       # Room code entry field for Player 2
+│   │   │   └── hooks/
+│   │   │       └── useStartFlow.ts         # Handles create/join REST calls and navigation
+│   │   │
+│   │   ├── lobby/                          # Player 1 only — displays room code, waits for Player 2
+│   │   │   ├── components/
+│   │   │   │   └── RoomCode.tsx            # Displays and copies the room code
+│   │   │   └── hooks/
+│   │   │       └── useLobby.ts             # Listens for gameStarted event, navigates to /game
+│   │   │
+│   │   ├── game/                           # Game screen — canvas, input, HUD
+│   │   │   ├── components/
+│   │   │   │   ├── GameCanvas.tsx          # HTML Canvas element
+│   │   │   │   └── ScoreHud.tsx            # Live score overlay
+│   │   │   ├── hooks/
+│   │   │   │   ├── useGameLoop.ts          # requestAnimationFrame loop — drives all rendering
+│   │   │   │   └── useKeyboardInput.ts     # Captures WASD+Q / arrow+space; sends to server in multiplayer
+│   │   │   ├── physics/
+│   │   │   │   ├── projectileSimulation.ts # Deterministic local projectile simulation (both modes)
+│   │   │   │   └── wallReflection.ts       # Reflection math — must stay identical to server
+│   │   │   ├── singleplayer/
+│   │   │   │   ├── bot.ts                  # Bot movement and firing logic
+│   │   │   │   ├── hitDetection.ts         # Client-side hit detection (singleplayer only)
+│   │   │   │   └── mazeGenerator.ts        # Maze generation (singleplayer only)
+│   │   │   └── rendering/
+│   │   │       ├── drawMaze.ts             # Draws the wall grid onto canvas
+│   │   │       ├── drawPlayers.ts          # Draws player tokens
+│   │   │       └── drawProjectiles.ts      # Draws projectiles and neon motion trails
+│   │   │
+│   │   └── summary/                        # Summary screen — final scores, quit
+│   │       └── components/
+│   │           └── ScoreBoard.tsx          # Final score display
+│   │
+│   ├── services/
+│   │   ├── api.ts                          # HTTP client — REST calls to create/join rooms
+│   │   └── signalr.service.ts              # Raw SignalR connection — multiplayer only, no React dependency
+│   │
+│   ├── hooks/
+│   │   └── useSignalR.ts                   # React wrapper around signalr.service.ts
+│   │
+│   ├── context/
+│   │   ├── GameProvider.tsx                # Root provider — mounts at layout level; opens SignalR only in multiplayer
+│   │   ├── GameContext.ts                  # Live game state (player positions, projectiles, scores, maze)
+│   │   └── RoomContext.ts                  # Session metadata (roomCode, sessionId, playerSlot, mode)
+│   │
+│   ├── types/
+│   │   ├── game.types.ts                   # Player, Projectile, MazeWall, GameState, PlayerSlot
+│   │   └── events.types.ts                 # Typed SignalR event payloads (multiplayer)
+│   │
+│   └── shared/
+│       └── components/
+│           └── NeonButton.tsx              # Reusable neon-styled button
+│
+├── .env.local
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+└── README.md
+```
+
+---
+
+## Backend: `dead-angle-api/`
+
+*(Multiplayer only — not contacted during singleplayer)*
+
+```
+dead-angle-api/
+│
+├── Controllers/
+│   └── RoomsController.cs                  # POST /rooms → create room, return sessionId + roomCode
+│                                           # POST /rooms/{code}/join → join room, return sessionId
+│
+├── Hubs/
+│   └── GameHub.cs                          # SignalR hub — maps sessionId to player slot in OnConnectedAsync;
+│                                           # receives player input; emits all game events;
+│                                           # detects disconnection and ends session
+│
+├── Services/
+│   ├── Interfaces/
+│   │   ├── IGameService.cs
+│   │   ├── IRoomService.cs
+│   │   ├── IMazeGenerator.cs
+│   │   └── IDiscordWebhookService.cs
+│   ├── GameService.cs                      # Game loop (~20Hz), player positions, projectile hit detection,
+│   │                                       # round resolution, ammo lifecycle, score tracking
+│   ├── RoomService.cs                      # Room lifecycle — create, join, end; session ID generation;
+│   │                                       # Player1/Player2 slot assignment
+│   ├── MazeGenerator.cs                    # Procedural maze generation — called on game start and each round end
+│   └── DiscordWebhookService.cs            # Outbound POST to Discord webhook on session end
+│
+├── Physics/
+│   ├── ProjectileSimulator.cs              # Server-side projectile simulation — authoritative hit detection only
+│   └── WallReflection.cs                   # Reflection math — must stay identical to client wallReflection.ts
+│
+├── Models/
+│   ├── Room.cs                             # Room state — code, phase, players, scores
+│   ├── Player.cs                           # Player — slot, sessionId, connectionId, position, angle, ammo count, reload state
+│   ├── Projectile.cs                       # Projectile — id, position, velocity, ownerSlot, remaining lifetime (max 10s)
+│   ├── MazeLayout.cs                       # Wall grid — list of wall rectangles defining the maze
+│   └── Enums/
+│       ├── GamePhase.cs                    # Lobby, Playing, RoundTransition, Summary
+│       └── PlayerSlot.cs                   # Player1, Player2
+│
+├── DTOs/
+│   ├── Responses/
+│   │   ├── CreateRoomResponse.cs           # { RoomCode, SessionId, PlayerSlot }
+│   │   └── JoinRoomResponse.cs             # { SessionId, PlayerSlot }
+│   └── Events/
+│       ├── GameStartedEvent.cs             # Emitted when Player 2 joins — { maze: MazeLayout }; triggers navigation to /game
+│       ├── GameTickEvent.cs                # ~20Hz broadcast — { players: [{ slot, position, angle, ammoCount, reloading }] }
+│       ├── ProjectileFiredEvent.cs         # { projectileId, ownerSlot, startPosition, angle, velocity, firedAt }
+│       ├── RoundEndedEvent.cs              # { winnerSlot, scores, newMaze: MazeLayout }
+│       └── SessionEndedEvent.cs            # { finalScores } — emitted on disconnect; triggers Discord webhook server-side
+│
+├── Program.cs                              # DI, SignalR, CORS, routing
+├── appsettings.json
+├── appsettings.Development.json
+├── dead-angle-api.csproj
+└── .gitignore
+```
