@@ -8,16 +8,20 @@ import styles from './page.module.css';
 /**
  * /  — Dead Angle start screen.
  *
- * 1980s arcade attract-mode.
- * Title: hot pink with hard cyan offset drop-shadow (moodboard spec).
- * Decorative CSS tank token in neon green below title.
- * Corner diamond ornaments in alternating pink / cyan.
- * CRTOverlay already active via layout.tsx.
+ * 1980s arcade cabinet attract-mode.
  *
- * Layout (top → bottom):
- *   Title block  →  decorative divider  →  tank icon
- *   →  mode selector  →  (multiplayer) sub-options
- *   →  (join) room code input  →  footer prompt
+ * Title: data-text attributes drive ::before (red ghost, left) and
+ * ::after (cyan ghost, right) pseudo-elements with mix-blend-mode: screen.
+ * Both ghosts rest at a small offset; every few seconds they snap
+ * violently wider with a brief skew, then snap back instantly.
+ *
+ * Decorative additions vs previous version:
+ *   - Vertical side lines (vlineL / vlineR) flanking the content
+ *   - Corner diamonds at 24px with a scale-pop animation
+ *   - Tank heartbeat (dim → painfully bright → dim)
+ *   - Footer prompt fully on / fully off (no dimming, step-end)
+ *
+ * CRTOverlay already active via layout.tsx.
  */
 export default function StartPage() {
   const flow = useStartFlow();
@@ -42,23 +46,33 @@ export default function StartPage() {
   return (
     <div className={styles.screen}>
 
-      {/* ── Corner ornaments ── */}
+      {/* ── Corner ornaments — 24px diamonds, alternating pink/cyan ── */}
       <span className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerTR}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBR}`} aria-hidden="true" />
 
-      {/* ── Horizontal edge lines (top + bottom decoration) ── */}
+      {/* ── Horizontal edge lines — top + bottom ── */}
       <span className={`${styles.edgeLine} ${styles.edgeLineTop}`}    aria-hidden="true" />
       <span className={`${styles.edgeLine} ${styles.edgeLineBottom}`} aria-hidden="true" />
+
+      {/* ── Vertical side lines — left + right ── */}
+      <span className={`${styles.vline} ${styles.vlineL}`} aria-hidden="true" />
+      <span className={`${styles.vline} ${styles.vlineR}`} aria-hidden="true" />
 
       <div className={styles.content}>
 
         {/* ── Title block ── */}
         <header className={styles.header}>
+          {/*
+            data-text is consumed by ::before (red ghost, left offset)
+            and ::after (cyan ghost, right offset) in page.module.css.
+            Every few seconds both ghosts snap violently wider with a
+            brief skew, then snap back instantly.
+          */}
           <h1 className={styles.title} aria-label="Dead Angle">
-            <span className={styles.titleWord}>DEAD</span>
-            <span className={styles.titleWord}>ANGLE</span>
+            <span className={styles.titleWord} data-text="DEAD">DEAD</span>
+            <span className={styles.titleWord} data-text="ANGLE">ANGLE</span>
           </h1>
           <p className={styles.tagline}>NEON MAZE COMBAT</p>
         </header>
@@ -70,7 +84,7 @@ export default function StartPage() {
           <span className={styles.dividerLine} />
         </div>
 
-        {/* ── CSS tank token — decorative, neon green ── */}
+        {/* ── CSS tank token — neon green, heartbeat rhythm ── */}
         <div className={styles.tankWrap} aria-hidden="true">
           <div className={styles.tank}>
             {/* barrel */}
@@ -115,7 +129,7 @@ export default function StartPage() {
           )}
         </section>
 
-        {/* ── Footer attract prompt ── */}
+        {/* ── Footer attract prompt — fully on/off blink ── */}
         <footer className={styles.footer}>
           <span className={styles.prompt}>— SELECT MODE TO BEGIN —</span>
         </footer>

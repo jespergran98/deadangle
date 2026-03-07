@@ -1,7 +1,9 @@
 /* ============================================================
    DEAD ANGLE — globals.css
-   Design tokens · CSS reset · Base document · @keyframes only
-   No component styles live here.
+   Design tokens · CSS reset · Base document
+   @keyframes: SHARED ONLY — blink, fade-in, fade-in-flat,
+   cursor-blink. All component-specific animations live
+   inside their own .module.css files.
    ============================================================ */
 
 /* ── Design Tokens ────────────────────────────────────────── */
@@ -57,7 +59,8 @@
 
   /* ── Title text-shadow — hot pink with hard cyan offset drop shadow ──
      Matches the arcade cabinet moodboard: pink foreground + cyan shadow
-     offset 4–5px bottom-right, creating the classic 80s pixel-depth look. */
+     offset 4–5px bottom-right, creating the classic 80s pixel-depth look.
+     Resting state — pulse doubles in spread inside page.module.css */
   --title-shadow:
     4px  4px  0   #00F0FF,
     5px  5px  0   #00F0FF,
@@ -69,10 +72,11 @@
   --title-shadow-pulse:
     4px  4px  0   #00F0FF,
     5px  5px  0   #00F0FF,
-    0    0   16px #FF2D78,
-    0    0   38px #FF2D78,
-    0    0   76px rgba(255, 45, 120, 0.70),
-    4px  4px 20px rgba(0, 240, 255, 0.60);
+    0    0   20px #FF2D78,
+    0    0   60px #FF2D78,
+    0    0  120px rgba(255, 45, 120, 0.80),
+    0    0  200px rgba(255, 45, 120, 0.30),
+    4px  4px 24px rgba(0, 240, 255, 0.60);
 
   /* ── Typography ── */
   --font-mono:            "Courier New", Courier, "Lucida Console", monospace;
@@ -168,114 +172,11 @@ input {
 }
 
 /* ──────────────────────────────────────────────────────────
-   @keyframes — ALL reusable animations live here.
-   Component modules reference by name only.
+   @keyframes — SHARED ONLY.
+   These are candidates for reuse across multiple components.
+   Component-specific animations are declared locally in
+   each .module.css file.
    ────────────────────────────────────────────────────────── */
-
-/* ── Title pulse — hot pink with cyan drop-shadow offset ── */
-@keyframes neon-pulse-title {
-  0%, 100% {
-    text-shadow: var(--title-shadow);
-    opacity: 1;
-  }
-  45%, 55% {
-    text-shadow: var(--title-shadow-pulse);
-    opacity: 0.94;
-  }
-}
-
-/* ── Cyan box-shadow pulse — active outlines ── */
-@keyframes neon-pulse-cyan {
-  0%, 100% { box-shadow: var(--glow-cyan-sm); }
-  50%       { box-shadow: var(--glow-cyan-md); }
-}
-
-/* ── Green text / element pulse ── */
-@keyframes neon-pulse-green {
-  0%, 100% {
-    filter: brightness(1);
-    box-shadow: var(--glow-green-sm);
-  }
-  50% {
-    filter: brightness(1.18);
-    box-shadow: var(--glow-green-md);
-  }
-}
-
-/* ── CSS tank icon pulse ── */
-@keyframes tank-pulse {
-  0%, 100% {
-    filter:
-      brightness(1)
-      drop-shadow(0 0 3px #C8FF00)
-      drop-shadow(0 0 8px #C8FF00);
-  }
-  50% {
-    filter:
-      brightness(1.2)
-      drop-shadow(0 0 7px #C8FF00)
-      drop-shadow(0 0 18px #C8FF00)
-      drop-shadow(0 0 32px rgba(200, 255, 0, 0.55));
-  }
-}
-
-/* ── CRT flicker — models real phosphor tube irregularity.
-   Brief, asymmetric opacity drops at uneven intervals. ── */
-@keyframes crt-flicker {
-  0%     { opacity: 1; }
-  1.4%   { opacity: 0.91; }
-  1.9%   { opacity: 1; }
-  2.8%   { opacity: 0.97; }
-  3.2%   { opacity: 1; }
-  17.5%  { opacity: 1; }
-  17.9%  { opacity: 0.94; }
-  18.3%  { opacity: 1; }
-  35.6%  { opacity: 1; }
-  35.9%  { opacity: 0.87; }
-  36.2%  { opacity: 0.98; }
-  36.6%  { opacity: 1; }
-  52.4%  { opacity: 1; }
-  52.7%  { opacity: 0.93; }
-  53.1%  { opacity: 1; }
-  69.8%  { opacity: 1; }
-  70.0%  { opacity: 0.95; }
-  70.4%  { opacity: 1; }
-  83.5%  { opacity: 1; }
-  83.8%  { opacity: 0.89; }
-  84.0%  { opacity: 0.99; }
-  84.3%  { opacity: 1; }
-  96.5%  { opacity: 1; }
-  96.8%  { opacity: 0.93; }
-  97.2%  { opacity: 1; }
-  100%   { opacity: 1; }
-}
-
-/* ── CRT sweep line — slow bright horizontal band drifting
-   from top to bottom, like a CRT's vertical sync artifact ── */
-@keyframes crt-sweep {
-  0%   { transform: translateY(-200px); opacity: 0; }
-  4%   { opacity: 1; }
-  96%  { opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
-}
-
-/* ── Blink — attract-mode text prompts ── */
-@keyframes blink {
-  0%, 49%   { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-
-/* ── Slow blink — dimmer elements ── */
-@keyframes blink-slow {
-  0%, 64%   { opacity: 1; }
-  65%, 100% { opacity: 0.28; }
-}
-
-/* ── Cursor blink ── */
-@keyframes cursor-blink {
-  0%, 49%   { caret-color: var(--color-cyan); }
-  50%, 100% { caret-color: transparent; }
-}
 
 /* ── Fade-in on mount ── */
 @keyframes fade-in {
@@ -289,8 +190,14 @@ input {
   to   { opacity: 1; }
 }
 
-/* ── Corner diamond rotate-pulse ── */
-@keyframes corner-pulse {
-  0%, 100% { opacity: 0.7; }
-  50%       { opacity: 1; }
+/* ── Blink — attract-mode text prompts ── */
+@keyframes blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── Cursor blink ── */
+@keyframes cursor-blink {
+  0%, 49%   { caret-color: var(--color-cyan); }
+  50%, 100% { caret-color: transparent; }
 }
