@@ -220,3 +220,253 @@ The single goal: a start screen that looks and feels like a real 1980s arcade ca
 - **Zero regressions** — all existing logic (useStartFlow, RoomContext, api.ts, ModeSelector, RoomCodeInput) must be preserved exactly. Only visual and animation files change.
 
 Deliver: `globals.css`, `layout.module.css`, `CRTOverlay.tsx`, `CRTOverlay.module.css`, `page.tsx`, `page.module.css`, `ModeSelector.module.css`. Nothing else.
+
+----------------------------------------------
+
+Here is the improved prompt with the issues corrected and precise technical specification for each effect:
+
+---
+
+**Analyze all attached files and deliver a complete, production-ready overhaul of the Dead Angle start screen.**
+
+The single goal: a start screen that looks and feels like a real 1980s arcade cabinet attract mode. Not inspired by one. Indistinguishable from one.
+
+---
+
+**CRITICAL: READ THIS BEFORE WRITING A SINGLE LINE OF CODE**
+
+Every animation and visual effect must be *immediately perceptible* at normal viewing distance without looking for it. If you have to squint or inspect the element to notice it, the value is wrong — double it. Do not write "subtle" or "slight" effects. This is a neon arcade cabinet. It screams.
+
+---
+
+### 1. CRT Simulation — Three Mandatory Layers
+
+**Layer A: Barrel distortion / curved glass (NOT a vignette)**
+
+A real 1980s CRT screen is a convex curved glass tube. The image is projected onto the inside of a curve, so the whole picture appears to bulge slightly outward like a fishbowl. What this looks like in practice:
+
+- The corners of the screen appear very slightly compressed inward, as if the glass is pulling the image toward the center
+- The edges of the screen appear darker not because of an overlay gradient but because the electron beam arrives at a shallower angle to the phosphor at the extremes, reducing emission efficiency
+
+**Layer B: Horizontal scanlines — animated, not static**
+
+Scanlines must not be a static `repeating-linear-gradient`. A real CRT's electron beam is always moving — the image is redrawn 60 times per second. Simulate this with a `@keyframes` that very slowly shifts the `background-position-y` of the scanline gradient by one full pitch (3px), creating a slow perpetual downward scroll of the scan pattern. Cycle time: ~0.5s, `linear`, `infinite`. Opacity of the dark scanline bands: `rgba(0,0,0,0.40)` — fully visible, not subtle. DO THIS WHILE ALSO ENSURING PERFECT PERFORMANCE.
+
+**Layer C: Vertical sync sweep line**
+
+A slowly drifting horizontal bright band (200px tall, feathered) from top to bottom of the viewport. The band must be white at `0.05` opacity at the brightest point — clearly a visible shimmer as it passes. Cycle time: 10s, `linear`.
+
+---
+
+### 2. CRT Startup Roll — Plays Once on Mount, Zero Delay
+
+When a real CRT TV is switched on, the horizontal and vertical deflection circuits take ~0.5–1.5 seconds to lock to the sync signal. During that window, before the raster fills properly, you see **diagonal rolling bands** — bright scan lines sweeping across the screen at an angle (typically 15–25° off horizontal) because the H-sync and V-sync are not yet phase-locked. This is distinct from the "line expands" boot concept — it is a desync roll that happens while the image is already trying to display..
+
+---
+
+### 3. Chromatic Aberration on the Title
+
+`DEAD` and `ANGLE` must each render three layers:
+
+- **Real text (pink):** z-index 1, `text-shadow: var(--title-shadow)`, pulsing
+- **Red ghost (`::before`):** `content: attr(data-text)`, `color: #FF2200`, `mix-blend-mode: screen`, permanently at `transform: translate(-5px, 2px)`. On the black background `mix-blend-mode: screen` will show the pure red. Over the pink title, it screen-blends toward saturated red-white. Opacity: `0.85`.
+- **Cyan ghost (`::after`):** `content: attr(data-text)`, `color: #00EEFF`, `mix-blend-mode: screen`, permanently at `transform: translate(5px, -2px)`. Opacity: `0.85`.
+
+Both ghosts are **permanently offset** — visible at all times without any animation needed to notice them. Additionally: every 8–10s a `@keyframes` burst snaps both ghosts to `translate(±18px, ±4px)` with a `skewX(±4deg)` for 3 frames (≈50ms), then snaps back. This is the glitch burst. The resting offset of 5px is the baseline; the glitch burst is the exclamation point.
+
+Both `page.tsx` title `<span>` elements must carry `data-text="DEAD"` and `data-text="ANGLE"` so `content: attr(data-text)` resolves correctly.
+
+---
+
+### 4. Title, Tank, and Footer — Perceptible Animation Values
+
+**Title pulse (`neon-pulse-title`):** The `text-shadow` must visibly throb. At minimum the glow spread values must change by 2× between the dim and bright keyframes. Cycle: 3s. The difference between resting and pulsed state must be obvious.
+
+**Tank pulse (`tank-pulse`):** The tank must visibly flash brighter and dimmer. `filter: brightness(1)` to `filter: brightness(1.5)` with `drop-shadow` values going from `0 0 4px` to `0 0 20px`. The pulse should feel like a heartbeat, not a fade. Cycle: 2s.
+
+**Footer blink (`blink-slow`):** Must go from `opacity: 1` to `opacity: 0` (full off, not just dim). A real attract-mode INSERT COIN prompt is either fully on or fully off.
+
+**Corner diamonds:** Scale from `1.0` to `1.2` as well as opacity change.
+
+---
+
+### 5. Phosphor Persistence on Buttons
+
+Real phosphor screens retain a fading afterglow after the electron beam moves on. Simulate with asymmetric CSS transitions:
+
+- Hover **on**: `transition: all 40ms ease` (instant strike)
+- Hover **off**: `transition: all 320ms ease` (slow phosphor decay)
+
+In CSS, the transition defined on the *hovered state* governs the in-direction, and the transition on the base state governs the out-direction. Use this: define `transition: ... 320ms ease` on the base `.modeBtn` selector, and override with `transition: ... 40ms ease` inside the `.modeBtn:hover` selector.
+
+---
+
+### 6. Zero Regressions
+
+`useStartFlow`, `RoomContext`, `api.ts`, `ModeSelector.tsx`, `RoomCodeInput.tsx`, `RoomCodeInput.module.css`, and `layout.tsx` must not be touched. Every interface, prop, and export from those files stays exactly as-is.
+
+---
+
+### Deliverables
+
+Exactly these 7 files, nothing else:
+
+`globals.css` — updated `@keyframes` (add `chroma-r`, `chroma-c`, `startup-roll`, `scanline-scroll`, update `tank-pulse` and `blink-slow` to perceptible values)  
+`layout.module.css` — unchanged  
+`CRTOverlay.tsx` — add startup roll: `useState(true)` mounted for 1200ms, render `.startup` div only while true  
+`CRTOverlay.module.css` — barrel distortion via `border-radius` + inset `box-shadow` on `.overlay`; animated scanlines; `.startup` + `.startupLine` classes  
+`page.tsx` — add `data-text` attributes to both `.titleWord` spans, no other changes  
+`page.module.css` — chromatic aberration `::before`/`::after` on `.titleWord`; updated animation values  
+`ModeSelector.module.css` — phosphor persistence asymmetric transition
+
+---
+
+Okay, you added way too many complexities that had no visual impact, I also think there might be an import/animation issue because nothing is actually animating on my screen, the diagonal line animation on startups look completely off because it doesn't actually affect the real lines being drawn, and overall there are a lot of issues. Your task is no longer to update the files, but provide a clean version of this preompt without all the complexities. I only want a major improvement of the start screen, but don't mention specifics.
+
+--------------------------------------------------
+
+Here's a clean, direct version of the prompt:
+
+---
+
+**Overhaul the Dead Angle start screen to look and feel like a real 1980s arcade cabinet attract mode.**
+
+Read all attached files before writing any code. Deliver exactly these 7 files: `globals.css`, `layout.module.css` (unchanged), `CRTOverlay.tsx`, `CRTOverlay.module.css`, `page.tsx`, `page.module.css`, `ModeSelector.module.css`.
+
+Do not touch `useStartFlow.ts`, `RoomContext.ts`, `api.ts`, `ModeSelector.tsx`, `RoomCodeInput.tsx`, `RoomCodeInput.module.css`, or `layout.tsx`.
+
+---
+
+**Every visual effect must be immediately obvious at normal viewing distance. If you have to look for it, double the value. This is a neon arcade cabinet — it screams.**
+
+---
+
+**CRT overlay** — Three layers, all in CSS, `pointer-events: none`, `position: fixed`:
+- Animated horizontal scanlines (dark bands visible at full opacity, slowly drifting downward via `background-position` animation — not static)
+- A curved-screen edge darkening effect (inset `box-shadow`, not a vignette gradient)
+- A slow bright horizontal band drifting top-to-bottom (the vertical sync sweep shimmer)
+
+**CRT startup** — On mount, play a one-shot diagonal banding effect for ~1200ms that simulates a CRT locking to sync. Use `useState` in `CRTOverlay.tsx` to unmount it after the animation completes.
+
+**Title chromatic aberration** — Each title word (`DEAD`, `ANGLE`) must have a red ghost and a cyan ghost permanently offset a few pixels in opposite directions using `::before`/`::after` with `mix-blend-mode: screen`. Add `data-text` attributes to both `<span>` elements in `page.tsx` so `content: attr(data-text)` works. Every few seconds, both ghosts should snap wider for a brief glitch burst.
+
+**Animation values must be perceptible:**
+- Title glow pulse: shadow spreads must change by at least 2× between dim and bright states
+- Tank pulse: `brightness(1)` to `brightness(1.5)`, glow from tight to wide — a visible flash, not a fade
+- Footer blink: `opacity: 1` to `opacity: 0` — fully off, not dim
+
+**Button hover — phosphor persistence:** Define `transition: 320ms ease` on the base button state (slow decay on mouse-out) and override with `transition: 40ms ease` inside the `:hover` selector (instant strike on mouse-in).
+
+--------------
+
+Your task is no longer to update the files, but provide a clean version of this prompt without all the complexities. I only want a major improvement of the start screen, but don't mention specifics. I do not want the animation that goes on mount anymore, it looks ugly and weird, and the overall prompt needs to be way shorter and straight to the point. Also if any CSS is specific to only one component, that component should have the animations inside it. But the global css file should have base animations that eventually can be used by multiple components, not specific animations specific to each feature. Please just create a prompt that will analyze the current project and provide perfect solutions and a overhauled startscreen with better layout and design:
+
+---
+
+**Rebuild the Dead Angle start screen from the ground up. The goal: indistinguishable from a real 1980s arcade cabinet attract mode. Not inspired by one — indistinguishable from one.**
+
+Read every attached file before writing a single line. Deliver exactly these 7 files: `globals.css`, `layout.module.css` (unchanged), `CRTOverlay.tsx`, `CRTOverlay.module.css`, `page.tsx`, `page.module.css`, `ModeSelector.module.css`. Do not touch `useStartFlow.ts`, `RoomContext.ts`, `api.ts`, `ModeSelector.tsx`, `RoomCodeInput.tsx`, `RoomCodeInput.module.css`, or `layout.tsx`.
+
+---
+
+**The cardinal rule: if you have to look for an effect, the value is wrong — double it. This screen should feel loud, alive, and slightly unstable. Like real phosphor glass under voltage.**
+
+---
+
+**CRT Hardware Simulation**
+
+Every layer is CSS only, `pointer-events: none`, `position: fixed`, above all content.
+
+Scanlines must be animated — dark bands visibly drifting downward via `background-position` keyframes, not a static gradient. Full opacity, not subtle. The screen should look like it's being redrawn.
+
+The edges of the screen darken from the inside using inset `box-shadow` — this simulates the electron beam losing efficiency at shallow angles toward the glass edge, which is distinct from a vignette. Combine this with a slight `border-radius` to suggest curved glass.
+
+A bright horizontal band drifts slowly from top to bottom — the vertical sync sweep. It should be clearly visible as it passes, like a real phosphor shimmer.
+
+On mount, play a one-shot startup desync effect for roughly 1200ms — diagonal banding across the full screen, as if the H/V sync circuits haven't locked yet. Use `useState` in `CRTOverlay.tsx` to unmount the startup layer once it finishes. Zero delay — it plays the instant the page loads.
+
+**Chromatic Aberration on the Title**
+
+Add `data-text="DEAD"` and `data-text="ANGLE"` to the two title spans in `page.tsx`. Using `::before` and `::after` with `content: attr(data-text)` and `mix-blend-mode: screen`, render a red ghost and a cyan ghost permanently offset a few pixels in opposite directions. They are always visible — resting offset is the baseline. Every several seconds, both ghosts snap violently wider with a brief skew for a glitch burst, then snap back instantly.
+
+**Everything Must Throb**
+
+The title glow pulses between a dim and a blazing state — shadow spreads at least double between keyframes. The difference must be obvious across the room.
+
+The tank flashes between dim and painfully bright on a heartbeat rhythm — `brightness(1)` to `brightness(1.5)`, drop-shadow from tight to blown-out. It should look like it's surging with power.
+
+The footer prompt blinks fully on and fully off — `opacity: 1` to `opacity: 0`. No dimming. A real arcade INSERT COIN text is either lit or it isn't.
+
+Corner diamonds scale up as well as change opacity — they should visibly pop on every pulse.
+
+**Phosphor Persistence on Buttons**
+
+On mouse-in: transition completes in 40ms — instant phosphor strike. On mouse-out: transition takes 320ms — slow afterglow decay. Achieve this by defining the slow transition on the base selector and overriding with the fast one inside `:hover`. This is a real physical behavior, not a style choice.
+
+**Overall Aesthetic**
+
+Push the design further than the current files suggest. The color palette — hot pink, cyan, neon green on pure black — should feel maximalist, not tasteful. Rethink spacing, scale, fonts and layout rhythm if needed to make the screen feel like a cabinet bezel, not a webpage. Every element should earn its place by contributing to the illusion.
+
+-----------------------------------------
+
+# Dead Angle — Start Screen Overhaul
+
+Read every attached file before writing a single line. Understand the full project — design tokens, component structure, existing CSS, the flow hooks — then redesign the start screen from scratch.
+
+Deliver exactly these 7 files: `globals.css`, `layout.module.css` (unchanged), `CRTOverlay.tsx`, `CRTOverlay.module.css`, `page.tsx`, `page.module.css`, `ModeSelector.module.css`. Do not modify any other file.
+
+---
+
+## CSS Architecture Rule
+
+**CSS Modules scope `animation-name` values locally.** A `.module.css` file cannot reference `@keyframes` declared in `globals.css` — the browser will silently fail to find them. Therefore:
+
+- `globals.css` defines only **shared base animations** that are candidates for reuse across multiple components (e.g. `blink`, `fade-in`, `cursor-blink`)
+- Every `.module.css` file **declares its own `@keyframes` locally** for any animation specific to that component
+- Never rely on a global keyframe inside a module file
+
+---
+
+## Goal
+
+The screen should feel like a real 1980s arcade cabinet attract mode — loud, maximalist, slightly unstable. Hot pink, cyan, neon green on pure black. Every element should earn its place by contributing to the illusion.
+
+---
+
+## CRT Overlay
+
+CSS only — `pointer-events: none`, `position: fixed`, above all content.
+
+- **Scanlines**: animated dark bands drifting downward. Use a child `<div>` with a `repeating-linear-gradient` scrolled via `translateY` — one pitch per cycle for a seamless loop. Not subtle; the screen should look like it's being redrawn
+- **Edge darkening**: inset `box-shadow` layers simulate electron beam falloff at screen edges. Add a slight `border-radius` to suggest curved glass. This is not a vignette — it's edge-specific
+- **Sweep line**: a bright horizontal band drifts from top to bottom on a slow loop, clearly visible as it passes
+
+No startup/mount animation.
+
+---
+
+## Title
+
+Add `data-text="DEAD"` and `data-text="ANGLE"` to the title spans in `page.tsx`. Use `::before` / `::after` with `content: attr(data-text)` and `mix-blend-mode: screen` to render permanent red and cyan ghost offsets. Every few seconds, both ghosts snap violently wider with a brief skew, then snap back instantly.
+
+The title glow pulses — shadow spread at least doubles between resting and peak states. The difference should be obvious.
+
+---
+
+## Everything Throbs
+
+- Tank: heartbeat rhythm, `brightness` swings from dim to painfully bright, drop-shadow from tight to blown-out
+- Footer prompt: fully on / fully off — `opacity: 1` to `opacity: 0`, no dimming
+- Corner diamonds: scale up and change opacity on each pulse — a visible pop, not a fade
+
+---
+
+## Phosphor Persistence on Buttons
+
+Mouse-in: 40ms (instant phosphor strike). Mouse-out: 320ms (slow afterglow decay). Define the slow transition on the base selector; override with the fast one inside `:hover`.
+
+---
+
+## Layout and Design
+
+Rethink the layout — scale, spacing, and rhythm should feel like a cabinet bezel, not a webpage. Push further than the current files suggest.
