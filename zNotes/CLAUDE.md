@@ -7,26 +7,12 @@ Dead Angle is a real-time two-player arcade shooter inspired by Tank Trouble. Pl
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Player Flow](#player-flow)
-- [Game Screens](#game-screens)
-- [Gameplay](#gameplay)
-- [Scoring](#scoring)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Backend Responsibilities](#backend-responsibilities)
-- [Frontend Responsibilities](#frontend-responsibilities)
-
----
-
 ## Overview
 
 Dead Angle supports two modes:
 
-- **Singleplayer** — play as Player 1 against a bot, runs entirely client-side. The backend is not contacted
-- **Multiplayer** — no account or login required. Player 1 creates a room and shares the code. Player 2 enters the code and joins. The server assigns each connection an anonymous session ID used solely to identify the two slots — this is not authentication
+- **Singleplayer** — play against a bot, runs entirely client-side. The backend is not contacted
+- **Multiplayer** — no account or login required. Player 1 creates a room and shares the code. Player 2 enters the code and joins
 
 ---
 
@@ -62,14 +48,7 @@ Dead Angle supports two modes:
 - Each player has 7 projectiles. Each projectile expires after 10 seconds. When the last projectile is fired, a 3-second reload begins before 7 new projectiles are granted
 - Projectiles bounce off walls at a true reflection angle
 - A round ends when a player is hit. A 3-second countdown plays, then the next round begins with a new maze and fresh spawn positions
-
----
-
-## Scoring
-
-- Hitting your opponent awards 1 point
-- After a 3-second countdown, the next round begins immediately with a new maze
-- Rounds are unlimited; the session ends when a player quits
+- Hitting your opponent awards 1 point. Rounds are unlimited; the session ends when a player quits
 
 ---
 
@@ -120,39 +99,3 @@ When Player 1 calls `POST /rooms`, the server returns a `sessionId` and assigns 
 
 **Integrations**
 - Discord webhook — on multiplayer session end, the .NET backend sends an outbound POST to a Discord webhook URL with a formatted match summary
-
----
-
-## Backend Responsibilities
-
-*(Multiplayer only — the backend is not involved in singleplayer)*
-
-- Room creation and join flow; anonymous session ID assignment
-- Mapping SignalR connections to player slots via session ID in `OnConnectedAsync`
-- Server-side game loop at ~20Hz
-- Player position updates from client input
-- Projectile simulation for authoritative hit detection
-- Round resolution, scoring, and new maze generation on round end
-- Detecting player disconnection and ending the session
-- Emitting all game events to clients via SignalR
-- Outbound Discord webhook on session end
-
----
-
-## Frontend Responsibilities
-
-**Both modes**
-- Rendering the maze, players, and projectiles on Canvas each frame
-- Deterministic local projectile simulation for smooth 60fps rendering
-- Capturing keyboard input
-
-**Singleplayer only**
-- Bot movement and firing logic
-- Hit detection and scoring
-- Maze generation between rounds
-
-**Multiplayer only**
-- REST calls to create or join a room
-- Sending keyboard input to the backend via SignalR
-- Receiving and applying all authoritative game events from the backend
-- Interpolating player positions between server ticks

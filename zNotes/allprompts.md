@@ -16,20 +16,16 @@ Ensure the readme is as clean, simple and well structured as possible, without a
 
 I'm now going to start on the start screen.
 
-Ensure this prompt is as good as possible:
-
-Yor task is now to create the startscreen of my game "Dead Angle". 
+Ensure this prompt is as good as possible.
 
 Here is the apps theme:
-
 (update this text to make sense for the simple singleplayer and multiplayer option on the start screen)
 Pure 1980s arcade cabinet energy — the kind of game that would have lived next to Pac-Man and Galaga. Black background, neon outlines only. The maze walls are bright single-colour neon lines with no fill. Player tokens are minimal geometric vehicles made of 3-4 rectangles. Projectiles are small bright squares. Iconic, immediately readable, trivially achievable in CSS.
-
 Flat 2D top-down arcade game maze arena. Pure black background. Maze walls are bright neon outlines only — thin glowing lines with no fill, in hot pink or cyan. Players are minimal geometric tank shapes made of 2-3 rectangles in contrasting neon colours, viewed from above. Small bright square projectiles. No textures, no gradients, no 3D. Thick pixel-art style outlines. Style: 1982 arcade cabinet game screen, like Tron or early vector arcade games. Everything flat, bold, minimal
 
 The prompt should be simple, straight to the point and clean.
 
----
+improve this prompt that will be attached with the CLAUDE.md, filestructure and moodboard images:
 
 Build the start screen for Dead Angle — a 1980s neon arcade game.
 
@@ -62,4 +58,110 @@ Centred vertically and horizontally. From top to bottom:
 - Follow the file structure exactly as specified in the attached filestructure.md
 - Follow all game rules and architecture exactly as specified in the attached README.md
 
-(Look at the moodboard images and attached filestructure and CLAUDE.MD, and create a very simple globals.css dfollowing best 2026 practices)
+(Look at the moodboard images and attached filestructure and CLAUDE.MD, and create a very simple globals.css following best 2026 practices)
+
+---
+
+Create a prompt I can start in a new conversation with a single job of scrutinizing the CLAUDE.md and filestructure, and find the cleanest and best solution for all features and update the filestructure and CLAUDE.md accordingly. I will keep pasting the prompt you give together with the filestructure.md and CLAUDE.md over 10 times, until it has analyzed and caught every issue. The prompt should be short, clean straight to the point and follow best 2026 standards.'
+
+---
+
+You are a senior full-stack architect reviewing a game project called Dead Angle.
+
+Your only job is to read the attached CLAUDE.md and filestructure.md, understand the project deeply, then produce updated versions of both files that are simpler and more correct than what you received.
+
+Guiding principle: the simplest solution that is fully correct beats a complex solution that is also correct. If something can be removed, merged, or replaced with a simpler approach without losing any feature — do it.
+
+Ask yourself for every file, every decision, every system:
+- Is this the simplest way to achieve this?
+- Is this logic on the right side of the client/server boundary?
+- Does this file exist because the project needs it, or because it seemed like good practice?
+- Can two things become one thing?
+
+Deliver:
+1. Updated CLAUDE.md
+2. Updated filestructure.md
+3. Changelog — every change with what it was, what it is now, and why it is simpler or more correct
+
+If you find nothing to improve, say so. Do not invent complexity. Do not add files or systems that aren't justified by a concrete feature need.
+
+---------------------------------------------------------
+
+# Dead Angle — Start Screen
+
+Build the start screen (`src/app/page.tsx`) and `globals.css` for Dead Angle.
+Reference the attached `CLAUDE.md` and `filestructure.md` for architecture and file placement rules.
+
+---
+
+## globals.css
+
+Create `src/app/globals.css` first. It must contain only:
+- CSS reset (box-sizing, margin, padding, body)
+- Design tokens as CSS custom properties: background colour, neon colours (hot pink, cyan, white), glow intensities, font stack, base font size, border widths
+- `@keyframes` definitions (e.g. pulse glow, flicker) — no component styles
+
+No component styles. Everything else goes in a `.module.css` file.
+
+---
+
+## Visual style
+
+1980s arcade cabinet. The start screen is a title screen — think the attract mode of Galaga or Tron.
+
+- **Background:** pure black (`#000`)
+- **Palette:** hot pink (`#FF2D78`), cyan (`#00F0FF`), white for body text
+- **Glow:** `box-shadow` and `text-shadow` only — no images, no SVGs, no external fonts
+- **Font:** monospace system font or a CSS `@font-face` pixel font if one is already in `/public` — do not import from Google Fonts or any CDN
+- **Borders:** neon outlines only, no fills on interactive elements
+- **No gradients, no textures, no 3D transforms**
+
+Specific elements:
+- **Title "DEAD ANGLE"** — large, hot pink, heavy text-shadow glow. Static or slow pulse
+- **Mode buttons** ("SINGLEPLAYER", "MULTIPLAYER") — neon outlined rectangles, no fill. Cyan on hover/active, with glow. Uppercase, letter-spaced
+- **Sub-toggle** ("HOST" / "JOIN") — smaller than mode buttons, same outline style
+- **Room code input** — neon outlined, black background, cyan caret, monospace text, no browser default styling
+- **Action buttons** ("CREATE ROOM", "JOIN ROOM") — same style as mode buttons
+
+---
+
+## Layout
+
+Centred vertically and horizontally. Single column. Top to bottom:
+
+1. "DEAD ANGLE" title
+2. SINGLEPLAYER / MULTIPLAYER mode buttons
+3. *(MULTIPLAYER only)* HOST / JOIN sub-toggle
+4. *(HOST)* "CREATE ROOM" button
+5. *(JOIN)* Room code input + "JOIN ROOM" button
+
+---
+
+## Behaviour
+
+- **SINGLEPLAYER** → `router.push('/game')`
+- **MULTIPLAYER → HOST** → `POST /rooms` via `api.ts` → write `sessionId`, `playerSlot`, `roomCode`, `mode` to `RoomContext` → `router.push('/lobby')`
+- **MULTIPLAYER → JOIN** → `POST /rooms/{code}/join` via `api.ts` → write `sessionId`, `playerSlot`, `mode` to `RoomContext` → `router.push('/game')`
+- Loading state: disable the active button and show a text label change (e.g. "CONNECTING…") — no spinner
+- Error state: show a short error message below the button in hot pink — no separate screen or modal
+- All logic lives in `src/features/start/hooks/useStartFlow.ts`
+
+---
+
+## File placement
+
+```
+src/app/globals.css
+src/app/page.tsx
+src/app/page.module.css
+src/features/start/
+  components/
+    ModeSelector/
+      ModeSelector.tsx
+      ModeSelector.module.css
+    RoomCodeInput/
+      RoomCodeInput.tsx
+      RoomCodeInput.module.css
+  hooks/
+    useStartFlow.ts
+```
