@@ -6,58 +6,118 @@
 
 /* ── Design Tokens ────────────────────────────────────────── */
 :root {
-  /* Colours */
+  /* ── Core palette ── */
   --color-bg:           #000000;
   --color-pink:         #FF2D78;
   --color-cyan:         #00F0FF;
+  --color-green:        #C8FF00;   /* neon yellow-green — P2 / victory / accents */
   --color-white:        #FFFFFF;
+  --color-dim:          rgba(255, 255, 255, 0.4);
   --color-error:        #FF2D78;
 
-  /* Glow intensities */
-  --glow-pink-sm:       0 0 6px #FF2D78, 0 0 12px #FF2D78;
-  --glow-pink-md:       0 0 8px #FF2D78, 0 0 20px #FF2D78, 0 0 40px rgba(255, 45, 120, 0.4);
-  --glow-pink-lg:       0 0 10px #FF2D78, 0 0 30px #FF2D78, 0 0 60px rgba(255, 45, 120, 0.5), 0 0 100px rgba(255, 45, 120, 0.2);
-  --glow-cyan-sm:       0 0 6px #00F0FF, 0 0 12px #00F0FF;
-  --glow-cyan-md:       0 0 8px #00F0FF, 0 0 20px #00F0FF, 0 0 40px rgba(0, 240, 255, 0.4);
-  --glow-cyan-lg:       0 0 10px #00F0FF, 0 0 30px #00F0FF, 0 0 60px rgba(0, 240, 255, 0.5);
-  --glow-white-sm:      0 0 4px #FFFFFF, 0 0 8px rgba(255, 255, 255, 0.6);
+  /* ── Pink glow stack ── */
+  --glow-pink-sm:
+    0 0 4px  #FF2D78,
+    0 0 10px #FF2D78;
+  --glow-pink-md:
+    0 0 6px  #FF2D78,
+    0 0 18px #FF2D78,
+    0 0 36px rgba(255, 45, 120, 0.55);
+  --glow-pink-lg:
+    0 0 8px  #FF2D78,
+    0 0 24px #FF2D78,
+    0 0 54px rgba(255, 45, 120, 0.60),
+    0 0 90px rgba(255, 45, 120, 0.25);
 
-  /* Typography */
-  --font-mono:          "Courier New", Courier, "Lucida Console", monospace;
-  --font-size-base:     16px;
-  --font-size-sm:       0.75rem;   /* 12px */
-  --font-size-md:       1rem;      /* 16px */
-  --font-size-lg:       1.25rem;   /* 20px */
-  --font-size-xl:       1.5rem;    /* 24px */
-  --font-size-2xl:      2rem;      /* 32px */
-  --font-size-3xl:      3rem;      /* 48px */
-  --font-size-4xl:      4.5rem;    /* 72px */
-  --letter-spacing-wide: 0.2em;
-  --letter-spacing-xl:   0.35em;
+  /* ── Cyan glow stack ── */
+  --glow-cyan-sm:
+    0 0 4px  #00F0FF,
+    0 0 10px #00F0FF;
+  --glow-cyan-md:
+    0 0 6px  #00F0FF,
+    0 0 18px #00F0FF,
+    0 0 36px rgba(0, 240, 255, 0.55);
+  --glow-cyan-lg:
+    0 0 8px  #00F0FF,
+    0 0 24px #00F0FF,
+    0 0 54px rgba(0, 240, 255, 0.60);
 
-  /* Borders */
-  --border-neon-pink:   2px solid #FF2D78;
-  --border-neon-cyan:   2px solid #00F0FF;
-  --border-neon-white:  2px solid #FFFFFF;
+  /* ── Green glow stack ── */
+  --glow-green-sm:
+    0 0 4px  #C8FF00,
+    0 0 10px #C8FF00;
+  --glow-green-md:
+    0 0 6px  #C8FF00,
+    0 0 18px #C8FF00,
+    0 0 36px rgba(200, 255, 0, 0.55);
+  --glow-green-lg:
+    0 0 8px  #C8FF00,
+    0 0 24px #C8FF00,
+    0 0 54px rgba(200, 255, 0, 0.60);
 
-  /* Spacing scale */
-  --space-1:  0.25rem;
-  --space-2:  0.5rem;
-  --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
+  /* ── Title text-shadow — hot pink with hard cyan offset drop shadow ──
+     Matches the arcade cabinet moodboard: pink foreground + cyan shadow
+     offset 4–5px bottom-right, creating the classic 80s pixel-depth look. */
+  --title-shadow:
+    4px  4px  0   #00F0FF,
+    5px  5px  0   #00F0FF,
+    0    0   10px #FF2D78,
+    0    0   26px #FF2D78,
+    0    0   52px rgba(255, 45, 120, 0.60),
+    4px  4px 14px rgba(0, 240, 255, 0.45);
 
-  /* Layout */
-  --z-content:     1;
-  --z-overlay:     9999;
+  --title-shadow-pulse:
+    4px  4px  0   #00F0FF,
+    5px  5px  0   #00F0FF,
+    0    0   16px #FF2D78,
+    0    0   38px #FF2D78,
+    0    0   76px rgba(255, 45, 120, 0.70),
+    4px  4px 20px rgba(0, 240, 255, 0.60);
 
-  /* Transition */
-  --transition-fast:   150ms ease;
-  --transition-base:   250ms ease;
+  /* ── Typography ── */
+  --font-mono:            "Courier New", Courier, "Lucida Console", monospace;
+  --font-size-base:       16px;
+  --font-size-xs:         0.625rem;  /* 10px */
+  --font-size-sm:         0.75rem;   /* 12px */
+  --font-size-md:         1rem;      /* 16px */
+  --font-size-lg:         1.25rem;   /* 20px */
+  --font-size-xl:         1.5rem;    /* 24px */
+  --font-size-2xl:        2rem;      /* 32px */
+  --font-size-3xl:        3rem;      /* 48px */
+  --font-size-4xl:        5rem;      /* 80px */
+  --letter-spacing-base:  0.1em;
+  --letter-spacing-wide:  0.2em;
+  --letter-spacing-xl:    0.35em;
+  --letter-spacing-2xl:   0.5em;
+
+  /* ── Borders ── */
+  --border-neon-pink:     2px solid #FF2D78;
+  --border-neon-cyan:     2px solid #00F0FF;
+  --border-neon-green:    2px solid #C8FF00;
+  --border-neon-white:    2px solid #FFFFFF;
+  --border-dim:           1px solid rgba(255, 255, 255, 0.22);
+
+  /* ── Spacing ── */
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+  --space-20:  5rem;
+  --space-24:  6rem;
+
+  /* ── Z-index ── */
+  --z-content:  1;
+  --z-overlay:  9999;
+
+  /* ── Transitions ── */
+  --transition-fast:  120ms ease;
+  --transition-base:  220ms ease;
 }
 
 /* ── CSS Reset ────────────────────────────────────────────── */
@@ -74,14 +134,10 @@ html {
   font-size: var(--font-size-base);
   background-color: var(--color-bg);
   color: var(--color-white);
-  /* Prevent layout shift from scrollbar appearing */
   overflow-y: scroll;
   scrollbar-width: none;
 }
-
-html::-webkit-scrollbar {
-  display: none;
-}
+html::-webkit-scrollbar { display: none; }
 
 body {
   font-family: var(--font-mono);
@@ -94,12 +150,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove default list styling */
-ul, ol {
-  list-style: none;
-}
+ul, ol { list-style: none; }
 
-/* Consistent button base — actual styles live in component modules */
 button {
   cursor: pointer;
   border: none;
@@ -107,7 +159,6 @@ button {
   font-family: inherit;
 }
 
-/* Consistent input base */
 input {
   font-family: inherit;
   background: none;
@@ -116,65 +167,130 @@ input {
   color: inherit;
 }
 
-/* ── @keyframes ───────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────
+   @keyframes — ALL reusable animations live here.
+   Component modules reference by name only.
+   ────────────────────────────────────────────────────────── */
 
-/* Neon pulse — title and active elements */
-@keyframes neon-pulse-pink {
+/* ── Title pulse — hot pink with cyan drop-shadow offset ── */
+@keyframes neon-pulse-title {
   0%, 100% {
-    text-shadow: var(--glow-pink-md);
+    text-shadow: var(--title-shadow);
     opacity: 1;
   }
-  50% {
-    text-shadow: var(--glow-pink-lg);
-    opacity: 0.92;
+  45%, 55% {
+    text-shadow: var(--title-shadow-pulse);
+    opacity: 0.94;
   }
 }
 
+/* ── Cyan box-shadow pulse — active outlines ── */
 @keyframes neon-pulse-cyan {
+  0%, 100% { box-shadow: var(--glow-cyan-sm); }
+  50%       { box-shadow: var(--glow-cyan-md); }
+}
+
+/* ── Green text / element pulse ── */
+@keyframes neon-pulse-green {
   0%, 100% {
-    box-shadow: var(--glow-cyan-sm);
-    border-color: #00F0FF;
+    filter: brightness(1);
+    box-shadow: var(--glow-green-sm);
   }
   50% {
-    box-shadow: var(--glow-cyan-md);
-    border-color: #00F0FF;
+    filter: brightness(1.18);
+    box-shadow: var(--glow-green-md);
   }
 }
 
-/* CRT flicker — subtle brightness oscillation */
-@keyframes crt-flicker {
-  0%   { opacity: 1; }
-  3%   { opacity: 0.97; }
-  6%   { opacity: 1; }
-  50%  { opacity: 1; }
-  52%  { opacity: 0.98; }
-  54%  { opacity: 1; }
-  78%  { opacity: 1; }
-  80%  { opacity: 0.96; }
-  82%  { opacity: 1; }
-  100% { opacity: 1; }
+/* ── CSS tank icon pulse ── */
+@keyframes tank-pulse {
+  0%, 100% {
+    filter:
+      brightness(1)
+      drop-shadow(0 0 3px #C8FF00)
+      drop-shadow(0 0 8px #C8FF00);
+  }
+  50% {
+    filter:
+      brightness(1.2)
+      drop-shadow(0 0 7px #C8FF00)
+      drop-shadow(0 0 18px #C8FF00)
+      drop-shadow(0 0 32px rgba(200, 255, 0, 0.55));
+  }
 }
 
-/* Text blink — for secondary prompts */
+/* ── CRT flicker — models real phosphor tube irregularity.
+   Brief, asymmetric opacity drops at uneven intervals. ── */
+@keyframes crt-flicker {
+  0%     { opacity: 1; }
+  1.4%   { opacity: 0.91; }
+  1.9%   { opacity: 1; }
+  2.8%   { opacity: 0.97; }
+  3.2%   { opacity: 1; }
+  17.5%  { opacity: 1; }
+  17.9%  { opacity: 0.94; }
+  18.3%  { opacity: 1; }
+  35.6%  { opacity: 1; }
+  35.9%  { opacity: 0.87; }
+  36.2%  { opacity: 0.98; }
+  36.6%  { opacity: 1; }
+  52.4%  { opacity: 1; }
+  52.7%  { opacity: 0.93; }
+  53.1%  { opacity: 1; }
+  69.8%  { opacity: 1; }
+  70.0%  { opacity: 0.95; }
+  70.4%  { opacity: 1; }
+  83.5%  { opacity: 1; }
+  83.8%  { opacity: 0.89; }
+  84.0%  { opacity: 0.99; }
+  84.3%  { opacity: 1; }
+  96.5%  { opacity: 1; }
+  96.8%  { opacity: 0.93; }
+  97.2%  { opacity: 1; }
+  100%   { opacity: 1; }
+}
+
+/* ── CRT sweep line — slow bright horizontal band drifting
+   from top to bottom, like a CRT's vertical sync artifact ── */
+@keyframes crt-sweep {
+  0%   { transform: translateY(-200px); opacity: 0; }
+  4%   { opacity: 1; }
+  96%  { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* ── Blink — attract-mode text prompts ── */
 @keyframes blink {
-  0%, 49%  { opacity: 1; }
+  0%, 49%   { opacity: 1; }
   50%, 100% { opacity: 0; }
 }
 
-/* Cursor blink for inputs */
-@keyframes cursor-blink {
-  0%, 49%  { border-color: var(--color-cyan); }
-  50%, 100% { border-color: transparent; }
+/* ── Slow blink — dimmer elements ── */
+@keyframes blink-slow {
+  0%, 64%   { opacity: 1; }
+  65%, 100% { opacity: 0.28; }
 }
 
-/* Fade in on mount */
+/* ── Cursor blink ── */
+@keyframes cursor-blink {
+  0%, 49%   { caret-color: var(--color-cyan); }
+  50%, 100% { caret-color: transparent; }
+}
+
+/* ── Fade-in on mount ── */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(7px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Scanline sweep — decorative, very subtle */
-@keyframes scanline-sweep {
-  0%   { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+/* ── Fade-in flat — no translate ── */
+@keyframes fade-in-flat {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Corner diamond rotate-pulse ── */
+@keyframes corner-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
 }

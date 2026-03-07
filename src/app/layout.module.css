@@ -1,0 +1,10 @@
+/* ============================================================
+   layout.module.css
+   Root layout wrapper only — fills viewport, nothing more.
+   ============================================================ */
+
+.main {
+  position: relative;
+  z-index: var(--z-content);
+  min-height: 100dvh;
+}

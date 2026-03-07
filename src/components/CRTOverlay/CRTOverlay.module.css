@@ -1,0 +1,87 @@
+/* ============================================================
+   CRTOverlay.module.css
+   Realistic CRT phosphor tube simulation — CSS only.
+   Three layers:
+     1. .overlay        — Horizontal scanlines + irregular flicker
+     2. .overlay::before — Edge vignette (radial gradient)
+     3. .overlay::after  — Vertical sync sweep line (drifts down)
+
+   Hard constraints:
+   - pointer-events: none on every layer
+   - position: fixed, inset: 0
+   - z-index: var(--z-overlay) — above all page content
+   - No canvas, no JS, no animation libraries
+   ============================================================ */
+
+/* ── Layer 1: Scanlines + flicker ────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  pointer-events: none;
+
+  /*  Horizontal scanlines: alternating transparent / semi-opaque black.
+      Pitch = 3px  (2px clear + 1px dark).
+      Opacity ~0.28 on the dark band — visible but not distracting.
+      This matches the scanline density visible in the moodboard images. */
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent        0px,
+    transparent        2px,
+    rgba(0, 0, 0, 0.28) 2px,
+    rgba(0, 0, 0, 0.28) 3px
+  );
+
+  /*  Subtle global brightness flicker — models phosphor tube warm-up
+      and irregular power fluctuations.
+      Defined in globals.css as @keyframes crt-flicker. */
+  animation: crt-flicker 9s step-end infinite;
+}
+
+/* ── Layer 2: Screen vignette ─────────────────────────────── */
+.overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /*  Strong radial vignette darkening all four edges.
+      Inner clear zone at ~48% so centre stays fully readable.
+      Outer edge reaches near-black — matches the curved
+      phosphor screen falloff on real CRT cabinets. */
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent          0%,
+    transparent          42%,
+    rgba(0, 0, 0, 0.28)  62%,
+    rgba(0, 0, 0, 0.60)  80%,
+    rgba(0, 0, 0, 0.82)  100%
+  );
+}
+
+/* ── Layer 3: Vertical-sync sweep line ────────────────────── */
+.overlay::after {
+  content: '';
+  position: absolute;
+  /*  A thin horizontal band — 160px tall, full width.
+      The gradient feathers to transparent at both top and bottom
+      so the sweep is felt as a ripple rather than a hard stripe. */
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 160px;
+  pointer-events: none;
+
+  background: linear-gradient(
+    to bottom,
+    transparent                    0%,
+    rgba(255, 255, 255, 0.016)    20%,
+    rgba(255, 255, 255, 0.030)    50%,
+    rgba(255, 255, 255, 0.016)    80%,
+    transparent                   100%
+  );
+
+  /*  Drift from above the viewport to below — 11s cycle.
+      Defined in globals.css as @keyframes crt-sweep. */
+  animation: crt-sweep 11s linear infinite;
+}

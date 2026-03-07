@@ -1,0 +1,310 @@
+/* ============================================================
+   page.module.css — Dead Angle start screen
+   1980s arcade attract-mode aesthetic.
+   Pure black · hot pink + cyan offset title · neon green tank
+   Corner diamonds · edge lines · scanlines from CRTOverlay.
+   ============================================================ */
+
+/* ── Full-screen layout ───────────────────────────────────── */
+.screen {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Corner ornaments — thin neon outlined diamonds
+   Pink TL & BR, Cyan TR & BL (alternating — arcade convention)
+   ────────────────────────────────────────────────────────── */
+.corner {
+  position: absolute;
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid;
+  transform: rotate(45deg);
+}
+
+.cornerTL {
+  top: 24px;
+  left: 24px;
+  border-color: var(--color-pink);
+  box-shadow: var(--glow-pink-sm);
+  animation: corner-pulse 3.2s ease-in-out infinite;
+}
+.cornerTR {
+  top: 24px;
+  right: 24px;
+  border-color: var(--color-cyan);
+  box-shadow: var(--glow-cyan-sm);
+  animation: corner-pulse 3.2s ease-in-out 0.8s infinite;
+}
+.cornerBL {
+  bottom: 24px;
+  left: 24px;
+  border-color: var(--color-cyan);
+  box-shadow: var(--glow-cyan-sm);
+  animation: corner-pulse 3.2s ease-in-out 1.6s infinite;
+}
+.cornerBR {
+  bottom: 24px;
+  right: 24px;
+  border-color: var(--color-pink);
+  box-shadow: var(--glow-pink-sm);
+  animation: corner-pulse 3.2s ease-in-out 2.4s infinite;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Horizontal edge lines — top and bottom decorative rules
+   that run inside the corner diamonds like a real arcade bezel
+   ────────────────────────────────────────────────────────── */
+.edgeLine {
+  position: absolute;
+  left: 52px;
+  right: 52px;
+  height: 1px;
+  display: block;
+}
+.edgeLineTop {
+  top: 31px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(0, 240, 255, 0.5) 15%,
+    rgba(0, 240, 255, 0.5) 85%,
+    transparent
+  );
+  box-shadow: 0 0 6px rgba(0, 240, 255, 0.3);
+}
+.edgeLineBottom {
+  bottom: 31px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 45, 120, 0.5) 15%,
+    rgba(255, 45, 120, 0.5) 85%,
+    transparent
+  );
+  box-shadow: 0 0 6px rgba(255, 45, 120, 0.3);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Content column
+   ────────────────────────────────────────────────────────── */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-20) var(--space-8);
+  width: 100%;
+  max-width: 680px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Title — the hero element.
+   Hot pink text with a hard 4–5px cyan offset drop-shadow.
+   Matches the Tank Attack moodboard: pink foreground,
+   cyan depth shadow, phosphor glow all around.
+   ────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: fade-in-flat 0.8s ease both;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.88;
+  gap: var(--space-1);
+  /* No margin — gap on .content handles vertical rhythm */
+}
+
+.titleWord {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(3.8rem, 13vw, 7.5rem);
+  font-weight: 900;
+  letter-spacing: var(--letter-spacing-2xl);
+  text-transform: uppercase;
+  color: var(--color-pink);
+
+  /* The signature arcade drop-shadow:
+     hard offset copies build the cyan depth plane,
+     then the neon glow halos sit on top. */
+  text-shadow: var(--title-shadow);
+  animation: neon-pulse-title 3.5s ease-in-out infinite;
+}
+
+/* Stagger the two title lines very subtly */
+.titleWord:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.tagline {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-2xl);
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan-sm);
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-top: var(--space-2);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Decorative divider — line ◆ line
+   ────────────────────────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 420px;
+  animation: fade-in-flat 0.9s ease 0.2s both;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(0, 240, 255, 0.6),
+    transparent
+  );
+  box-shadow: 0 0 5px rgba(0, 240, 255, 0.3);
+  display: block;
+}
+
+.dividerDiamond {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--color-cyan);
+  box-shadow: var(--glow-cyan-sm);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   CSS tank token — neon green, top-down view.
+   Built entirely from CSS rectangles — no images, no SVGs.
+   Matches the moodboard's "tiny animated geometric tank token
+   in yellow-green with a pulsing glow."
+   ────────────────────────────────────────────────────────── */
+.tankWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in-flat 0.9s ease 0.3s both;
+}
+
+.tank {
+  position: relative;
+  width: 42px;
+  height: 30px;
+  animation: tank-pulse 2.4s ease-in-out infinite;
+}
+
+/* Hull — main body rectangle */
+.tankHull {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  height: 16px;
+  background: var(--color-green);
+}
+
+/* Turret — square centred on hull */
+.tankTurret {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--color-green);
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Barrel — thin vertical rect pointing up */
+.tankBarrel {
+  position: absolute;
+  width: 4px;
+  height: 14px;
+  background: var(--color-green);
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Tracks — thin strips flanking hull */
+.tankTrackL,
+.tankTrackR {
+  position: absolute;
+  width: 4px;
+  height: 18px;
+  background: var(--color-green);
+  bottom: 2px;
+}
+.tankTrackL { left: 0; }
+.tankTrackR { right: 0; }
+
+/* ──────────────────────────────────────────────────────────
+   Controls section
+   ────────────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  width: 100%;
+  animation: fade-in 0.5s ease 0.35s both;
+}
+
+/* JOIN sub-section */
+.joinSection {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  animation: fade-in 0.3s ease both;
+}
+
+/* HOST inline error */
+.inlineError {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-error);
+  text-shadow: var(--glow-pink-sm);
+  text-transform: uppercase;
+  animation: fade-in-flat 0.2s ease both;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Footer attract prompt
+   ────────────────────────────────────────────────────────── */
+.footer {
+  animation: fade-in-flat 1s ease 0.6s both;
+}
+
+.prompt {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-xl);
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  text-align: center;
+  /* Slow blink — attract-mode feel */
+  animation: blink-slow 2.8s step-end infinite;
+}

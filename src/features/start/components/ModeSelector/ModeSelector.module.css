@@ -1,0 +1,93 @@
+/* ============================================================
+   ModeSelector.module.css
+   ============================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+/* ── Primary mode buttons ─────────────────────────────────── */
+.modeRow {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.modeBtn {
+  position: relative;
+  padding: var(--space-3) var(--space-8);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition:
+    color            var(--transition-fast),
+    border-color     var(--transition-fast),
+    box-shadow       var(--transition-fast),
+    background       var(--transition-fast);
+  cursor: pointer;
+}
+
+.modeBtn:hover:not(.modeBtnActive),
+.modeBtn:focus-visible:not(.modeBtnActive) {
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.55);
+  outline: none;
+}
+
+.modeBtnActive {
+  color: var(--color-cyan);
+  border: var(--border-neon-cyan);
+  box-shadow: var(--glow-cyan-sm), inset 0 0 18px rgba(0, 240, 255, 0.07);
+  animation: neon-pulse-cyan 2.4s ease-in-out infinite;
+}
+
+/* ── Sub-mode buttons (HOST / JOIN) ───────────────────────── */
+.subRow {
+  display: flex;
+  gap: var(--space-3);
+  animation: fade-in 0.25s ease both;
+}
+
+.subBtn {
+  padding: var(--space-2) var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition:
+    color        var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow   var(--transition-fast);
+  cursor: pointer;
+}
+
+.subBtn:hover:not(.subBtnActive):not(:disabled),
+.subBtn:focus-visible:not(.subBtnActive):not(:disabled) {
+  color: var(--color-cyan);
+  border-color: rgba(0, 240, 255, 0.5);
+  outline: none;
+}
+
+.subBtnActive {
+  color: var(--color-cyan);
+  border-color: var(--color-cyan);
+  box-shadow: var(--glow-cyan-sm);
+}
+
+.subBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

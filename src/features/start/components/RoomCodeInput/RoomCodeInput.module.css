@@ -1,0 +1,100 @@
+/* ============================================================
+   RoomCodeInput.module.css
+   ============================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  animation: fade-in 0.3s ease both;
+}
+
+/* ── Input + button in a single row ───────────────────────── */
+.fieldRow {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+/* ── Room code input ──────────────────────────────────────── */
+.input {
+  width: 11rem;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-wide);
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  background: #000;
+  border: var(--border-neon-cyan);
+  border-right: none;
+  caret-color: var(--color-cyan);
+  transition: box-shadow var(--transition-base);
+}
+
+.input::placeholder {
+  color: rgba(0, 240, 255, 0.28);
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: var(--glow-cyan-md);
+  animation: cursor-blink 1s step-end infinite;
+}
+
+.input:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ── Join button ──────────────────────────────────────────── */
+.joinBtn {
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  background: transparent;
+  border: var(--border-neon-cyan);
+  box-shadow: var(--glow-cyan-sm);
+  transition:
+    background  var(--transition-fast),
+    box-shadow  var(--transition-fast);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.joinBtn:hover:not(:disabled),
+.joinBtn:focus-visible:not(:disabled) {
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: var(--glow-cyan-md);
+  outline: none;
+}
+
+.joinBtn:active:not(:disabled) {
+  background: rgba(0, 240, 255, 0.14);
+}
+
+.joinBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Inline error ─────────────────────────────────────────── */
+.error {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-error);
+  text-shadow: var(--glow-pink-sm);
+  text-transform: uppercase;
+  text-align: center;
+  animation: fade-in-flat 0.2s ease both;
+}
