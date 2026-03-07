@@ -470,3 +470,12 @@ Mouse-in: 40ms (instant phosphor strike). Mouse-out: 320ms (slow afterglow decay
 ## Layout and Design
 
 Rethink the layout — scale, spacing, and rhythm should feel like a cabinet bezel, not a webpage. Push further than the current files suggest.
+
+--------
+
+1UP / 2UP — the final round counts from the last completed session (e.g. 00007 / 00004). In singleplayer, 2UP stays zeroed. These come from the sessionEnded event payload which already contains finalScores, so no extra backend work is needed.
+HIGH SCORE — the highest single-session score across all games on this device, stored in localStorage. Just one number, one key — trivial to implement.
+
+That's not it, I want the design to be pixel based, and not be rounded corners, here is the exact design:
+
+a 3x5 base square, around this square is a 1 pixel gap (5x7 are missing), followed by a 7x9 square that is 1 pixel wide. In the petruding/cannon part, the outer 7x9 pixels are missing.

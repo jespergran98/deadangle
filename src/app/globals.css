@@ -1,9 +1,13 @@
 /* ============================================================
    DEAD ANGLE — globals.css
    Design tokens · CSS reset · Base document
-   @keyframes: SHARED ONLY — blink, fade-in, fade-in-flat,
-   cursor-blink. All component-specific animations live
-   inside their own .module.css files.
+
+   @keyframes here are SHARED CANDIDATES ONLY:
+     fade-in, fade-in-flat, blink, cursor-blink
+   All component-specific animations live inside their own
+   .module.css files. Module files cannot reference global
+   @keyframes by name — CSS Modules scopes animation-name
+   to the local stylesheet.
    ============================================================ */
 
 /* ── Design Tokens ────────────────────────────────────────── */
@@ -12,7 +16,7 @@
   --color-bg:           #000000;
   --color-pink:         #FF2D78;
   --color-cyan:         #00F0FF;
-  --color-green:        #C8FF00;   /* neon yellow-green — P2 / victory / accents */
+  --color-green:        #C8FF00;
   --color-white:        #FFFFFF;
   --color-dim:          rgba(255, 255, 255, 0.4);
   --color-error:        #FF2D78;
@@ -57,38 +61,29 @@
     0 0 24px #C8FF00,
     0 0 54px rgba(200, 255, 0, 0.60);
 
-  /* ── Title text-shadow — hot pink with hard cyan offset drop shadow ──
-     Matches the arcade cabinet moodboard: pink foreground + cyan shadow
-     offset 4–5px bottom-right, creating the classic 80s pixel-depth look.
-     Resting state — pulse doubles in spread inside page.module.css */
+  /* ── Title text-shadow token — for reference.
+     Actual pulse animation declared locally in page.module.css.
+     Keeping this token so other screens (lobby, summary) can
+     reference a resting title shadow if needed. ── */
   --title-shadow:
     4px  4px  0   #00F0FF,
     5px  5px  0   #00F0FF,
     0    0   10px #FF2D78,
-    0    0   26px #FF2D78,
-    0    0   52px rgba(255, 45, 120, 0.60),
-    4px  4px 14px rgba(0, 240, 255, 0.45);
-
-  --title-shadow-pulse:
-    4px  4px  0   #00F0FF,
-    5px  5px  0   #00F0FF,
-    0    0   20px #FF2D78,
-    0    0   60px #FF2D78,
-    0    0  120px rgba(255, 45, 120, 0.80),
-    0    0  200px rgba(255, 45, 120, 0.30),
-    4px  4px 24px rgba(0, 240, 255, 0.60);
+    0    0   28px #FF2D78,
+    0    0   52px rgba(255, 45, 120, 0.55),
+    4px  4px 14px rgba(0, 240, 255, 0.42);
 
   /* ── Typography ── */
   --font-mono:            "Courier New", Courier, "Lucida Console", monospace;
   --font-size-base:       16px;
-  --font-size-xs:         0.625rem;  /* 10px */
-  --font-size-sm:         0.75rem;   /* 12px */
-  --font-size-md:         1rem;      /* 16px */
-  --font-size-lg:         1.25rem;   /* 20px */
-  --font-size-xl:         1.5rem;    /* 24px */
-  --font-size-2xl:        2rem;      /* 32px */
-  --font-size-3xl:        3rem;      /* 48px */
-  --font-size-4xl:        5rem;      /* 80px */
+  --font-size-xs:         0.625rem;   /* 10px */
+  --font-size-sm:         0.75rem;    /* 12px */
+  --font-size-md:         1rem;       /* 16px */
+  --font-size-lg:         1.25rem;    /* 20px */
+  --font-size-xl:         1.5rem;     /* 24px */
+  --font-size-2xl:        2rem;       /* 32px */
+  --font-size-3xl:        3rem;       /* 48px */
+  --font-size-4xl:        5rem;       /* 80px */
   --letter-spacing-base:  0.1em;
   --letter-spacing-wide:  0.2em;
   --letter-spacing-xl:    0.35em;
@@ -173,30 +168,30 @@ input {
 
 /* ──────────────────────────────────────────────────────────
    @keyframes — SHARED ONLY.
-   These are candidates for reuse across multiple components.
-   Component-specific animations are declared locally in
-   each .module.css file.
+   These four animations are used by multiple components or
+   are simple enough to warrant a single canonical definition.
+
+   IMPORTANT: Component .module.css files MUST redeclare any
+   animations they need locally — they cannot reference these
+   names. These definitions exist for components that are NOT
+   using CSS Modules (e.g. global utility classes, or legacy).
    ────────────────────────────────────────────────────────── */
 
-/* ── Fade-in on mount ── */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(7px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Fade-in flat — no translate ── */
 @keyframes fade-in-flat {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* ── Blink — attract-mode text prompts ── */
 @keyframes blink {
   0%, 49%   { opacity: 1; }
   50%, 100% { opacity: 0; }
 }
 
-/* ── Cursor blink ── */
 @keyframes cursor-blink {
   0%, 49%   { caret-color: var(--color-cyan); }
   50%, 100% { caret-color: transparent; }

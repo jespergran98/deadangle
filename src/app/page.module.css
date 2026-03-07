@@ -1,228 +1,197 @@
 /* ============================================================
-   page.module.css — Dead Angle start screen OVERHAUL
-   1980s arcade cabinet attract-mode.
+   page.module.css — Dead Angle start screen
+   1980s arcade cabinet attract-mode. Everything throbs.
 
-   Design intent:
-   - Everything throbs. Nothing rests.
-   - Title: hot pink, ::before red ghost left, ::after cyan ghost
-     right — both snap violently wider every few seconds then
-     snap back instantly. Glow spread doubles between resting
-     and peak states.
-   - Tank: heartbeat — brightness 0.35 → 2.3, drop-shadow tight
-     → blown-out. Dual-beat (lub-dub) rhythm.
-   - Corner diamonds: 24px, scale-pop not fade.
-   - Footer: step-end blink, fully on → fully off, no dimming.
-   - Buttons: phosphor persistence — 40ms on mouse-in,
-     320ms on mouse-out (defined in ModeSelector.module.css).
+   Cabinet zones (top → bottom):
+     TOP STRIP    absolute, 1UP / HIGH SCORE / 2UP
+     MARQUEE      title with chromatic ghosts + glow pulse
+     SEPARATOR    solid double neon rule
+     MASCOT       CSS tank, heartbeat rhythm
+     PLAY SURFACE mode buttons, sub-options, join input
+     BOTTOM STRIP absolute, attract prompt, hard blink
 
-   All @keyframes declared locally — never rely on a global
-   keyframe inside a module file.
+   GHOST SNAP TECHNIQUE:
+     animation-timing-function: linear
+     Sub-frame keyframe intervals (0.1% ≈ 4.5ms < 1 frame)
+     produce functional snaps — CSS has no time to interpolate
+     between adjacent frames. step-end is NOT used because
+     with multiple keyframes it holds the first value until
+     the END of each segment, firing the snap at the wrong time.
+
+   All @keyframes declared locally — module files never reference
+   global keyframe names (CSS Modules scopes animation-name).
    ============================================================ */
 
-/* ── Local @keyframes ─────────────────────────────────────── */
 
-/* Fade-in with upward drift — declared locally */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ─────────────────────────────────────────────────────────────
+   LOCAL @keyframes
+   ───────────────────────────────────────────────────────────── */
 
-/* Fade-in flat — declared locally */
 @keyframes fade-in-flat {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Title glow pulse.
-   Shadow spread more than doubles between resting and peak:
-   resting outer ≈ 52px, peak outer ≈ 200px.
-   Difference is immediately obvious. ── */
+   Resting outer spread ~52px. Peak outer spread ~210px.
+   The difference should be obvious — a visible throb,
+   not a subtle shift. Second word staggered 0.4 s. ── */
 @keyframes title-glow-pulse {
   0%, 100% {
     text-shadow:
       4px  4px  0   #00F0FF,
       5px  5px  0   #00F0FF,
       0    0   10px #FF2D78,
-      0    0   26px #FF2D78,
+      0    0   28px #FF2D78,
       0    0   52px rgba(255, 45, 120, 0.55),
-      4px  4px 14px rgba(0, 240, 255, 0.40);
+      4px  4px 14px rgba(0, 240, 255, 0.42);
   }
   50% {
     text-shadow:
       4px  4px  0   #00F0FF,
       5px  5px  0   #00F0FF,
-      0    0   20px #FF2D78,
-      0    0   60px #FF2D78,
-      0    0  120px rgba(255, 45, 120, 0.80),
-      0    0  200px rgba(255, 45, 120, 0.30),
-      4px  4px 24px rgba(0, 240, 255, 0.65);
+      0    0   22px #FF2D78,
+      0    0   68px #FF2D78,
+      0    0  130px rgba(255, 45, 120, 0.82),
+      0    0  210px rgba(255, 45, 120, 0.28),
+      4px  4px 26px rgba(0, 240, 255, 0.68);
   }
 }
 
-/* ── Chromatic ghost — red channel (::before), offsets LEFT.
-   Every ~4.5 s the ghost snaps violently wider with a skew
-   then snaps back instantly (step-end feel within keyframes). ── */
+/* ── Red ghost (::before) — offset LEFT.
+   Rests at translate(-4px, 1px). Snaps violently wide every
+   ~4.5 s via sub-frame intervals (0.1% ≈ 4.5 ms).
+   animation-timing-function: linear — no step-end. ── */
 @keyframes ghost-red {
-  0%,  84%  {
-    transform: translate(-4px, 1px) skewX(0deg);
-    opacity: 0.72;
-  }
-  85%  {
-    transform: translate(-20px, 4px) skewX(-16deg);
-    opacity: 1;
-  }
-  86%  {
-    transform: translate(-4px, 1px) skewX(0deg);
-    opacity: 0.72;
-  }
-  87%  {
-    transform: translate(-26px, 3px) skewX(-10deg);
-    opacity: 0.88;
-  }
-  88%  {
-    transform: translate(-4px, 1px) skewX(0deg);
-    opacity: 0.72;
-  }
-  100% {
-    transform: translate(-4px, 1px) skewX(0deg);
-    opacity: 0.72;
-  }
+  /* Resting position for most of the cycle */
+  0%,    83.8% { transform: translate(-4px, 1px)  skewX(0deg);   opacity: 0.70; }
+  /* Snap OUT — sub-frame gap so CSS cannot interpolate */
+  83.9%         { transform: translate(-24px, 4px) skewX(-20deg); opacity: 1.00; }
+  /* Hold wide for ~50 ms (1.1% of 4.5 s) */
+  84.9%         { transform: translate(-24px, 4px) skewX(-20deg); opacity: 1.00; }
+  /* Snap BACK */
+  85.0%         { transform: translate(-4px, 1px)  skewX(0deg);   opacity: 0.70; }
+  /* Pause, then second (softer) snap */
+  85.9%         { transform: translate(-4px, 1px)  skewX(0deg);   opacity: 0.70; }
+  86.0%         { transform: translate(-30px, 2px) skewX(-12deg); opacity: 0.88; }
+  87.0%         { transform: translate(-30px, 2px) skewX(-12deg); opacity: 0.88; }
+  87.1%         { transform: translate(-4px, 1px)  skewX(0deg);   opacity: 0.70; }
+  100%          { transform: translate(-4px, 1px)  skewX(0deg);   opacity: 0.70; }
 }
 
-/* ── Chromatic ghost — cyan channel (::after), offsets RIGHT.
-   Slightly staggered from the red ghost for visual realism. ── */
+/* ── Cyan ghost (::after) — offset RIGHT.
+   Staggered 0.3 s from red ghost for layered realism. ── */
 @keyframes ghost-cyan {
-  0%,  81%  {
-    transform: translate(4px, -1px) skewX(0deg);
-    opacity: 0.68;
-  }
-  82%  {
-    transform: translate(22px, -5px) skewX(16deg);
-    opacity: 1;
-  }
-  83%  {
-    transform: translate(4px, -1px) skewX(0deg);
-    opacity: 0.68;
-  }
-  84%  {
-    transform: translate(28px, -3px) skewX(10deg);
-    opacity: 0.85;
-  }
-  85%  {
-    transform: translate(4px, -1px) skewX(0deg);
-    opacity: 0.68;
-  }
-  100% {
-    transform: translate(4px, -1px) skewX(0deg);
-    opacity: 0.68;
-  }
+  0%,    80.8% { transform: translate(4px, -1px)  skewX(0deg);   opacity: 0.65; }
+  80.9%         { transform: translate(26px, -5px) skewX(20deg);  opacity: 1.00; }
+  81.9%         { transform: translate(26px, -5px) skewX(20deg);  opacity: 1.00; }
+  82.0%         { transform: translate(4px, -1px)  skewX(0deg);   opacity: 0.65; }
+  82.9%         { transform: translate(4px, -1px)  skewX(0deg);   opacity: 0.65; }
+  83.0%         { transform: translate(32px, -3px) skewX(12deg);  opacity: 0.84; }
+  84.0%         { transform: translate(32px, -3px) skewX(12deg);  opacity: 0.84; }
+  84.1%         { transform: translate(4px, -1px)  skewX(0deg);   opacity: 0.65; }
+  100%          { transform: translate(4px, -1px)  skewX(0deg);   opacity: 0.65; }
 }
 
 /* ── Tank heartbeat — lub-dub double-beat.
-   brightness swings from painfully dim (0.35) to
-   painfully bright (2.3). Drop-shadow tight → blown-out. ── */
+   brightness: 0.30 (very dim) → 2.40 (painfully bright).
+   Drop-shadow: 1px tight → 44px blown-out.
+   Pause after beat, repeat ~every 2.2 s. ── */
 @keyframes tank-heartbeat {
   0%   {
     filter:
-      brightness(0.35)
-      drop-shadow(0 0 1px #C8FF00);
+      brightness(0.30)
+      drop-shadow(0 0 1px rgba(200, 255, 0, 0.60));
   }
-  7%   {
+  /* First beat — LUB */
+  6%   {
     filter:
-      brightness(2.3)
+      brightness(2.40)
       drop-shadow(0 0 8px  #C8FF00)
-      drop-shadow(0 0 20px #C8FF00)
-      drop-shadow(0 0 40px rgba(200, 255, 0, 0.95));
+      drop-shadow(0 0 22px #C8FF00)
+      drop-shadow(0 0 44px rgba(200, 255, 0, 1.00));
   }
-  14%  {
+  13%  {
     filter:
-      brightness(0.55)
-      drop-shadow(0 0 3px #C8FF00);
+      brightness(0.45)
+      drop-shadow(0 0 2px rgba(200, 255, 0, 0.50));
   }
-  22%  {
+  /* Second beat — DUB (slightly softer) */
+  21%  {
     filter:
-      brightness(1.95)
+      brightness(2.00)
       drop-shadow(0 0 6px  #C8FF00)
       drop-shadow(0 0 16px #C8FF00)
-      drop-shadow(0 0 28px rgba(200, 255, 0, 0.75));
+      drop-shadow(0 0 30px rgba(200, 255, 0, 0.80));
   }
-  36%  {
+  /* Rest until next heartbeat */
+  34%, 100% {
     filter:
-      brightness(0.35)
-      drop-shadow(0 0 1px #C8FF00);
-  }
-  100% {
-    filter:
-      brightness(0.35)
-      drop-shadow(0 0 1px #C8FF00);
+      brightness(0.30)
+      drop-shadow(0 0 1px rgba(200, 255, 0, 0.60));
   }
 }
 
-/* ── Corner diamond pop — visible scale jump, not a slow fade.
-   Doubles in size at peak, two pops like the tank heartbeat. ── */
-@keyframes corner-pop {
-  0%,  76%,  100% {
-    transform: rotate(45deg) scale(1);
-    opacity: 0.50;
-  }
-  78%  {
-    transform: rotate(45deg) scale(2.4);
-    opacity: 1;
-  }
-  80%  {
-    transform: rotate(45deg) scale(1);
-    opacity: 0.50;
-  }
-  82%  {
-    transform: rotate(45deg) scale(1.7);
-    opacity: 0.85;
-  }
-  84%  {
-    transform: rotate(45deg) scale(1);
-    opacity: 0.50;
-  }
+/* ── Corner pop — scale jump, not a fade.
+   Each corner has its own keyframe so they stagger
+   around the bezel like marquee lights. ── */
+@keyframes cpop-tl {
+  0%,  72%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  73%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  74%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  75%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  76%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+}
+@keyframes cpop-tr {
+  0%,  75%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  76%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  77%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  78%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  79%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+}
+@keyframes cpop-bl {
+  0%,  78%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  79%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  80%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  81%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  82%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+}
+@keyframes cpop-br {
+  0%,  81%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  82%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  83%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  84%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  85%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
 }
 
-/* ── Hard blink — fully on / fully off.
-   No dimming — opacity goes 1 → 0, step-end style. ── */
+/* ── Score value blink — P1 score blinks slightly out of
+   phase with P2, like real attract-mode score counters. ── */
+@keyframes score-blink-p1 {
+  0%,  89.9% { opacity: 1.0; }
+  90%, 93.9% { opacity: 0.2; }
+  94%, 100%  { opacity: 1.0; }
+}
+@keyframes score-blink-p2 {
+  0%,  83.9% { opacity: 1.0; }
+  84%, 87.9% { opacity: 0.2; }
+  88%, 100%  { opacity: 1.0; }
+}
+
+/* ── Attract prompt — fully on / fully off, no in-between. ── */
 @keyframes blink-hard {
   0%,  49.9% { opacity: 1; }
   50%, 100%  { opacity: 0; }
 }
 
-/* ── Corner pulse (label animation for timing offset) ── */
-@keyframes corner-pulse-tl {
-  0%,  74%,  100% { transform: rotate(45deg) scale(1); opacity: 0.50; }
-  76%  { transform: rotate(45deg) scale(2.4); opacity: 1; }
-  78%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-  80%  { transform: rotate(45deg) scale(1.7); opacity: 0.85; }
-  82%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-}
-@keyframes corner-pulse-tr {
-  0%,  77%,  100% { transform: rotate(45deg) scale(1); opacity: 0.50; }
-  79%  { transform: rotate(45deg) scale(2.4); opacity: 1; }
-  81%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-  83%  { transform: rotate(45deg) scale(1.7); opacity: 0.85; }
-  85%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-}
-@keyframes corner-pulse-bl {
-  0%,  80%,  100% { transform: rotate(45deg) scale(1); opacity: 0.50; }
-  82%  { transform: rotate(45deg) scale(2.4); opacity: 1; }
-  84%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-  86%  { transform: rotate(45deg) scale(1.7); opacity: 0.85; }
-  88%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-}
-@keyframes corner-pulse-br {
-  0%,  83%,  100% { transform: rotate(45deg) scale(1); opacity: 0.50; }
-  85%  { transform: rotate(45deg) scale(2.4); opacity: 1; }
-  87%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-  89%  { transform: rotate(45deg) scale(1.7); opacity: 0.85; }
-  91%  { transform: rotate(45deg) scale(1);   opacity: 0.50; }
-}
 
-/* ──────────────────────────────────────────────────────────
-   Screen — full-viewport stage
-   ────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   SCREEN — full viewport stage
+   ───────────────────────────────────────────────────────────── */
 .screen {
   position: relative;
   display: flex;
@@ -230,200 +199,289 @@
   justify-content: center;
   min-height: 100dvh;
   background: var(--color-bg);
+  /* Allow ghost text to bleed to viewport edge */
   overflow: hidden;
 }
 
-/* ──────────────────────────────────────────────────────────
-   Corner ornaments — 24px diamonds.
-   Pink TL & BR, Cyan TR & BL (arcade convention).
-   Each corner uses its own pop-keyframe so the beats
-   stagger around the frame like corner lights on a cabinet.
-   ────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────
+   BEZEL CORNERS — 22px diamonds, pop stagger around frame.
+   Pink: TL, BR. Cyan: TR, BL. (Arcade convention.)
+   transform-origin: center — scale expands from centre.
+   ───────────────────────────────────────────────────────────── */
 .corner {
   position: absolute;
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border: 2px solid;
-  /* transform-origin centred — scale expands evenly */
   transform-origin: center;
 }
 
 .cornerTL {
-  top: 22px;
-  left: 22px;
+  top: 20px; left: 20px;
   border-color: var(--color-pink);
   box-shadow: var(--glow-pink-sm);
-  transform: rotate(45deg) scale(1);
-  animation: corner-pulse-tl 4.0s ease-in-out infinite;
+  animation: cpop-tl 4.2s linear infinite;
 }
 .cornerTR {
-  top: 22px;
-  right: 22px;
+  top: 20px; right: 20px;
   border-color: var(--color-cyan);
   box-shadow: var(--glow-cyan-sm);
-  transform: rotate(45deg) scale(1);
-  animation: corner-pulse-tr 4.0s ease-in-out 0.6s infinite;
+  animation: cpop-tr 4.2s linear 0.6s infinite;
 }
 .cornerBL {
-  bottom: 22px;
-  left: 22px;
+  bottom: 20px; left: 20px;
   border-color: var(--color-cyan);
   box-shadow: var(--glow-cyan-sm);
-  transform: rotate(45deg) scale(1);
-  animation: corner-pulse-bl 4.0s ease-in-out 1.2s infinite;
+  animation: cpop-bl 4.2s linear 1.2s infinite;
 }
 .cornerBR {
-  bottom: 22px;
-  right: 22px;
+  bottom: 20px; right: 20px;
   border-color: var(--color-pink);
   box-shadow: var(--glow-pink-sm);
-  transform: rotate(45deg) scale(1);
-  animation: corner-pulse-br 4.0s ease-in-out 1.8s infinite;
+  animation: cpop-br 4.2s linear 1.8s infinite;
 }
 
-/* ──────────────────────────────────────────────────────────
-   Horizontal edge lines — run between corner diamonds.
-   Top line: cyan. Bottom line: pink.
-   ────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────
+   BEZEL RAILS — horizontal and vertical.
+   Horizontal: top = cyan, bottom = pink.
+   Vertical:   left = pink, right = cyan.
+   Left/right edge of verticals is 31px (meets rail thickness).
+   ───────────────────────────────────────────────────────────── */
 .edgeLine {
   position: absolute;
-  left: 60px;
-  right: 60px;
+  left: 54px;
+  right: 54px;
   height: 1px;
   display: block;
 }
-
 .edgeLineTop {
-  top: 33px;
+  top: 31px;
   background: linear-gradient(
     to right,
     transparent,
-    rgba(0, 240, 255, 0.55) 12%,
-    rgba(0, 240, 255, 0.55) 88%,
+    rgba(0, 240, 255, 0.65) 10%,
+    rgba(0, 240, 255, 0.65) 90%,
     transparent
   );
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 6px rgba(0, 240, 255, 0.28);
 }
-
 .edgeLineBottom {
-  bottom: 33px;
+  bottom: 31px;
   background: linear-gradient(
     to right,
     transparent,
-    rgba(255, 45, 120, 0.55) 12%,
-    rgba(255, 45, 120, 0.55) 88%,
+    rgba(255, 45, 120, 0.65) 10%,
+    rgba(255, 45, 120, 0.65) 90%,
     transparent
   );
-  box-shadow: 0 0 8px rgba(255, 45, 120, 0.25);
+  box-shadow: 0 0 6px rgba(255, 45, 120, 0.28);
 }
 
-/* ──────────────────────────────────────────────────────────
-   Vertical side lines — run between top and bottom edges.
-   Left: pink. Right: cyan.
-   These frame the content column like cabinet side rails.
-   ────────────────────────────────────────────────────────── */
 .vline {
   position: absolute;
-  top: 60px;
-  bottom: 60px;
+  top: 54px;
+  bottom: 54px;
   width: 1px;
   display: block;
 }
-
 .vlineL {
-  left: 33px;
+  left: 31px;
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(255, 45, 120, 0.35) 15%,
-    rgba(255, 45, 120, 0.35) 85%,
+    rgba(255, 45, 120, 0.40) 12%,
+    rgba(255, 45, 120, 0.40) 88%,
     transparent
   );
 }
-
 .vlineR {
-  right: 33px;
+  right: 31px;
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(0, 240, 255, 0.35) 15%,
-    rgba(0, 240, 255, 0.35) 85%,
+    rgba(0, 240, 255, 0.40) 12%,
+    rgba(0, 240, 255, 0.40) 88%,
     transparent
   );
 }
 
-/* ──────────────────────────────────────────────────────────
-   Content column — cabinet panel rhythm.
-   Generous vertical gaps; the screen should feel tall
-   and monumental, not like a webpage.
-   ────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────
+   TOP SCORE STRIP
+   Anchored below the top bezel rail.
+   Three columns: 1UP (pink) · HIGH SCORE (white dim) · 2UP (cyan).
+   ───────────────────────────────────────────────────────────── */
+.topStrip {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  animation: fade-in-flat 1.2s ease both;
+}
+
+.scoreRow {
+  display: flex;
+  width: 100%;
+  max-width: 520px;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+}
+
+.scoreLabel {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  /* Centre each column */
+  flex: 1;
+  text-align: center;
+}
+/* 1UP = pink, HIGH SCORE = dim white, 2UP = cyan */
+.scoreLabel:nth-child(1) { color: var(--color-pink); text-shadow: var(--glow-pink-sm); }
+.scoreLabel:nth-child(2) { color: rgba(255, 255, 255, 0.45); }
+.scoreLabel:nth-child(3) { color: var(--color-cyan);  text-shadow: var(--glow-cyan-sm); }
+
+.scoreValue {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  flex: 1;
+  text-align: center;
+}
+/* P1 = pink, hi = white, P2 = cyan — each blinks slightly
+   out of phase in attract mode. */
+.scoreValueP1 {
+  color: var(--color-pink);
+  text-shadow: var(--glow-pink-sm);
+  animation: score-blink-p1 6.0s linear 1.5s infinite;
+}
+.scoreValueHi {
+  color: rgba(255, 255, 255, 0.55);
+}
+.scoreValueP2 {
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan-sm);
+  animation: score-blink-p2 6.0s linear infinite;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   BOTTOM ATTRACT STRIP
+   Anchored above the bottom bezel rail.
+   ───────────────────────────────────────────────────────────── */
+.bottomStrip {
+  position: absolute;
+  bottom: 44px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  animation: fade-in-flat 1.4s ease 0.8s both;
+}
+
+.prompt {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-xl);
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  text-align: center;
+  /* Fully on → fully off, no dimming in between */
+  animation: blink-hard 2.6s step-end infinite;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   MAIN CONTENT COLUMN
+   Sits vertically centred in the viewport, between the two strips.
+   Gap is non-uniform across sections to create cabinet rhythm:
+   tight between title and separator, comfortable before buttons.
+   ───────────────────────────────────────────────────────────── */
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-10);
-  padding: var(--space-20) var(--space-8);
+  /* Non-uniform zone rhythm — each child gets explicit margin-bottom */
+  gap: 0;
+  /* Top/bottom padding keeps content from colliding with the strips */
+  padding: 120px var(--space-8) 100px;
   width: 100%;
-  max-width: 700px;
-  /* overflow visible so ghost offsets + glow aren't clipped */
+  /* Wide enough that the title (with 0.4em tracking) fills the column. */
+  max-width: min(96vw, 760px);
+  /* Ghost pseudo-elements extend beyond bounds — must be visible */
   overflow: visible;
 }
 
-/* ──────────────────────────────────────────────────────────
-   Title block
-   ────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────
+   MARQUEE ZONE — title + tagline
+   Occupies the top third of the cabinet's visual weight.
+   ───────────────────────────────────────────────────────────── */
 .header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  animation: fade-in-flat 0.6s ease both;
-  /* overflow visible — ghost text extends beyond bounds */
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+  animation: fade-in-flat 0.55s ease both;
   overflow: visible;
 }
 
-/* h1 flex container — two stacked words */
+/* h1: two stacked words, tight line-height */
 .title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  line-height: 0.85;
-  gap: 0;
+  line-height: 0.82;
   overflow: visible;
 }
 
-/* ── Each word span.
-   position: relative creates containing block for ::before/::after.
-   Ghost pseudo-elements are position: absolute, top: 0, left: 0.
-   overflow: visible so skewed ghosts don't get clipped. ── */
+/* ── Each title word.
+   position: relative creates the containing block for ghost
+   pseudo-elements (absolute, top: 0, left: 0).
+   font-size: clamped so the word fills the content column.
+   At 0.4em letter-spacing + Courier New (≈0.6 ch width):
+     "ANGLE" @ max 9rem = 144px →
+     5 × (144×0.6 + 144×0.4) = 5 × 144 = 720px
+   Content max-width 760px − 64px padding = 696px. Fits.
+   ── */
 .titleWord {
   position: relative;
   display: block;
   font-family: var(--font-mono);
-  font-size: clamp(4.5rem, 20vw, 10.5rem);
+  font-size: clamp(4.2rem, 16vw, 9rem);
   font-weight: 900;
-  letter-spacing: var(--letter-spacing-2xl);
+  letter-spacing: 0.4em;
   text-transform: uppercase;
   color: var(--color-pink);
   overflow: visible;
-
-  /* Glow pulses — spread more than doubles resting → peak */
-  animation: title-glow-pulse 3.2s ease-in-out infinite;
-
-  /* Stagger second word */
-  &:nth-child(2) {
-    animation-delay: 0.4s;
-  }
+  /* Glow pulse — resting spread doubles at peak */
+  animation: title-glow-pulse 3.4s ease-in-out infinite;
 }
 
-/* ── Red ghost — left offset, snaps wider every ~4.5s ── */
+/* Stagger second word's glow cycle */
+.titleWord:nth-child(2) {
+  animation-delay: 0.45s;
+}
+
+/* ── RED GHOST — ::before, offsets LEFT.
+   animation: linear (not step-end) so sub-frame snap works.
+   ── */
 .titleWord::before {
   content: attr(data-text);
   position: absolute;
   top: 0;
   left: 0;
-  /* Inherit all text rendering from parent */
+  /* Mirror all text properties from parent exactly */
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -431,23 +489,21 @@
   text-transform: inherit;
   line-height: inherit;
   white-space: nowrap;
-
-  color: #FF0040;
+  color: #FF0036;
   mix-blend-mode: screen;
   pointer-events: none;
-  /* No text-shadow on ghosts — they are the offset artefact */
   text-shadow: none;
-
-  animation: ghost-red 4.5s step-end infinite;
+  /* LINEAR timing — sub-frame intervals create functional snap */
+  animation: ghost-red 4.5s linear infinite;
 }
 
-/* ── Cyan ghost — right offset, snaps wider ~0.3s after red ── */
+/* ── CYAN GHOST — ::after, offsets RIGHT.
+   Staggered 0.3 s from red ghost. ── */
 .titleWord::after {
   content: attr(data-text);
   position: absolute;
   top: 0;
   left: 0;
-
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -455,183 +511,152 @@
   text-transform: inherit;
   line-height: inherit;
   white-space: nowrap;
-
   color: #00F0FF;
   mix-blend-mode: screen;
   pointer-events: none;
   text-shadow: none;
-
-  animation: ghost-cyan 4.5s step-end 0.3s infinite;
+  animation: ghost-cyan 4.5s linear 0.3s infinite;
 }
 
-/* Stagger second word's ghosts so each word glitches separately */
-.titleWord:nth-child(2)::before {
-  animation-delay: 2.1s;
-}
-.titleWord:nth-child(2)::after {
-  animation-delay: 2.4s;
-}
+/* Second word's ghosts stagger so each word glitches separately */
+.titleWord:nth-child(2)::before { animation-delay: 2.2s; }
+.titleWord:nth-child(2)::after  { animation-delay: 2.5s; }
 
 /* ── Tagline ── */
 .tagline {
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   letter-spacing: var(--letter-spacing-2xl);
   color: var(--color-cyan);
   text-shadow: var(--glow-cyan-sm);
   text-transform: uppercase;
-  opacity: 0.72;
-  margin-top: var(--space-3);
+  opacity: 0.68;
+  /* Sits tightly below the title */
+  margin-top: var(--space-4);
 }
 
-/* ──────────────────────────────────────────────────────────
-   Decorative divider — line ◆ line
-   ────────────────────────────────────────────────────────── */
-.divider {
+
+/* ─────────────────────────────────────────────────────────────
+   SEPARATOR — double neon rule
+   Solid lines (not gradient) for structural clarity.
+   Two 1px lines with a 4px gap — hardware panel marker.
+   ───────────────────────────────────────────────────────────── */
+.separator {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: 4px;
   width: 100%;
-  max-width: 440px;
-  animation: fade-in-flat 0.7s ease 0.15s both;
+  margin-bottom: var(--space-8);
 }
 
-.dividerLine {
-  flex: 1;
+.sepLine {
+  display: block;
   height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(0, 240, 255, 0.55),
-    transparent
-  );
-  box-shadow: 0 0 6px rgba(0, 240, 255, 0.22);
-  display: block;
+  background: rgba(0, 240, 255, 0.55);
+  box-shadow: 0 0 7px rgba(0, 240, 255, 0.35);
 }
 
-.dividerDiamond {
-  display: block;
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--color-cyan);
-  box-shadow: var(--glow-cyan-sm);
-  transform: rotate(45deg);
-  flex-shrink: 0;
-}
 
-/* ──────────────────────────────────────────────────────────
-   CSS tank token — neon green, top-down view.
-   Heartbeat: brightness 0.35 → 2.3, drop-shadow tight → blown-out.
-   Lub-dub double-beat rhythm (see @keyframes tank-heartbeat).
-   ────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   MASCOT — CSS tank, heartbeat rhythm.
+   Geometry: side-profile style (matching reference images) but
+   rotated so the barrel points straight up.
+
+   Structure (top → bottom):
+     BARREL   — thin vertical rectangle, centred, at top
+     TURRET   — chunky box, slightly wider than barrel
+     HULL     — wide flat rectangle, the main body
+     TRACKS   — tankTrackL / tankTrackR flank the hull on
+                left and right, slightly taller, creating the
+                boxy overhang of the tread assembly
+
+   Container: 64 × 72 px.
+   All elements background: var(--color-green) — the glow
+   is applied via filter: drop-shadow on .tank via heartbeat.
+   ───────────────────────────────────────────────────────────── */
 .tankWrap {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: var(--space-8);
   animation: fade-in-flat 0.7s ease 0.2s both;
 }
 
 .tank {
   position: relative;
-  width: 50px;
-  height: 36px;
-  animation: tank-heartbeat 2.0s ease-in-out infinite;
+  width: 64px;
+  height: 72px;
+  animation: tank-heartbeat 2.2s ease-in-out infinite;
 }
 
-/* Hull — main body rectangle */
+/* Barrel — 8 × 20 px, centred, flush to top */
+.tankBarrel {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 20px;
+  background: var(--color-green);
+}
+
+/* Turret — 28 × 20 px, centred, sits directly below barrel */
+.tankTurret {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 20px;
+  background: var(--color-green);
+}
+
+/* Hull — 44 × 18 px, centred, sits below turret */
 .tankHull {
   position: absolute;
-  bottom: 4px;
-  left: 5px;
-  right: 5px;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
   height: 18px;
   background: var(--color-green);
 }
 
-/* Turret — square centred on hull */
-.tankTurret {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background: var(--color-green);
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Barrel — thin vertical rect pointing up */
-.tankBarrel {
-  position: absolute;
-  width: 4px;
-  height: 16px;
-  background: var(--color-green);
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Tracks — thin strips flanking hull */
+/* Tracks — 10 × 28 px, flank the hull on each side.
+   Top aligns 2 px above the hull to create the overhang
+   that gives the tread assembly its boxy silhouette. */
 .tankTrackL,
 .tankTrackR {
   position: absolute;
-  width: 5px;
-  height: 22px;
+  top: 34px;
+  width: 10px;
+  height: 28px;
   background: var(--color-green);
-  bottom: 2px;
 }
 .tankTrackL { left: 0; }
 .tankTrackR { right: 0; }
 
-/* ──────────────────────────────────────────────────────────
-   Controls — mode selector + sub-options + join input.
-   Styled as a distinct panel with corner cuts suggesting
-   a hardware control surface.
-   ────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────
+   PLAY SURFACE — mode buttons + sub-options + join input.
+   No panel border — buttons float cleanly, no card-like container.
+   ───────────────────────────────────────────────────────────── */
 .controls {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-5);
   width: 100%;
-  padding: var(--space-8) var(--space-10);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  animation: fade-in 0.5s ease 0.3s both;
+  animation: fade-in-up 0.5s ease 0.32s both;
 }
 
-/* Panel corner cuts — top-left and bottom-right */
-.controls::before,
-.controls::after {
-  content: '';
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-}
-
-.controls::before {
-  top: -1px;
-  left: -1px;
-  border-right: none;
-  border-bottom: none;
-}
-
-.controls::after {
-  bottom: -1px;
-  right: -1px;
-  border-left: none;
-  border-top: none;
-}
-
-/* JOIN sub-section */
 .joinSection {
   width: 100%;
   display: flex;
   justify-content: center;
-  animation: fade-in 0.25s ease both;
+  animation: fade-in-up 0.22s ease both;
 }
 
-/* HOST inline error */
 .inlineError {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
@@ -639,25 +664,5 @@
   color: var(--color-error);
   text-shadow: var(--glow-pink-sm);
   text-transform: uppercase;
-  animation: fade-in-flat 0.2s ease both;
-}
-
-/* ──────────────────────────────────────────────────────────
-   Footer attract prompt
-   Fully on / fully off — opacity 1 → 0, step-end.
-   ────────────────────────────────────────────────────────── */
-.footer {
-  animation: fade-in-flat 0.8s ease 0.5s both;
-}
-
-.prompt {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--letter-spacing-xl);
-  color: rgba(255, 255, 255, 0.40);
-  text-transform: uppercase;
-  text-align: center;
-  /* Hard blink — fully on to fully off, no dimming in between */
-  animation: blink-hard 2.4s step-end infinite;
+  animation: fade-in-flat 0.18s ease both;
 }

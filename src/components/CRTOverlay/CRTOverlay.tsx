@@ -3,18 +3,26 @@ import styles from './CRTOverlay.module.css';
 /**
  * CRTOverlay
  *
- * Fixed full-viewport wrapper mounted once in layout.tsx.
- * Three child layers simulate a real phosphor CRT tube:
- *   1. .overlay wrapper — edge darkening via inset box-shadow
- *      + border-radius to suggest curved glass + phosphor flicker
- *   2. .scanlines child — animated dark bands drifting downward
- *      via repeating-linear-gradient + translateY loop
- *   3. .sweep child — bright horizontal band drifting top → bottom
+ * Fixed full-viewport shell mounted once in layout.tsx.
+ * Three layered CSS effects simulate a phosphor CRT tube:
  *
- * pointer-events: none on all layers — never intercepts any input.
+ *   .overlay    — edge darkening via inset box-shadow (4 directions,
+ *                 not a radial vignette). border-radius suggests the
+ *                 curved glass of a CRT cabinet monitor. Phosphor
+ *                 flicker via crt-flicker animation.
+ *
+ *   .scanlines  — dark bands drifting downward continuously.
+ *                 repeating-linear-gradient scrolled via translateY.
+ *                 One pitch (6px) per cycle for seamless loop.
+ *                 Opacity is intentionally high — looks like active redraw.
+ *
+ *   .sweep      — bright 280px feathered band drifting top → bottom
+ *                 on a slow 10s loop. Clearly visible as it passes.
+ *
+ * pointer-events: none on all elements — never intercepts input.
  * Pure CSS — no canvas, no JS, no animation libraries.
- * aria-hidden: true — purely decorative, invisible to screen readers.
- * No startup or mount animation.
+ * aria-hidden: true — decorative, invisible to screen readers.
+ * No startup / mount animation.
  */
 export default function CRTOverlay() {
   return (

@@ -8,20 +8,21 @@ import styles from './page.module.css';
 /**
  * /  — Dead Angle start screen.
  *
- * 1980s arcade cabinet attract-mode.
+ * Cabinet bezel structure (top → bottom):
+ *   TOP STRIP    — 1UP · HIGH SCORE · 2UP, anchored absolute to top bezel
+ *   MARQUEE ZONE — massive title with chromatic ghost glitch + glow pulse
+ *   SEPARATOR    — solid double-line rule, full content width
+ *   MASCOT       — CSS tank icon, heartbeat rhythm (dim → blown-out)
+ *   PLAY SURFACE — mode buttons, sub-options, room code input
+ *   BOTTOM STRIP — attract prompt, anchored absolute to bottom, hard blink
  *
- * Title: data-text attributes drive ::before (red ghost, left) and
- * ::after (cyan ghost, right) pseudo-elements with mix-blend-mode: screen.
- * Both ghosts rest at a small offset; every few seconds they snap
- * violently wider with a brief skew, then snap back instantly.
+ * Ghost offsets:
+ *   data-text on each .titleWord drives ::before (red, left) and
+ *   ::after (cyan, right) with mix-blend-mode: screen. Both snap
+ *   violently wider every ~4.5s using sub-frame (0.1%) keyframe spacing
+ *   with linear timing — functional snap, not interpolated.
  *
- * Decorative additions vs previous version:
- *   - Vertical side lines (vlineL / vlineR) flanking the content
- *   - Corner diamonds at 24px with a scale-pop animation
- *   - Tank heartbeat (dim → painfully bright → dim)
- *   - Footer prompt fully on / fully off (no dimming, step-end)
- *
- * CRTOverlay already active via layout.tsx.
+ * CRTOverlay mounted once in layout.tsx (scanlines, sweep, edge dark).
  */
 export default function StartPage() {
   const flow = useStartFlow();
@@ -31,45 +32,50 @@ export default function StartPage() {
 
   function handleModeButton(mode: 'singleplayer' | 'multiplayer') {
     flow.selectMode(mode);
-    if (mode === 'singleplayer') {
-      flow.handleSingleplayer();
-    }
+    if (mode === 'singleplayer') flow.handleSingleplayer();
   }
 
   function handleSubMode(sub: 'host' | 'join') {
     flow.selectSubMode(sub);
-    if (sub === 'host') {
-      flow.handleHost();
-    }
+    if (sub === 'host') flow.handleHost();
   }
 
   return (
     <div className={styles.screen}>
 
-      {/* ── Corner ornaments — 24px diamonds, alternating pink/cyan ── */}
+      {/* ── Bezel corner ornaments — stagger around the frame ── */}
       <span className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerTR}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBR}`} aria-hidden="true" />
 
-      {/* ── Horizontal edge lines — top + bottom ── */}
+      {/* ── Bezel horizontal rails ── */}
       <span className={`${styles.edgeLine} ${styles.edgeLineTop}`}    aria-hidden="true" />
       <span className={`${styles.edgeLine} ${styles.edgeLineBottom}`} aria-hidden="true" />
 
-      {/* ── Vertical side lines — left + right ── */}
+      {/* ── Bezel vertical rails ── */}
       <span className={`${styles.vline} ${styles.vlineL}`} aria-hidden="true" />
       <span className={`${styles.vline} ${styles.vlineR}`} aria-hidden="true" />
 
+      {/* ── Top score strip — 1UP / HIGH SCORE / 2UP ── */}
+      <div className={styles.topStrip} aria-hidden="true">
+        <div className={styles.scoreRow}>
+          <span className={styles.scoreLabel}>1UP</span>
+          <span className={styles.scoreLabel}>HIGH SCORE</span>
+          <span className={styles.scoreLabel}>2UP</span>
+        </div>
+        <div className={styles.scoreRow}>
+          <span className={`${styles.scoreValue} ${styles.scoreValueP1}`}>00000</span>
+          <span className={`${styles.scoreValue} ${styles.scoreValueHi}`}>00000</span>
+          <span className={`${styles.scoreValue} ${styles.scoreValueP2}`}>00000</span>
+        </div>
+      </div>
+
+      {/* ── Main content — vertically centred in the bezel ── */}
       <div className={styles.content}>
 
-        {/* ── Title block ── */}
+        {/* MARQUEE ZONE */}
         <header className={styles.header}>
-          {/*
-            data-text is consumed by ::before (red ghost, left offset)
-            and ::after (cyan ghost, right offset) in page.module.css.
-            Every few seconds both ghosts snap violently wider with a
-            brief skew, then snap back instantly.
-          */}
           <h1 className={styles.title} aria-label="Dead Angle">
             <span className={styles.titleWord} data-text="DEAD">DEAD</span>
             <span className={styles.titleWord} data-text="ANGLE">ANGLE</span>
@@ -77,29 +83,24 @@ export default function StartPage() {
           <p className={styles.tagline}>NEON MAZE COMBAT</p>
         </header>
 
-        {/* ── Decorative horizontal rule ── */}
-        <div className={styles.divider} aria-hidden="true">
-          <span className={styles.dividerLine} />
-          <span className={styles.dividerDiamond} />
-          <span className={styles.dividerLine} />
+        {/* SEPARATOR — double neon rule */}
+        <div className={styles.separator} aria-hidden="true">
+          <span className={styles.sepLine} />
+          <span className={styles.sepLine} />
         </div>
 
-        {/* ── CSS tank token — neon green, heartbeat rhythm ── */}
+        {/* MASCOT — heartbeat tank */}
         <div className={styles.tankWrap} aria-hidden="true">
           <div className={styles.tank}>
-            {/* barrel */}
             <div className={styles.tankBarrel} />
-            {/* turret */}
             <div className={styles.tankTurret} />
-            {/* hull */}
             <div className={styles.tankHull} />
-            {/* tracks */}
             <div className={styles.tankTrackL} />
             <div className={styles.tankTrackR} />
           </div>
         </div>
 
-        {/* ── Mode selector ── */}
+        {/* PLAY SURFACE */}
         <section className={styles.controls}>
           <ModeSelector
             mode={flow.mode}
@@ -110,12 +111,10 @@ export default function StartPage() {
             onHost={flow.handleHost}
           />
 
-          {/* HOST error feedback */}
           {isMultiplayer && flow.subMode === 'host' && flow.error && (
             <p className={styles.inlineError} role="alert">{flow.error}</p>
           )}
 
-          {/* JOIN flow */}
           {isJoin && (
             <div className={styles.joinSection}>
               <RoomCodeInput
@@ -129,12 +128,13 @@ export default function StartPage() {
           )}
         </section>
 
-        {/* ── Footer attract prompt — fully on/off blink ── */}
-        <footer className={styles.footer}>
-          <span className={styles.prompt}>— SELECT MODE TO BEGIN —</span>
-        </footer>
-
       </div>
+
+      {/* ── Bottom attract strip — anchored to bezel ── */}
+      <div className={styles.bottomStrip}>
+        <span className={styles.prompt}>— SELECT MODE TO BEGIN —</span>
+      </div>
+
     </div>
   );
 }

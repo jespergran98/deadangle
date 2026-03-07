@@ -2,41 +2,45 @@
    ModeSelector.module.css
 
    Phosphor persistence model:
-   - Mouse-in  → 40ms (instant phosphor strike, tube fires fast)
-   - Mouse-out → 320ms (slow afterglow decay, phosphor lingers)
+     Mouse-in  → 40ms  (phosphor tube fires fast — instant strike)
+     Mouse-out → 320ms (slow afterglow decay — phosphor lingers)
 
-   Implementation: slow transition defined on the BASE selector
-   (governs the out-transition); fast transition defined inside
-   :hover (governs the in-transition). The browser applies
-   whichever transition block is active at the MOMENT of
-   state change.
+   Implementation pattern:
+     BASE selector defines the SLOW (320ms) transition, which
+     governs the OUT state. The :hover selector overrides with
+     FAST (40ms) transition, governing the IN state. The browser
+     applies whichever transition block is active at the moment
+     the state change occurs.
 
-   All @keyframes declared locally — never rely on global names.
+   All @keyframes declared locally — module files cannot reference
+   global @keyframes (CSS Modules scopes animation-name).
    ============================================================ */
 
 /* ── Local @keyframes ─────────────────────────────────────── */
 
-/* Fade-in — declared locally */
-@keyframes fade-in {
+@keyframes fade-in-up {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* neon-pulse-cyan — active button outline throb.
-   Declared locally; cannot reference global keyframe names
-   inside a CSS Module file. */
+/* neon-pulse-cyan: active button outline throb.
+   Declared locally — cannot use global keyframe name. */
 @keyframes neon-pulse-cyan {
   0%, 100% {
     box-shadow:
-      var(--glow-cyan-sm),
-      inset 0 0 18px rgba(0, 240, 255, 0.06);
+      0 0  4px #00F0FF,
+      0 0 10px #00F0FF,
+      inset 0 0 16px rgba(0, 240, 255, 0.05);
   }
-  50%  {
+  50% {
     box-shadow:
-      var(--glow-cyan-md),
-      inset 0 0 28px rgba(0, 240, 255, 0.12);
+      0 0  6px #00F0FF,
+      0 0 18px #00F0FF,
+      0 0 36px rgba(0, 240, 255, 0.50),
+      inset 0 0 24px rgba(0, 240, 255, 0.10);
   }
 }
+
 
 /* ── Root ─────────────────────────────────────────────────── */
 .root {
@@ -46,6 +50,7 @@
   gap: var(--space-5);
   width: 100%;
 }
+
 
 /* ── Primary mode buttons ─────────────────────────────────── */
 .modeRow {
@@ -64,12 +69,12 @@
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
 
-  color: rgba(255, 255, 255, 0.40);
+  color: rgba(255, 255, 255, 0.38);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: none;
 
-  /* BASE transition = slow mouse-OUT (phosphor afterglow decay) */
+  /* BASE = slow OUT transition (afterglow decay) */
   transition:
     color        320ms ease,
     border-color 320ms ease,
@@ -79,7 +84,7 @@
   cursor: pointer;
 }
 
-/* Fast mouse-IN — phosphor tube strikes quickly */
+/* Fast IN — phosphor tube fires quickly */
 .modeBtn:hover:not(.modeBtnActive),
 .modeBtn:focus-visible:not(.modeBtnActive) {
   /* Override with fast in-transition */
@@ -90,30 +95,37 @@
     background   40ms ease;
 
   color: var(--color-white);
-  border-color: rgba(255, 255, 255, 0.60);
+  border-color: rgba(255, 255, 255, 0.55);
   box-shadow:
-    0 0 10px rgba(255, 255, 255, 0.18),
-    inset 0 0 20px rgba(255, 255, 255, 0.04);
-  background: rgba(255, 255, 255, 0.03);
+    0 0  8px rgba(255, 255, 255, 0.14),
+    inset 0 0 18px rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.025);
   outline: none;
 }
 
-/* Active state — cyan neon outline, pulsing */
+/* Active state — cyan neon outline, pulsing throb */
 .modeBtnActive {
   color: var(--color-cyan);
   border: var(--border-neon-cyan);
-  box-shadow:
-    var(--glow-cyan-sm),
-    inset 0 0 18px rgba(0, 240, 255, 0.07);
-  /* Phosphor persistence still applies on active:hover — no override needed */
   animation: neon-pulse-cyan 2.4s ease-in-out infinite;
 }
+
+/* Hovering an active button — fast-in only */
+.modeBtnActive:hover,
+.modeBtnActive:focus-visible {
+  transition:
+    background 40ms ease,
+    box-shadow 40ms ease;
+  background: rgba(0, 240, 255, 0.05);
+  outline: none;
+}
+
 
 /* ── Sub-mode buttons (HOST / JOIN) ───────────────────────── */
 .subRow {
   display: flex;
   gap: var(--space-4);
-  animation: fade-in 0.22s ease both;
+  animation: fade-in-up 0.20s ease both;
 }
 
 .subBtn {
@@ -124,12 +136,12 @@
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
 
-  color: rgba(255, 255, 255, 0.36);
+  color: rgba(255, 255, 255, 0.34);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: none;
 
-  /* BASE = slow mouse-OUT (afterglow) */
+  /* BASE = slow OUT */
   transition:
     color        320ms ease,
     border-color 320ms ease,
@@ -139,7 +151,7 @@
   cursor: pointer;
 }
 
-/* Fast mouse-IN */
+/* Fast IN */
 .subBtn:hover:not(.subBtnActive):not(:disabled),
 .subBtn:focus-visible:not(.subBtnActive):not(:disabled) {
   transition:
@@ -150,34 +162,28 @@
 
   color: var(--color-cyan);
   border-color: rgba(0, 240, 255, 0.55);
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.20);
-  background: rgba(0, 240, 255, 0.03);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.18);
+  background: rgba(0, 240, 255, 0.025);
   outline: none;
 }
 
 .subBtnActive {
   color: var(--color-cyan);
   border-color: var(--color-cyan);
-  box-shadow: var(--glow-cyan-sm);
-  /* Phosphor-persist the active state too:
-     hovering an active button gets fast-in, un-hovering gets slow-out */
+  box-shadow: 0 0 4px #00F0FF, 0 0 10px #00F0FF;
 }
 
-/* Hover on active — fast-in only (border/shadow already at full) */
 .subBtnActive:hover,
 .subBtnActive:focus-visible {
   transition:
-    color        40ms ease,
-    border-color 40ms ease,
-    box-shadow   40ms ease,
-    background   40ms ease;
-
-  background: rgba(0, 240, 255, 0.06);
+    background 40ms ease,
+    box-shadow 40ms ease;
+  background: rgba(0, 240, 255, 0.05);
   box-shadow: var(--glow-cyan-md);
   outline: none;
 }
 
 .subBtn:disabled {
-  opacity: 0.40;
+  opacity: 0.38;
   cursor: not-allowed;
 }
