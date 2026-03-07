@@ -558,21 +558,25 @@
 
 
 /* ─────────────────────────────────────────────────────────────
-   MASCOT — CSS tank, heartbeat rhythm.
-   Geometry: side-profile style (matching reference images) but
-   rotated so the barrel points straight up.
+   MASCOT — pixel-art CSS tank, barrel pointing up.
 
-   Structure (top → bottom):
-     BARREL   — thin vertical rectangle, centred, at top
-     TURRET   — chunky box, slightly wider than barrel
-     HULL     — wide flat rectangle, the main body
-     TRACKS   — tankTrackL / tankTrackR flank the hull on
-                left and right, slightly taller, creating the
-                boxy overhang of the tread assembly
+   Pixel grid: 7 wide × 12 tall at 8px per pixel = 56 × 96px.
 
-   Container: 64 × 72 px.
-   All elements background: var(--color-green) — the glow
-   is applied via filter: drop-shadow on .tank via heartbeat.
+   Structure (described from top):
+     Barrel  rows 0–2 : col 3 only (1 px wide, centred)
+     Body    rows 3–11: 7×9 bordered rectangle
+       - Outer border: 1px thick
+       - Inner gap:    1px all around
+       - Inner hull:   3×5 solid (cols 2–4, rows 5–9)
+       - Top border row (3) has a gap at col 3 — the cannon opening
+
+   Technique: single .tankPixels div (8×8, background: transparent).
+   Every filled pixel is a box-shadow at (col×8)px (row×8)px 0 0 color.
+   box-shadow with blur=0, spread=0 renders as an exact copy of the
+   element's bounding box at the given offset — the element's size
+   (8×8) is inherited by each shadow, producing clean pixel squares.
+   filter on the parent .tank applies to the entire composited
+   subtree including child box-shadows, so heartbeat works correctly.
    ───────────────────────────────────────────────────────────── */
 .tankWrap {
   display: flex;
@@ -584,57 +588,84 @@
 
 .tank {
   position: relative;
-  width: 64px;
-  height: 72px;
+  /* 7 cols × 8px = 56px wide, 12 rows × 8px = 96px tall */
+  width: 56px;
+  height: 96px;
   animation: tank-heartbeat 2.2s ease-in-out infinite;
 }
 
-/* Barrel — 8 × 20 px, centred, flush to top */
-.tankBarrel {
+.tankPixels {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  /* Element sits at (0,0) — that cell is empty (no pixel at col 0, row 0)
+     so background is transparent. All pixels rendered via box-shadow. */
   width: 8px;
-  height: 20px;
-  background: var(--color-green);
-}
+  height: 8px;
+  background: transparent;
+  image-rendering: pixelated;
 
-/* Turret — 28 × 20 px, centred, sits directly below barrel */
-.tankTurret {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 20px;
-  background: var(--color-green);
-}
+  box-shadow:
+    /* ── Barrel (rows 0–2, col 3) ── */
+    24px  0px  0 0 #C8FF00,
+    24px  8px  0 0 #C8FF00,
+    24px 16px  0 0 #C8FF00,
+    24px 24px  0 0 #C8FF00,
 
-/* Hull — 44 × 18 px, centred, sits below turret */
-.tankHull {
-  position: absolute;
-  top: 36px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 44px;
-  height: 18px;
-  background: var(--color-green);
-}
+    /* ── Body top border (row 3) — gap at col 3 = cannon opening ── */
+     0px 24px  0 0 #C8FF00,
+     8px 24px  0 0 #C8FF00,
+    40px 24px  0 0 #C8FF00,
+    48px 24px  0 0 #C8FF00,
 
-/* Tracks — 10 × 28 px, flank the hull on each side.
-   Top aligns 2 px above the hull to create the overhang
-   that gives the tread assembly its boxy silhouette. */
-.tankTrackL,
-.tankTrackR {
-  position: absolute;
-  top: 34px;
-  width: 10px;
-  height: 28px;
-  background: var(--color-green);
+    /* ── Row 4 — sides only ── */
+     0px 32px  0 0 #C8FF00,
+    48px 32px  0 0 #C8FF00,
+
+    /* ── Rows 5–9 — sides + inner 3×5 hull (cols 2–4) ── */
+     0px 40px  0 0 #C8FF00,
+    16px 40px  0 0 #C8FF00,
+    24px 40px  0 0 #C8FF00,
+    32px 40px  0 0 #C8FF00,
+    48px 40px  0 0 #C8FF00,
+
+     0px 48px  0 0 #C8FF00,
+    16px 48px  0 0 #C8FF00,
+    24px 48px  0 0 #C8FF00,
+    32px 48px  0 0 #C8FF00,
+    48px 48px  0 0 #C8FF00,
+
+     0px 56px  0 0 #C8FF00,
+    16px 56px  0 0 #C8FF00,
+    24px 56px  0 0 #C8FF00,
+    32px 56px  0 0 #C8FF00,
+    48px 56px  0 0 #C8FF00,
+
+     0px 64px  0 0 #C8FF00,
+    16px 64px  0 0 #C8FF00,
+    24px 64px  0 0 #C8FF00,
+    32px 64px  0 0 #C8FF00,
+    48px 64px  0 0 #C8FF00,
+
+     0px 72px  0 0 #C8FF00,
+    16px 72px  0 0 #C8FF00,
+    24px 72px  0 0 #C8FF00,
+    32px 72px  0 0 #C8FF00,
+    48px 72px  0 0 #C8FF00,
+
+    /* ── Row 10 — sides only ── */
+     0px 80px  0 0 #C8FF00,
+    48px 80px  0 0 #C8FF00,
+
+    /* ── Row 11 — bottom border (full width) ── */
+     0px 88px  0 0 #C8FF00,
+     8px 88px  0 0 #C8FF00,
+    16px 88px  0 0 #C8FF00,
+    24px 88px  0 0 #C8FF00,
+    32px 88px  0 0 #C8FF00,
+    40px 88px  0 0 #C8FF00,
+    48px 88px  0 0 #C8FF00;
 }
-.tankTrackL { left: 0; }
-.tankTrackR { right: 0; }
 
 
 /* ─────────────────────────────────────────────────────────────

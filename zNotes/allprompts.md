@@ -479,3 +479,47 @@ HIGH SCORE — the highest single-session score across all games on this device,
 That's not it, I want the design to be pixel based, and not be rounded corners, here is the exact design:
 
 a 3x5 base square, around this square is a 1 pixel gap (5x7 are missing), followed by a 7x9 square that is 1 pixel wide. In the petruding/cannon part, the outer 7x9 pixels are missing.
+
+---
+
+Perfect, I now want you to slightly improve this prompt, and also make it shorter, with the main goal being that this start screen truly is as impressive and cool as possible, don't say any specific implementations, but let the AI I give the prompt to be creative:
+
+---
+
+# Dead Angle — Start Screen Overhaul
+
+Read every attached file before writing a single line. Understand the full project — design tokens, component structure, existing CSS, the flow hooks — then redesign the start screen from scratch.
+
+Deliver exactly these 7 files: `globals.css`, `layout.module.css` (unchanged), `CRTOverlay.tsx`, `CRTOverlay.module.css`, `page.tsx`, `page.module.css`, `ModeSelector.module.css`. Do not modify any other file.
+
+---
+
+## CSS Architecture Rule
+
+**CSS Modules scope `animation-name` values locally.** A `.module.css` file cannot reference `@keyframes` declared in `globals.css` — the browser will silently fail to find them. Therefore:
+
+- `globals.css` defines only **shared base animations** reusable across multiple components
+- Every `.module.css` file **declares its own `@keyframes` locally**
+- Never rely on a global keyframe inside a module file
+
+---
+
+## Goal
+
+Build the most visually stunning 1980s arcade cabinet attract screen possible. Hot pink, cyan, neon green on pure black. Loud, maximalist, slightly unstable. Every element must feel alive — nothing static, nothing that reads as a webpage.
+
+Before writing anything, audit every existing animation and style critically. Ask: is this timing right? Is this glow spread convincing? Does this throb, or does it merely shift? Improve whatever falls short. The bar is a real phosphor cabinet in a dark arcade, not a CSS demo.
+
+The layout should feel like a physical bezel — consider the full structure of a real arcade screen. Scale, spacing, and rhythm should be monumental.
+
+---
+
+## Hard Requirements
+
+**CRT Overlay** — CSS only, `pointer-events: none`, `position: fixed`. Simulate a real phosphor tube: drifting scanlines (visible enough to look like active redraw, not a texture), edge-specific darkening with `inset box-shadow` (not a radial vignette), a clearly visible sweep line. No startup animation.
+
+**Title** — Add `data-text="DEAD"` and `data-text="ANGLE"` to the title spans. Use `::before` / `::after` with `content: attr(data-text)` and `mix-blend-mode: screen` for permanent chromatic ghost offsets. Every few seconds both ghosts snap violently wider with a skew, then snap back instantly — use `animation-timing-function: linear` with sub-frame keyframe intervals (not `step-end`) so the snap fires at the correct moment. Title glow spread must at least double between resting and peak — the difference should be immediately obvious.
+
+**Buttons** — Phosphor persistence: 40ms transition on mouse-in (instant strike), 320ms on mouse-out (afterglow decay). Define the slow transition on the base selector; override with the fast one inside `:hover`.
+
+**Everything throbs** — heartbeats, blinks, pulses should feel visceral and physical. `opacity: 0` to `opacity: 1` with no in-between. Glow should bloom noticeably, not drift. Corner ornaments should pop in scale, not fade.
