@@ -12,33 +12,33 @@ Dead Angle is a real-time two-player arcade shooter inspired by Tank Trouble. Pl
 Dead Angle supports two modes:
 
 - **Singleplayer** — play against a bot, runs entirely client-side. The backend is not contacted
-- **Multiplayer** — no account or login required. Player 1 creates a room and shares the code. Player 2 enters the code and joins
+- **Multiplayer** — no account or login required. Player 1 creates a room; Player 2 joins with the room code. Both wait in the lobby until the host clicks Start
 
 ---
 
 ## Player Flow
 
-**Player 1 (multiplayer)**
-1. Choose Multiplayer → Create Room
-2. Server returns a room code and session ID
-3. Wait in the lobby — the room code is displayed
-4. Game starts automatically when Player 2 joins
+**Player 1 / Host (multiplayer)**
+1. Choose Multiplayer → Host
+2. Server returns a room code and session ID; player is taken directly to the lobby
+3. Share the room code with Player 2
+4. Click START when Player 2 has joined — game begins for both players
 
 **Player 2 (multiplayer)**
 1. Choose Multiplayer → enter room code → Join
-2. Server returns a session ID
-3. Game starts immediately — Player 2 skips the lobby entirely
+2. Server returns a session ID; player is taken to the lobby
+3. Wait for the host to click START
 
 ---
 
 ## Game Screens
 
-| Screen | Who sees it | Description |
+| Screen | Description |
 |---|---|---|
-| Start | Both | Choose singleplayer or multiplayer; enter room code to join |
-| Lobby | Player 1 only | Displays room code; waits for Player 2 to join |
-| Game | Both | Live maze arena — the core experience |
-| Summary | Both | Final scores shown after the session ends |
+| Start | Choose singleplayer or multiplayer; enter room code to join |
+| Lobby | Displays room code; host has a START button; both players wait here |
+| Game | Live maze arena — the core experience |
+| Summary | Final scores shown after the session ends |
 
 ---
 
@@ -57,6 +57,13 @@ Dead Angle supports two modes:
 ### Singleplayer
 
 Runs entirely in the browser. The bot, physics, hit detection, maze generation, and scoring are all client-side. The backend is not contacted.
+
+### Multiplayer — communication channels
+
+Two channels are used, each with a distinct role:
+
+- **REST** (`POST /rooms`, `POST /rooms/{code}/join`) — one-time room setup only. Called before the real-time connection opens; returns the `sessionId` and slot assignment
+- **SignalR (WebSocket)** — everything after that. SignalR is a WebSocket abstraction; it opens a persistent connection that carries all real-time traffic in both directions: player input from client to server, and all game events from server to clients. The `sessionId` from the REST call is passed as a query parameter when opening this connection so `GameHub` can map it to the correct room and slot
 
 ### Multiplayer — authority model
 
@@ -77,11 +84,11 @@ Clients send their input direction each frame. The server updates positions at ~
 
 **Maze**
 
-Generated server-side when a round starts. Sent to both clients in the `gameStarted` event (first round) and the `roundEnded` event (subsequent rounds). Static for the duration of each round.
+Generated server-side when the host clicks Start. Sent to both clients in the `gameStarted` event (first round) and the `roundEnded` event (subsequent rounds). Static for the duration of each round.
 
 **Session identity**
 
-When Player 1 calls `POST /rooms`, the server returns a `sessionId` and assigns them the `Player1` slot. When Player 2 calls `POST /rooms/{code}/join`, the same happens for `Player2`. The `sessionId` is passed as a query parameter when establishing the SignalR connection — `GameHub` maps it to the correct room and slot in `OnConnectedAsync`.
+`POST /rooms` assigns the `Player1` slot; `POST /rooms/{code}/join` assigns `Player2`. Both return a `sessionId` that is passed as a query parameter when opening the SignalR connection — `GameHub` maps it to the correct room and slot in `OnConnectedAsync`.
 
 ---
 

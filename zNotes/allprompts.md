@@ -89,19 +89,39 @@ If you find nothing to improve, say so. Do not invent complexity. Do not add fil
 
 # Dead Angle — Start Screen
 
-Build the start screen (`src/app/page.tsx`) and `globals.css` for Dead Angle.
+Build the start screen (`src/app/page.tsx`), `globals.css`, and the `CRTOverlay` component for Dead Angle.
 Reference the attached `CLAUDE.md` and `filestructure.md` for architecture and file placement rules.
 
 ---
 
 ## globals.css
 
-Create `src/app/globals.css` first. It must contain only:
+Create `src/app/globals.css` first. It must contain:
 - CSS reset (box-sizing, margin, padding, body)
 - Design tokens as CSS custom properties: background colour, neon colours (hot pink, cyan, white), glow intensities, font stack, base font size, border widths
-- `@keyframes` definitions (e.g. pulse glow, flicker) — no component styles
+- `@keyframes` for all reusable animations: neon pulse glow, CRT flicker, any shared transitions
+- It must follow all best 2026 practices, and act as the source of all design tokens meeting best 2026 practices for development.
 
 No component styles. Everything else goes in a `.module.css` file.
+
+---
+
+## CRTOverlay
+
+Create `src/components/CRTOverlay/CRTOverlay.tsx` and `CRTOverlay.module.css`.
+
+This component renders a fixed full-viewport div that sits above all page content on every screen. It is mounted once in `src/app/layout.tsx` and never touched again.
+
+**What it does:**
+- Horizontal scanlines across the full screen — `repeating-linear-gradient` of alternating fully transparent and semi-transparent black bands, 2–4px apart
+- Subtle screen vignette — `radial-gradient` darkening toward the edges
+- Optional slow CRT flicker — a low-opacity `@keyframes` brightness pulse, defined in `globals.css`, applied here. Keep it subtle: just enough to feel like a CRT tube, not enough to be distracting or cause discomfort
+
+**Hard constraints:**
+- `pointer-events: none` — must never intercept clicks, keyboard, or any input
+- `position: fixed`, `inset: 0`, `z-index` above all page content
+- Pure CSS — no canvas, no JS, no animation libraries
+- No impact on layout of any element beneath it
 
 ---
 
@@ -117,11 +137,13 @@ No component styles. Everything else goes in a `.module.css` file.
 - **No gradients, no textures, no 3D transforms**
 
 Specific elements:
-- **Title "DEAD ANGLE"** — large, hot pink, heavy text-shadow glow. Static or slow pulse
+- **Title "DEAD ANGLE"** — large, hot pink, heavy `text-shadow` glow. Static or slow pulse using the `@keyframes` from `globals.css`
 - **Mode buttons** ("SINGLEPLAYER", "MULTIPLAYER") — neon outlined rectangles, no fill. Cyan on hover/active, with glow. Uppercase, letter-spaced
-- **Sub-toggle** ("HOST" / "JOIN") — smaller than mode buttons, same outline style
+- **Sub-options** ("HOST", "JOIN") — same outline style, smaller than mode buttons. JOIN is active/highlighted by default
 - **Room code input** — neon outlined, black background, cyan caret, monospace text, no browser default styling
-- **Action buttons** ("CREATE ROOM", "JOIN ROOM") — same style as mode buttons
+- **"JOIN ROOM" button** — same style as mode buttons
+
+The CRTOverlay is already active on this screen via `layout.tsx` — do not add it here.
 
 ---
 
@@ -131,19 +153,19 @@ Centred vertically and horizontally. Single column. Top to bottom:
 
 1. "DEAD ANGLE" title
 2. SINGLEPLAYER / MULTIPLAYER mode buttons
-3. *(MULTIPLAYER only)* HOST / JOIN sub-toggle
-4. *(HOST)* "CREATE ROOM" button
-5. *(JOIN)* Room code input + "JOIN ROOM" button
+3. *(MULTIPLAYER only)* HOST and JOIN sub-options — JOIN is active by default
+4. *(JOIN, default)* Room code input + "JOIN ROOM" button
+5. *(HOST)* No additional UI — clicking HOST is the action itself
 
 ---
 
 ## Behaviour
 
 - **SINGLEPLAYER** → `router.push('/game')`
-- **MULTIPLAYER → HOST** → `POST /rooms` via `api.ts` → write `sessionId`, `playerSlot`, `roomCode`, `mode` to `RoomContext` → `router.push('/lobby')`
-- **MULTIPLAYER → JOIN** → `POST /rooms/{code}/join` via `api.ts` → write `sessionId`, `playerSlot`, `mode` to `RoomContext` → `router.push('/game')`
-- Loading state: disable the active button and show a text label change (e.g. "CONNECTING…") — no spinner
-- Error state: show a short error message below the button in hot pink — no separate screen or modal
+- **MULTIPLAYER → HOST** — clicking HOST immediately calls `POST /rooms` via `api.ts` → write `sessionId`, `playerSlot`, `roomCode`, `mode` to `RoomContext` → `router.push('/lobby')`
+- **MULTIPLAYER → JOIN** — clicking "JOIN ROOM" calls `POST /rooms/{code}/join` via `api.ts` → write `sessionId`, `playerSlot`, `mode` to `RoomContext` → `router.push('/lobby')`
+- Loading state: disable the active button and change its label (e.g. "CONNECTING…") — no spinner
+- Error state: short error message below the button in hot pink — no modal, no separate screen
 - All logic lives in `src/features/start/hooks/useStartFlow.ts`
 
 ---
@@ -152,8 +174,13 @@ Centred vertically and horizontally. Single column. Top to bottom:
 
 ```
 src/app/globals.css
+src/app/layout.tsx                              ← add <CRTOverlay /> here
 src/app/page.tsx
 src/app/page.module.css
+src/components/
+  CRTOverlay/
+    CRTOverlay.tsx
+    CRTOverlay.module.css
 src/features/start/
   components/
     ModeSelector/
@@ -165,3 +192,7 @@ src/features/start/
   hooks/
     useStartFlow.ts
 ```
+
+---
+
+Analyze the attached Start Screen implementation guide, Claude.md, filestructure.md and the moodboard images. Deliver the new files following best 2026 practices with clean, refactored, streamlined and perfect code.

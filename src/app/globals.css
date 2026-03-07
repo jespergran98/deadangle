@@ -1,167 +1,180 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+/* ============================================================
+   DEAD ANGLE — globals.css
+   Design tokens · CSS reset · Base document · @keyframes only
+   No component styles live here.
+   ============================================================ */
 
-@layer reset, base, tokens, animations;
+/* ── Design Tokens ────────────────────────────────────────── */
+:root {
+  /* Colours */
+  --color-bg:           #000000;
+  --color-pink:         #FF2D78;
+  --color-cyan:         #00F0FF;
+  --color-white:        #FFFFFF;
+  --color-error:        #FF2D78;
 
-/* ── RESET ────────────────────────────────────────────────── */
-@layer reset {
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-text-size-adjust: 100%; tab-size: 4; }
-  img, picture, video, canvas, svg { display: block; max-width: 100%; }
-  input, button, textarea, select { font: inherit; }
-  p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
-  #root, #__next { isolation: isolate; }
+  /* Glow intensities */
+  --glow-pink-sm:       0 0 6px #FF2D78, 0 0 12px #FF2D78;
+  --glow-pink-md:       0 0 8px #FF2D78, 0 0 20px #FF2D78, 0 0 40px rgba(255, 45, 120, 0.4);
+  --glow-pink-lg:       0 0 10px #FF2D78, 0 0 30px #FF2D78, 0 0 60px rgba(255, 45, 120, 0.5), 0 0 100px rgba(255, 45, 120, 0.2);
+  --glow-cyan-sm:       0 0 6px #00F0FF, 0 0 12px #00F0FF;
+  --glow-cyan-md:       0 0 8px #00F0FF, 0 0 20px #00F0FF, 0 0 40px rgba(0, 240, 255, 0.4);
+  --glow-cyan-lg:       0 0 10px #00F0FF, 0 0 30px #00F0FF, 0 0 60px rgba(0, 240, 255, 0.5);
+  --glow-white-sm:      0 0 4px #FFFFFF, 0 0 8px rgba(255, 255, 255, 0.6);
+
+  /* Typography */
+  --font-mono:          "Courier New", Courier, "Lucida Console", monospace;
+  --font-size-base:     16px;
+  --font-size-sm:       0.75rem;   /* 12px */
+  --font-size-md:       1rem;      /* 16px */
+  --font-size-lg:       1.25rem;   /* 20px */
+  --font-size-xl:       1.5rem;    /* 24px */
+  --font-size-2xl:      2rem;      /* 32px */
+  --font-size-3xl:      3rem;      /* 48px */
+  --font-size-4xl:      4.5rem;    /* 72px */
+  --letter-spacing-wide: 0.2em;
+  --letter-spacing-xl:   0.35em;
+
+  /* Borders */
+  --border-neon-pink:   2px solid #FF2D78;
+  --border-neon-cyan:   2px solid #00F0FF;
+  --border-neon-white:  2px solid #FFFFFF;
+
+  /* Spacing scale */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Layout */
+  --z-content:     1;
+  --z-overlay:     9999;
+
+  /* Transition */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
 }
 
-/* ── DESIGN TOKENS ────────────────────────────────────────── */
-@layer tokens {
-  :root {
-    color-scheme: dark;
+/* ── CSS Reset ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    /* Palette */
-    --color-void:     #000000;
-    --color-pink:     #ff2d78;
-    --color-pink-dim: #cc1f5e;
-    --color-cyan:     #00f5ff;
-    --color-cyan-dim: #00b8c8;
-    --color-white:    #ffffff;
-    --color-grey:     #444444;
-    --color-error:    #ff4444;
+/* ── Base Document ────────────────────────────────────────── */
+html {
+  font-size: var(--font-size-base);
+  background-color: var(--color-bg);
+  color: var(--color-white);
+  /* Prevent layout shift from scrollbar appearing */
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
 
-    /* Box-shadow glow */
-    --glow-pink-sm: 0 0 4px #ff2d78, 0 0 10px #ff2d7866;
-    --glow-pink-md: 0 0 6px #ff2d78, 0 0 18px #ff2d7888, 0 0 40px #ff2d7844;
-    --glow-pink-lg: 0 0 8px #ff2d78, 0 0 24px #ff2d78aa, 0 0 60px #ff2d7866, 0 0 100px #ff2d7833;
-    --glow-cyan-sm: 0 0 4px #00f5ff, 0 0 10px #00f5ff66;
-    --glow-cyan-md: 0 0 6px #00f5ff, 0 0 18px #00f5ff88, 0 0 40px #00f5ff44;
-    --glow-cyan-lg: 0 0 8px #00f5ff, 0 0 24px #00f5ffaa, 0 0 60px #00f5ff66, 0 0 100px #00f5ff33;
+html::-webkit-scrollbar {
+  display: none;
+}
 
-    /* Text-shadow glow */
-    --text-glow-pink: 0 0 6px #ff2d78, 0 0 20px #ff2d78, 0 0 40px #ff2d7888;
-    --text-glow-cyan: 0 0 6px #00f5ff, 0 0 20px #00f5ff, 0 0 40px #00f5ff88;
+body {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  background-color: var(--color-bg);
+  color: var(--color-white);
+  line-height: 1.5;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    /* Typography */
-    --font-pixel: 'Press Start 2P', monospace;
-    --font-mono:  'Share Tech Mono', monospace;
+/* Remove default list styling */
+ul, ol {
+  list-style: none;
+}
 
-    --text-xs:   0.5rem;
-    --text-sm:   0.625rem;
-    --text-base: 0.75rem;
-    --text-hero: clamp(2.5rem, 8vw, 5rem);
+/* Consistent button base — actual styles live in component modules */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
 
-    /* Spacing (4px base) */
-    --space-1:  0.25rem;
-    --space-2:  0.5rem;
-    --space-3:  0.75rem;
-    --space-4:  1rem;
-    --space-6:  1.5rem;
-    --space-8:  2rem;
-    --space-12: 3rem;
+/* Consistent input base */
+input {
+  font-family: inherit;
+  background: none;
+  border: none;
+  outline: none;
+  color: inherit;
+}
 
-    /* Misc */
-    --border-width:  2px;
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-    --duration-fast: 120ms;
-    --duration-base: 240ms;
-    --duration-slow: 600ms;
+/* ── @keyframes ───────────────────────────────────────────── */
+
+/* Neon pulse — title and active elements */
+@keyframes neon-pulse-pink {
+  0%, 100% {
+    text-shadow: var(--glow-pink-md);
+    opacity: 1;
+  }
+  50% {
+    text-shadow: var(--glow-pink-lg);
+    opacity: 0.92;
   }
 }
 
-/* ── BASE ─────────────────────────────────────────────────── */
-@layer base {
-  html, body {
-    height: 100%;
-    background-color: var(--color-void);
-    color: var(--color-white);
-    font-family: var(--font-pixel);
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: none;
-    font-smooth: never;
-    cursor: crosshair;
-  }
-
-  /* CRT scanline overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 2px,
-      rgba(0, 0, 0, 0.08) 2px,
-      rgba(0, 0, 0, 0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  /* Vignette */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%);
-    pointer-events: none;
-    z-index: 9998;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-pixel);
-    line-height: 1.2;
-    letter-spacing: 0.05em;
-  }
-
-  a { color: var(--color-cyan); text-decoration: none; }
-  a:hover { text-shadow: var(--text-glow-cyan); }
-
-  ::selection { background: var(--color-pink); color: var(--color-void); }
-
-  :focus-visible {
-    outline: var(--border-width) solid var(--color-cyan);
-    outline-offset: 3px;
+@keyframes neon-pulse-cyan {
+  0%, 100% {
     box-shadow: var(--glow-cyan-sm);
+    border-color: #00F0FF;
   }
-
-  ::-webkit-scrollbar       { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--color-void); }
-  ::-webkit-scrollbar-thumb { background: var(--color-pink); box-shadow: var(--glow-pink-sm); }
+  50% {
+    box-shadow: var(--glow-cyan-md);
+    border-color: #00F0FF;
+  }
 }
 
-/* ── KEYFRAMES — consumed by CSS modules ──────────────────── */
-@layer animations {
-  @keyframes blink {
-    0%, 49%  { opacity: 1; }
-    50%, 100% { opacity: 0; }
-  }
+/* CRT flicker — subtle brightness oscillation */
+@keyframes crt-flicker {
+  0%   { opacity: 1; }
+  3%   { opacity: 0.97; }
+  6%   { opacity: 1; }
+  50%  { opacity: 1; }
+  52%  { opacity: 0.98; }
+  54%  { opacity: 1; }
+  78%  { opacity: 1; }
+  80%  { opacity: 0.96; }
+  82%  { opacity: 1; }
+  100% { opacity: 1; }
+}
 
-  @keyframes flicker {
-    0%   { opacity: 1; }
-    92%  { opacity: 1; }
-    93%  { opacity: 0.85; }
-    94%  { opacity: 1; }
-    96%  { opacity: 0.9; }
-    97%  { opacity: 1; }
-    100% { opacity: 1; }
-  }
+/* Text blink — for secondary prompts */
+@keyframes blink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
 
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+/* Cursor blink for inputs */
+@keyframes cursor-blink {
+  0%, 49%  { border-color: var(--color-cyan); }
+  50%, 100% { border-color: transparent; }
+}
 
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-8px) scaleY(0.96); }
-    to   { opacity: 1; transform: translateY(0) scaleY(1); }
-  }
+/* Fade in on mount */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  @keyframes pulsePink {
-    0%, 100% { box-shadow: var(--glow-pink-sm); }
-    50%      { box-shadow: var(--glow-pink-lg); }
-  }
-
-  @keyframes pulseCyan {
-    0%, 100% { box-shadow: var(--glow-cyan-sm); }
-    50%      { box-shadow: var(--glow-cyan-lg); }
-  }
+/* Scanline sweep — decorative, very subtle */
+@keyframes scanline-sweep {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
 }

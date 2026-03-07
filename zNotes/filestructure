@@ -20,7 +20,7 @@ dead-angle/
 │   │   │   ├── page.tsx
 │   │   │   └── page.module.css
 │   │   ├── globals.css                         # Design tokens, reset, base, keyframes only
-│   │   ├── layout.tsx
+│   │   ├── layout.tsx                          # Mounts CRTOverlay once — persists across all screens
 │   │   ├── layout.module.css
 │   │   ├── not-found.tsx
 │   │   ├── not-found.module.css
@@ -40,13 +40,14 @@ dead-angle/
 │   │   │   └── hooks/
 │   │   │       └── useStartFlow.ts             # Handles create/join REST calls and navigation
 │   │   │
-│   │   ├── lobby/                              # Player 1 only — displays room code, waits for Player 2
+│   │   ├── lobby/                              # Both players — host sees START button; both wait here
 │   │   │   ├── components/
 │   │   │   │   └── RoomCode/
 │   │   │   │       ├── RoomCode.tsx            # Displays and copies the room code
 │   │   │   │       └── RoomCode.module.css
 │   │   │   └── hooks/
-│   │   │       └── useLobby.ts                 # Listens for gameStarted event, navigates to /game
+│   │   │       └── useLobby.ts                 # Listens for gameStarted event, navigates to /game;
+│   │   │                                       # host: sends start signal to server
 │   │   │
 │   │   ├── game/                               # Game screen — canvas, input, HUD
 │   │   │   ├── components/
@@ -102,6 +103,10 @@ dead-angle/
 │   │   └── events.types.ts                     # Typed SignalR event payloads (multiplayer only)
 │   │
 │   └── components/
+│       ├── CRTOverlay/
+│       │   ├── CRTOverlay.tsx                  # Fixed full-viewport div; pointer-events: none; z-index above all content
+│       │   └── CRTOverlay.module.css           # repeating-linear-gradient scanlines + radial-gradient vignette;
+│       │                                       # optional flicker animation via @keyframes defined in globals.css
 │       └── NeonButton/
 │           ├── NeonButton.tsx                  # Reusable neon-styled button
 │           └── NeonButton.module.css
@@ -144,7 +149,7 @@ dead-angle-api/
 │
 ├── Hubs/
 │   └── GameHub.cs                              # SignalR hub — maps sessionId to player slot in OnConnectedAsync;
-│                                               # receives player input; emits all game events;
+│                                               # receives player input and host start signal; emits all game events;
 │                                               # detects disconnection and ends session
 │
 ├── Services/
@@ -152,7 +157,7 @@ dead-angle-api/
 │   │                                           # round resolution, ammo lifecycle, score tracking
 │   ├── RoomService.cs                          # Room lifecycle — create, join, end; session ID generation;
 │   │                                           # Player1/Player2 slot assignment
-│   ├── MazeGenerator.cs                        # Procedural maze generation — called on game start and each round end
+│   ├── MazeGenerator.cs                        # Procedural maze generation — called when host starts and each round end
 │   └── DiscordWebhookService.cs                # Outbound POST to Discord webhook on session end
 │
 ├── Physics/
@@ -170,7 +175,7 @@ dead-angle-api/
 ├── DTOs/
 │   ├── RoomResponse.cs                         # { SessionId, PlayerSlot, RoomCode? } — RoomCode populated on create, null on join
 │   └── Events/
-│       ├── GameStartedEvent.cs                 # Emitted when Player 2 joins — { maze: MazeLayout }; triggers navigation to /game
+│       ├── GameStartedEvent.cs                 # Emitted when host clicks Start — { maze: MazeLayout }; both clients navigate to /game
 │       ├── GameTickEvent.cs                    # ~20Hz broadcast — { players: [{ slot, position, angle, ammoCount, reloading }] }
 │       ├── ProjectileFiredEvent.cs             # { projectileId, ownerSlot, startPosition, angle, velocity, firedAt }
 │       ├── RoundEndedEvent.cs                  # { winnerSlot, scores, newMaze: MazeLayout }
