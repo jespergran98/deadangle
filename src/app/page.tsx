@@ -89,10 +89,14 @@ export default function StartPage() {
           <span className={styles.sepLine} />
         </div>
 
-        {/* MASCOT — heartbeat tank, pixel art via box-shadow */}
+        {/* MASCOT — heartbeat tank */}
         <div className={styles.tankWrap} aria-hidden="true">
           <div className={styles.tank}>
-            <div className={styles.tankPixels} />
+            <div className={styles.tankBarrel} />
+            <div className={styles.tankTurret} />
+            <div className={styles.tankHull} />
+            <div className={styles.tankTrackL} />
+            <div className={styles.tankTrackR} />
           </div>
         </div>
 
