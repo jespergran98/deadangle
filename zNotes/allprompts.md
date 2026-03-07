@@ -196,3 +196,27 @@ src/features/start/
 ---
 
 Analyze the attached Start Screen implementation guide, Claude.md, filestructure.md and the moodboard images. Deliver the new files following best 2026 practices with clean, refactored, streamlined and perfect code.
+
+---
+
+Here was the original prompt I gave you, I will start a new chat and attach all the files you created, the new prompt will be to analyze the attached files, and ensure all the files you've created are as visually stunning, impressive, performant, and follow all 2026 practices. Provide an improved version of the prompt that I'll attach with the newly created files, CLAUDE.md and filestructure.md.
+
+---
+
+Here's your prompt:
+
+---
+
+**Analyze all attached files — CLAUDE.md, filestructure.md, and every source file — then deliver a complete, production-ready overhaul of the Dead Angle start screen.**
+
+The single goal: a start screen that looks and feels like a real 1980s arcade cabinet attract mode. Not inspired by one. Indistinguishable from one.
+
+**Non-negotiable standards:**
+
+- **CRT simulation** — visible fisheye corner darkening, horizontal scanlines, a slow vertical sweep line, and a power-on boot sequence (bright horizontal line expands to fill screen).
+- **Chromatic aberration** — the title "DEAD ANGLE" must have permanently offset red/cyan ghost copies (CSS `::before`/`::after` + `content: attr(data-text)` + `mix-blend-mode: screen`), with a periodic glitch burst. Offset must be large enough to see without looking for it.
+- **Animations that land** — every value must be visually perceptible. Nothing subtle to the point of invisible. Power-on plays once on mount. Title breathes. Tank pulses. Footer blinks. Buttons have phosphor persistence (fast in, slow out).
+- **Neon green** (`#C8FF00`) introduced as the third palette colour alongside hot pink and cyan — used on the tank token and anywhere a third accent is needed.
+- **Zero regressions** — all existing logic (useStartFlow, RoomContext, api.ts, ModeSelector, RoomCodeInput) must be preserved exactly. Only visual and animation files change.
+
+Deliver: `globals.css`, `layout.module.css`, `CRTOverlay.tsx`, `CRTOverlay.module.css`, `page.tsx`, `page.module.css`, `ModeSelector.module.css`. Nothing else.
