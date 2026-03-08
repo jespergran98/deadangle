@@ -1,37 +1,34 @@
 /* ============================================================
    page.module.css  ·  DEAD ANGLE  ·  Start Screen
-   1984 arcade cabinet attract screen.
-   Palette: #FF2D78 pink  ·  #00F0FF cyan  ·  #C8FF00 green
-   ============================================================
+   1984 coin-op attract screen — competing with Pac-Man,
+   Donkey Kong, and Galaga for a player's quarter.
 
-   LAYOUT (budgeted at 768px viewport):
-     .screen        height:100dvh, overflow:hidden — hard lock
-     .topStrip      absolute top:44px  — score header
-     .marqueeBand   absolute top:96px  — coin-op attract ticker
-     .content       flex-centered, clamp padding clears strips
-     .bottomStrip   absolute bottom:44px — INSERT COIN + credits
+   Palette (authentic arcade, no cross-hue gradients):
+     #FF2D78  pink   — P1, title, error, TL/BR corners, bottom rail
+     #00F0FF  cyan   — P2, active UI, top rail, TR/BL corners
+     #C8FF00  green  — CTA, credits, tank tracks
+     #000000  black  — all backgrounds
 
-   COLOR DISCIPLINE (authentic arcade assignment):
+   Color assignment (arcade convention):
      Pink  = title, P1 score, error, bottom rail, left vline
      Cyan  = mode-select active, P2 score, top rail, right vline
      Green = play CTA, credit counter, tank track
-     White = HI-SCORE, credit text
 
-   ANIMATION TIMING:
-     Hard digital state (blink, corner pop): step-end
-     Physical sweep / phosphor glow:         ease-in-out / linear
+   Animation timing rule:
+     Hard digital state  (blink, corner pop) → step-end
+     Physical sweep / phosphor glow           → ease-in-out / linear
    ============================================================ */
 
 
 /* ═══════════════════════════════════════════════════════════
-   KEYFRAMES
+   KEYFRAMES — all declared locally (CSS Modules scope)
    ═══════════════════════════════════════════════════════════ */
 
 /* — Entrance — */
 @keyframes fade-flat { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fade-up   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* — Title: per-word neon pulse — */
+/* — Title: per-word neon glow cycle — */
 @keyframes title-pulse {
   0%, 100% {
     text-shadow:
@@ -65,29 +62,29 @@
 
 /* — Chromatic aberration ghosts — linear: sub-frame gaps = instant snap — */
 @keyframes ghost-red {
-  0%,83.8%  { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  83.9%      { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
-  84.9%      { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
-  85.0%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  85.9%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  86.0%      { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
-  87.0%      { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
-  87.1%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  100%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  0%,83.8%   { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  83.9%       { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
+  84.9%       { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
+  85.0%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  85.9%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  86.0%       { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
+  87.0%       { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
+  87.1%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  100%        { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
 }
 @keyframes ghost-cyan {
-  0%,80.8%  { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  80.9%      { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
-  81.9%      { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
-  82.0%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  82.9%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  83.0%      { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
-  84.0%      { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
-  84.1%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  100%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  0%,80.8%   { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  80.9%       { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
+  81.9%       { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
+  82.0%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  82.9%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  83.0%       { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
+  84.0%       { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
+  84.1%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  100%        { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
 }
 
-/* — Tagline: hard palette cycle green→cyan→pink — */
+/* — Tagline: hard step-end palette cycle green→cyan→pink — */
 @keyframes tagline-cycle {
   0%,  28%  { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 16px #C8FF00; }
   30%,  32% { color: #fff;    text-shadow: 0 0 14px #fff; }
@@ -118,34 +115,35 @@
   34%,100% { filter: brightness(.30) drop-shadow(0 0 1px rgba(200,255,0,.48)); }
 }
 
-/* — Bezel corners: marquee-light strobe, 4-corner sequential stagger — */
+/* — Bezel corners: L-bracket marquee-light strobe, 4-corner sequential — */
+/* step-end: these are hard digital flashes, not phosphor glow */
 @keyframes cpop-tl {
-  0%,70%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  71%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
-  72%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  73%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
-  74%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  0%,70%,100%  { opacity: .52; box-shadow: none; }
+  71%           { opacity: 1.0; box-shadow: -4px -4px 18px #FF2D78, 0 0 36px rgba(255,45,120,.60); }
+  71.5%         { opacity: .52; box-shadow: none; }
+  73%           { opacity: .88; box-shadow: -3px -3px 10px rgba(255,45,120,.48); }
+  73.5%         { opacity: .52; box-shadow: none; }
 }
 @keyframes cpop-tr {
-  0%,73%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  74%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
-  75%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  76%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
-  77%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  0%,73%,100%  { opacity: .52; box-shadow: none; }
+  74%           { opacity: 1.0; box-shadow:  4px -4px 18px #00F0FF, 0 0 36px rgba(0,240,255,.60); }
+  74.5%         { opacity: .52; box-shadow: none; }
+  76%           { opacity: .88; box-shadow:  3px -3px 10px rgba(0,240,255,.48); }
+  76.5%         { opacity: .52; box-shadow: none; }
 }
 @keyframes cpop-bl {
-  0%,76%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  77%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
-  78%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  79%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
-  80%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  0%,76%,100%  { opacity: .52; box-shadow: none; }
+  77%           { opacity: 1.0; box-shadow: -4px  4px 18px #00F0FF, 0 0 36px rgba(0,240,255,.60); }
+  77.5%         { opacity: .52; box-shadow: none; }
+  79%           { opacity: .88; box-shadow: -3px  3px 10px rgba(0,240,255,.48); }
+  79.5%         { opacity: .52; box-shadow: none; }
 }
 @keyframes cpop-br {
-  0%,79%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  80%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
-  81%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
-  82%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
-  83%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  0%,79%,100%  { opacity: .52; box-shadow: none; }
+  80%           { opacity: 1.0; box-shadow:  4px  4px 18px #FF2D78, 0 0 36px rgba(255,45,120,.60); }
+  80.5%         { opacity: .52; box-shadow: none; }
+  82%           { opacity: .88; box-shadow:  3px  3px 10px rgba(255,45,120,.48); }
+  82.5%         { opacity: .52; box-shadow: none; }
 }
 
 /* — Rail comet: bright spark traverses horizontal rail — */
@@ -156,10 +154,10 @@
   100% { background-position: 160% 0; opacity: 0; }
 }
 
-/* — Attract marquee scroll — */
+/* — Seamless attract marquee — track contains text doubled — */
 @keyframes marquee-scroll {
-  from { transform: translateX(100vw); }
-  to   { transform: translateX(-100%); }
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 /* — Score: P1/P2 blink out of phase, step-end — */
@@ -174,18 +172,18 @@
   88%,100%  { opacity: 1;   }
 }
 @keyframes hi-throb {
-  0%,100% { color: rgba(255,255,255,.50); text-shadow: none; }
-  50%      { color: rgba(255,255,255,.95);
+  0%,100% { color: rgba(255,255,255,.48); text-shadow: none; }
+  50%      { color: rgba(255,255,255,.94);
              text-shadow: 0 0 10px rgba(255,255,255,.56), 0 0 24px rgba(255,255,255,.20); }
 }
 
-/* — Attract prompt: authentic 1 Hz coin-op blink — */
+/* — Attract prompt: authentic 1 Hz coin-op blink, step-end — */
 @keyframes coin-blink {
   0%,49.9%  { opacity: 1; }
   50%,100%  { opacity: 0; }
 }
 
-/* — Pixel dots: hard blink — */
+/* — Pixel dots: hard step-end blink — */
 @keyframes dot-blink {
   0%,49.9%  { opacity: 1; }
   50%,100%  { opacity: 0; }
@@ -221,6 +219,18 @@
   75%      { color: #00F0FF; text-shadow: 0 0 8px #00F0FF, 0 0 18px #00F0FF; transform: rotate(270deg) scale(1.2); }
 }
 
+/* — Score column divider pulse — subtle breathing — */
+@keyframes divider-breathe {
+  0%,100% { opacity: .18; }
+  50%      { opacity: .40; }
+}
+
+/* — Score rule: double-channel bottom flash synced to hi-throb — */
+@keyframes rule-flash {
+  0%,100% { opacity: .55; }
+  50%      { opacity: .90; }
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    SCREEN — hard viewport lock
@@ -236,7 +246,7 @@
   overflow: hidden;
 }
 
-/* Scattered phosphor point sources — CRT surface noise */
+/* Scattered phosphor point sources — surface noise */
 .screen::before {
   content: '';
   position: absolute;
@@ -261,7 +271,7 @@
    BACKGROUND: PIXEL MATRIX · SPARKS · DOTS
    ═══════════════════════════════════════════════════════════ */
 
-/* Raster dot grid — physical display phosphor matrix */
+/* Physical phosphor-dot matrix — every real CRT had this structure */
 .bgGrid {
   position: absolute;
   inset: 0;
@@ -271,7 +281,7 @@
   z-index: 0;
 }
 
-/* Falling pixel sparks — color/shadow/timing set by inline style */
+/* Falling pixel sparks — color/shadow/timing set via inline style */
 .spark {
   position: absolute;
   top: 0;
@@ -282,7 +292,7 @@
   animation: spark-fall linear infinite;
 }
 
-/* Edge-scattered pixel accent dots */
+/* Edge-scattered phosphor accent dots */
 .pxDot {
   position: absolute;
   width: 4px;
@@ -294,169 +304,276 @@
 
 
 /* ═══════════════════════════════════════════════════════════
-   BEZEL: CORNER DIAMONDS
-   TL=pink  TR=cyan  BL=cyan  BR=pink  (arcade convention)
+   BEZEL: CORNER ORNAMENTS
+   L-bracket corners + inner vertex diamonds.
+
+   Arcade convention: TL=pink, TR=cyan, BL=cyan, BR=pink.
+   The L-bracket references the physical cabinet's aluminum
+   corner guard. Diamond marks the exact outer bezel vertex.
+
+   cpop animations: step-end marquee-light strobe,
+   4-corner sequential stagger on a 4.2s cycle.
    ═══════════════════════════════════════════════════════════ */
 
 .corner {
   position: absolute;
   display: block;
-  width: 26px;
-  height: 26px;
-  border: 3px solid;
-  transform-origin: center;
+  width: 32px;
+  height: 32px;
   pointer-events: none;
   z-index: 6;
 }
-.cornerTL { top: 14px; left: 14px;     border-color: #FF2D78; box-shadow: 0 0 5px #FF2D78, 0 0 14px #FF2D78; animation: cpop-tl 4.2s step-end 0.0s infinite; }
-.cornerTR { top: 14px; right: 14px;    border-color: #00F0FF; box-shadow: 0 0 5px #00F0FF, 0 0 14px #00F0FF; animation: cpop-tr 4.2s step-end 0.6s infinite; }
-.cornerBL { bottom: 14px; left: 14px;  border-color: #00F0FF; box-shadow: 0 0 5px #00F0FF, 0 0 14px #00F0FF; animation: cpop-bl 4.2s step-end 1.2s infinite; }
-.cornerBR { bottom: 14px; right: 14px; border-color: #FF2D78; box-shadow: 0 0 5px #FF2D78, 0 0 14px #FF2D78; animation: cpop-br 4.2s step-end 1.8s infinite; }
+
+/* The L-bracket — two sides bordered */
+.cornerTL { top: 14px; left: 14px;     border-top: 3px solid #FF2D78; border-left:  3px solid #FF2D78; animation: cpop-tl 4.2s step-end 0.0s infinite; }
+.cornerTR { top: 14px; right: 14px;    border-top: 3px solid #00F0FF; border-right: 3px solid #00F0FF; animation: cpop-tr 4.2s step-end 0.6s infinite; }
+.cornerBL { bottom: 14px; left: 14px;  border-bottom: 3px solid #00F0FF; border-left:  3px solid #00F0FF; animation: cpop-bl 4.2s step-end 1.2s infinite; }
+.cornerBR { bottom: 14px; right: 14px; border-bottom: 3px solid #FF2D78; border-right: 3px solid #FF2D78; animation: cpop-br 4.2s step-end 1.8s infinite; }
+
+/* Vertex diamond — placed at the outer corner of each L bracket */
+.corner::before {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+.cornerTL::before { background: #FF2D78; box-shadow: 0 0 7px #FF2D78, 0 0 18px #FF2D78; top: -5px; left: -5px; }
+.cornerTR::before { background: #00F0FF; box-shadow: 0 0 7px #00F0FF, 0 0 18px #00F0FF; top: -5px; right: -5px; }
+.cornerBL::before { background: #00F0FF; box-shadow: 0 0 7px #00F0FF, 0 0 18px #00F0FF; bottom: -5px; left: -5px; }
+.cornerBR::before { background: #FF2D78; box-shadow: 0 0 7px #FF2D78, 0 0 18px #FF2D78; bottom: -5px; right: -5px; }
+
+/* Inner corner tick — small inward extension suggesting machined depth */
+.corner::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,.10);
+}
+.cornerTL::after, .cornerBL::after { left: 8px;  top: 0; bottom: 0; width: 1px; }
+.cornerTR::after, .cornerBR::after { right: 8px; top: 0; bottom: 0; width: 1px; }
 
 
 /* ═══════════════════════════════════════════════════════════
    BEZEL: RAILS
    Horizontal top=cyan · bottom=pink
    Vertical   left=pink · right=cyan
+
+   Each rail: outer 2px neon line + periodic 8px tick marks
+   via ::before repeating-gradient — physical machined channels.
+   Comet shimmer overlay via ::after — the phosphor sweep.
    ═══════════════════════════════════════════════════════════ */
 
 .edgeLine {
   position: absolute;
   left: 46px; right: 46px;
-  height: 2px;
+  height: 10px;            /* expanded from 2px to contain tick marks */
   display: block;
   overflow: visible;
   z-index: 4;
 }
 
+/* Top rail: cyan — tick marks below the main line */
 .edgeLineTop {
-  top: 26px;
-  background: linear-gradient(to right,
-    transparent, rgba(0,240,255,.22) 8%, rgba(0,240,255,.88) 50%, rgba(0,240,255,.22) 92%, transparent);
-  box-shadow: 0 0 4px rgba(0,240,255,.55), 0 0 10px rgba(0,240,255,.22);
+  top: 22px;
+  /* Main 2px rail line at top + tick marks below */
+  background:
+    /* Tick marks — 2px wide every 40px, full 10px height */
+    repeating-linear-gradient(
+      to right,
+      transparent 0px, transparent 38px,
+      rgba(0,240,255,.40) 38px, rgba(0,240,255,.40) 40px
+    ),
+    /* Main rail line — 2px at top of the 10px block */
+    linear-gradient(
+      to bottom,
+      rgba(0,240,255,.88) 0px, rgba(0,240,255,.88) 2px,
+      transparent 2px
+    );
+  box-shadow: 0 0 5px rgba(0,240,255,.40), 0 0 12px rgba(0,240,255,.15);
 }
-/* Comet shimmer overlay on top rail */
+
+/* Comet shimmer — traverses full rail width */
 .edgeLineTop::after {
   content: '';
   position: absolute;
   top: -1px; left: 0; right: 0; height: 4px;
-  background: linear-gradient(to right,
+  background: linear-gradient(
+    to right,
     transparent 0%, transparent 18%,
     rgba(0,240,255,0) 34%, rgba(255,255,255,.90) 49%, rgba(0,240,255,.90) 51%,
-    rgba(0,240,255,0) 66%, transparent 82%);
+    rgba(0,240,255,0) 66%, transparent 82%
+  );
   background-size: 200% 100%;
   animation: comet-h 4.8s ease-in-out 0.5s infinite;
 }
 
+/* Bottom rail: pink — tick marks upward (above the line) */
 .edgeLineBottom {
-  bottom: 26px;
-  background: linear-gradient(to right,
-    transparent, rgba(255,45,120,.22) 8%, rgba(255,45,120,.88) 50%, rgba(255,45,120,.22) 92%, transparent);
-  box-shadow: 0 0 4px rgba(255,45,120,.55), 0 0 10px rgba(255,45,120,.22);
+  bottom: 22px;
+  background:
+    repeating-linear-gradient(
+      to right,
+      transparent 0px, transparent 38px,
+      rgba(255,45,120,.38) 38px, rgba(255,45,120,.38) 40px
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0px, transparent 8px,
+      rgba(255,45,120,.88) 8px, rgba(255,45,120,.88) 10px
+    );
+  box-shadow: 0 0 5px rgba(255,45,120,.40), 0 0 12px rgba(255,45,120,.15);
 }
+
+/* Comet shimmer — pink */
 .edgeLineBottom::after {
   content: '';
   position: absolute;
-  top: -1px; left: 0; right: 0; height: 4px;
-  background: linear-gradient(to right,
+  top: 7px; left: 0; right: 0; height: 4px;
+  background: linear-gradient(
+    to right,
     transparent 0%, transparent 18%,
     rgba(255,45,120,0) 34%, rgba(255,255,255,.90) 49%, rgba(255,45,120,.90) 51%,
-    rgba(255,45,120,0) 66%, transparent 82%);
+    rgba(255,45,120,0) 66%, transparent 82%
+  );
   background-size: 200% 100%;
   animation: comet-h 5.6s ease-in-out 2.4s infinite;
 }
 
+/* Vertical rails */
 .vline {
   position: absolute;
   top: 46px; bottom: 46px;
-  width: 2px;
+  width: 10px;             /* expanded for tick marks */
   display: block;
   z-index: 4;
 }
+
 .vlineL {
-  left: 26px;
-  background: linear-gradient(to bottom,
-    transparent, rgba(255,45,120,.18) 10%, rgba(255,45,120,.62) 50%, rgba(255,45,120,.18) 90%, transparent);
-  box-shadow: 0 0 6px rgba(255,45,120,.28);
+  left: 22px;
+  background:
+    /* Tick marks — 2px tall every 36px, full 10px width */
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 34px,
+      rgba(255,45,120,.36) 34px, rgba(255,45,120,.36) 36px
+    ),
+    /* Main line at left edge */
+    linear-gradient(to right, rgba(255,45,120,.80) 0px, rgba(255,45,120,.80) 2px, transparent 2px);
+  box-shadow: -2px 0 6px rgba(255,45,120,.22);
 }
 .vlineR {
-  right: 26px;
-  background: linear-gradient(to bottom,
-    transparent, rgba(0,240,255,.18) 10%, rgba(0,240,255,.62) 50%, rgba(0,240,255,.18) 90%, transparent);
-  box-shadow: 0 0 6px rgba(0,240,255,.28);
-}
-
-/* Inner groove — second machined channel, 10px inset */
-.innerRailTop {
-  position: absolute;
-  top: 36px; left: 60px; right: 60px; height: 1px;
-  background: linear-gradient(to right,
-    transparent, rgba(0,240,255,.14) 8%, rgba(0,240,255,.32) 50%, rgba(0,240,255,.14) 92%, transparent);
-  pointer-events: none;
-  z-index: 4;
-}
-.innerRailBottom {
-  position: absolute;
-  bottom: 36px; left: 60px; right: 60px; height: 1px;
-  background: linear-gradient(to right,
-    transparent, rgba(255,45,120,.14) 8%, rgba(255,45,120,.32) 50%, rgba(255,45,120,.14) 92%, transparent);
-  pointer-events: none;
-  z-index: 4;
+  right: 22px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 34px,
+      rgba(0,240,255,.36) 34px, rgba(0,240,255,.36) 36px
+    ),
+    linear-gradient(to left, rgba(0,240,255,.80) 0px, rgba(0,240,255,.80) 2px, transparent 2px);
+  box-shadow: 2px 0 6px rgba(0,240,255,.22);
 }
 
 
 /* ═══════════════════════════════════════════════════════════
-   TOP SCORE STRIP — absolute top:44px
-   1UP=pink · HI-SCORE=white · 2UP=cyan (classic arcade)
+   TOP SCORE STRIP — absolute top:42px
+   Three-column grid with vertical separators.
+
+   1UP=pink · HI-SCORE=white · 2UP=cyan
+   (exact Pac-Man / Galaga color-column assignment)
+
+   scorePanel:  3 data cols + 2 divider cols → CSS Grid
+   scoreRule:   double-channel horizontal bar below scores,
+                modelled on the physical glass-etch line
+                that real CRT bezels had above the play field.
    ═══════════════════════════════════════════════════════════ */
 
 .topStrip {
   position: absolute;
-  top: 44px; left: 0; right: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
+  top: 42px; left: 0; right: 0;
   z-index: 5;
   animation: fade-flat 1.2s ease both;
 }
 
-.scoreRow {
-  display: flex;
-  width: 100%;
-  max-width: 560px;
-  justify-content: space-between;
-  padding: 0 var(--space-8);
-  align-items: baseline;
+/* 5-column grid: data · sep · data · sep · data */
+.scorePanel {
+  display: grid;
+  grid-template-columns: 1fr 1px 1.3fr 1px 1fr;
+  max-width: min(96vw, 680px);
+  margin: 0 auto;
+  padding: 0 52px;
 }
 
+/* Each score column: label on top, value below */
+.scoreCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 0 8px;
+}
+
+/* Vertical column separator — dim hairline */
+.scoreSep {
+  background: rgba(255,255,255,.14);
+  margin: 6px 0;
+  animation: divider-breathe 3.2s ease-in-out infinite;
+}
+
+/* Score labels — small caps above the number */
 .scoreLabel {
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: .14em;
+  font-size: 7px;
+  letter-spacing: .20em;
   text-transform: uppercase;
-  flex: 1;
-  text-align: center;
 }
-.scoreLabel:nth-child(1) { color: #FF2D78; text-shadow: 0 0 4px #FF2D78, 0 0 12px #FF2D78; }
-.scoreLabel:nth-child(2) { color: rgba(255,255,255,.42); }
-.scoreLabel:nth-child(3) { color: #00F0FF; text-shadow: 0 0 4px #00F0FF, 0 0 12px #00F0FF; }
+.scoreLabelP1 {
+  color: #FF2D78;
+  text-shadow: 0 0 5px #FF2D78;
+  animation: blink-p1 6.0s step-end 1.5s infinite;
+}
+.scoreLabelHi { color: rgba(255,255,255,.42); }
+.scoreLabelP2 {
+  color: #00F0FF;
+  text-shadow: 0 0 5px #00F0FF;
+  animation: blink-p2 6.0s step-end 0.0s infinite;
+}
 
+/* Score values — the hero numbers */
 .scoreValue {
   font-family: var(--font-mono);
   font-size: 13px;
-  letter-spacing: .08em;
-  flex: 1;
-  text-align: center;
+  letter-spacing: .10em;
 }
-.scoreValueP1 { color: #FF2D78; text-shadow: 0 0 4px #FF2D78, 0 0 10px #FF2D78; animation: blink-p1 6.0s linear 1.5s infinite; }
+.scoreValueP1 { color: #FF2D78; text-shadow: 0 0 5px #FF2D78, 0 0 14px #FF2D78; }
 .scoreValueHi { animation: hi-throb 3.2s ease-in-out infinite; }
-.scoreValueP2 { color: #00F0FF; text-shadow: 0 0 4px #00F0FF, 0 0 10px #00F0FF; animation: blink-p2 6.0s linear infinite; }
+.scoreValueP2 { color: #00F0FF; text-shadow: 0 0 5px #00F0FF, 0 0 14px #00F0FF; }
+
+/* Double-channel rule below scores — physical glass-etched bezel line */
+.scoreRule {
+  position: relative;
+  max-width: min(96vw, 680px);
+  margin: 4px auto 0;
+  height: 2px;
+  background: rgba(0,240,255,.70);
+  box-shadow: 0 0 6px rgba(0,240,255,.35);
+  animation: rule-flash 3.2s ease-in-out infinite;
+}
+/* Second, thinner channel 5px below the main line */
+.scoreRule::after {
+  content: '';
+  position: absolute;
+  top: 5px; left: 4%; right: 4%;
+  height: 1px;
+  background: rgba(0,240,255,.24);
+}
 
 
 /* ═══════════════════════════════════════════════════════════
    MARQUEE BAND — absolute top:96px
-   Coin-op attract ticker, 30s scroll cycle
+   Coin-op attract ticker, seamless 28s scroll.
+   Content is doubled in JSX for a seamless loop:
+     animation translateX(0) → translateX(-50%)
    ═══════════════════════════════════════════════════════════ */
 
 .marqueeBand {
@@ -464,33 +581,39 @@
   top: 96px; left: 0; right: 0;
   height: 20px;
   overflow: hidden;
-  border-top:    1px solid rgba(255,45,120,.15);
-  border-bottom: 1px solid rgba(0,240,255,.12);
+  border-top:    1px solid rgba(255,45,120,.14);
+  border-bottom: 1px solid rgba(0,240,255,.10);
   z-index: 5;
   animation: fade-flat 1.4s ease .3s both;
 }
 
-.marqueeText {
-  display: inline-block;
+/* Track: inline-flex, holds two identical copies for seamless loop */
+.marqueeTrack {
+  display: inline-flex;
   white-space: nowrap;
+  animation: marquee-scroll 28s linear 2.0s infinite;
+}
+
+.marqueeText {
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 7px;
-  letter-spacing: .24em;
-  color: rgba(255,45,120,.42);
-  text-shadow: 0 0 8px rgba(255,45,120,.28);
+  letter-spacing: .22em;
+  color: rgba(255,45,120,.40);
+  text-shadow: 0 0 8px rgba(255,45,120,.26);
   text-transform: uppercase;
   line-height: 20px;
-  animation: marquee-scroll 30s linear 2.0s infinite;
 }
 
 
 /* ═══════════════════════════════════════════════════════════
-   BOTTOM ATTRACT STRIP — absolute bottom:44px
+   BOTTOM ATTRACT STRIP — absolute bottom:42px
+   INSERT COIN blink + credits counter.
    ═══════════════════════════════════════════════════════════ */
 
 .bottomStrip {
   position: absolute;
-  bottom: 44px; left: 0; right: 0;
+  bottom: 42px; left: 0; right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -536,7 +659,7 @@
 
 /* ═══════════════════════════════════════════════════════════
    CONTENT COLUMN
-   clamp() padding guards absolute strip clearance at all heights
+   clamp() padding clears the absolute strips at all heights.
    ═══════════════════════════════════════════════════════════ */
 
 .content {
@@ -544,7 +667,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0;
-  padding: clamp(106px, 14vh, 118px) var(--space-8) clamp(62px, 9vh, 72px);
+  padding: clamp(110px, 15vh, 124px) var(--space-8) clamp(64px, 9vh, 76px);
   width: 100%;
   max-width: min(96vw, 760px);
   overflow: visible;
@@ -567,27 +690,22 @@
   animation: fade-flat .55s ease both;
 }
 
-/* h1: two words stacked as flex column */
+/* h1: two words stacked — explicit gap prevents overlap */
 .title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  line-height: 1; /* explicit: prevents word-row collapse */
+  gap: 6px;
+  line-height: 1;
   overflow: visible;
 }
 
 /*
- * Each word — the hero piece.
- *
+ * Each title word.
  * font-size: clamp(2.4rem, 7.5vw, 4.2rem)
- *   floor  2.4rem (38px)  — tiny viewports
- *   fluid  7.5vw          — 57.6px at 768px width
- *   cap    4.2rem (67px)  — large screens, safe for layout
- *
- * Two animations run simultaneously:
- *   title-pulse — neon glow cycle, staggered .45s between words
- *   title-shake — sync-loss tremor, staggered 3.4s between words
+ *   floor 2.4rem — tiny viewports
+ *   fluid 7.5vw  — 57.6px at 768px width
+ *   cap   4.2rem — large screens, safe for layout
  */
 .titleWord {
   position: relative;
@@ -605,7 +723,7 @@
 }
 .titleWord:nth-child(2) { animation-delay: .45s, 3.4s; }
 
-/* Red chromatic ghost — ::before — left offset, linear snap glitch */
+/* Red chromatic ghost — ::before — left offset */
 .titleWord::before {
   content: attr(data-text);
   position: absolute;
@@ -623,7 +741,7 @@
 }
 .titleWord:nth-child(2)::before { animation-delay: 2.2s; }
 
-/* Cyan chromatic ghost — ::after — right offset, staggered .3s */
+/* Cyan chromatic ghost — ::after — right offset */
 .titleWord::after {
   content: attr(data-text);
   position: absolute;
@@ -641,7 +759,7 @@
 }
 .titleWord:nth-child(2)::after { animation-delay: 2.5s; }
 
-/* Tagline: hard step-end color cycle through all three hues */
+/* Tagline: hard step-end palette cycle */
 .tagline {
   font-family: var(--font-mono);
   font-size: 8px;
@@ -656,7 +774,7 @@
 
 /* ═══════════════════════════════════════════════════════════
    SEPARATOR — neon rule with spinning star ornament
-   First separator: cyan. Second (last-of-type): pink.
+   First separator: cyan. Second (.separator + .separator): pink.
    ═══════════════════════════════════════════════════════════ */
 
 .separator {
@@ -672,13 +790,13 @@
   flex: 1;
   height: 2px;
   background: linear-gradient(to right,
-    transparent, rgba(0,240,255,.50) 20%, rgba(0,240,255,.82) 50%, rgba(0,240,255,.50) 80%, transparent);
-  box-shadow: 0 0 7px rgba(0,240,255,.30);
+    transparent, rgba(0,240,255,.48) 20%, rgba(0,240,255,.82) 50%, rgba(0,240,255,.48) 80%, transparent);
+  box-shadow: 0 0 7px rgba(0,240,255,.28);
 }
 .separator:last-of-type .sepLine {
   background: linear-gradient(to right,
-    transparent, rgba(255,45,120,.38) 20%, rgba(255,45,120,.62) 50%, rgba(255,45,120,.38) 80%, transparent);
-  box-shadow: 0 0 7px rgba(255,45,120,.26);
+    transparent, rgba(255,45,120,.36) 20%, rgba(255,45,120,.60) 50%, rgba(255,45,120,.36) 80%, transparent);
+  box-shadow: 0 0 7px rgba(255,45,120,.24);
 }
 
 .sepStar {
@@ -692,7 +810,7 @@
 
 /* ═══════════════════════════════════════════════════════════
    TANK MASCOT — pixel-grid, multi-colour heartbeat
-   12×12px cells / 2px gap → 12 rows × 14px = 168px + 22px = 190px grid height
+   Cell: 12×12px / 2px gap → 12 rows × 14px = 168px grid height
    ═══════════════════════════════════════════════════════════ */
 
 .tankWrap {
@@ -720,13 +838,25 @@
 
 /* ═══════════════════════════════════════════════════════════
    CONTROLS — mode select + play button
+
+   min-height: 200px HARD RESERVE.
+   This prevents layout shift when the multiplayer sub-row
+   or room code input appears. The .content container stays
+   at the same height regardless of which state is active:
+
+     singleplayer:         mode(42) + gap(12) + btn(48)          = 102px  ✓
+     multiplayer + host:   mode + sub(40) + gap + btn            = 158px  ✓
+     multiplayer + join:   mode + sub + gap + input(52) + err    = 182px  ✓
+     All states fit within 200px — centering never shifts.
    ═══════════════════════════════════════════════════════════ */
 
 .controls {
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
+  justify-content: flex-start;
   width: 100%;
   animation: fade-up .5s ease .32s both;
 }
@@ -748,7 +878,7 @@
   animation: fade-flat .18s ease both;
 }
 
-/* Play button — primary action CTA */
+/* Play button — the primary CTA */
 .playBtn {
   position: relative;
   padding: 14px 44px;
@@ -772,14 +902,19 @@
 
 /* ═══════════════════════════════════════════════════════════
    SMALL VIEWPORT BREAKPOINT — max-height: 640px
-   Hide marquee, tighten tank, reduce padding
+   Hide marquee band, tighten all sections, reduce tank cells.
    ═══════════════════════════════════════════════════════════ */
 
 @media (max-height: 640px) {
   .marqueeBand { display: none; }
-  .topStrip    { top: 36px; }
-  .bottomStrip { bottom: 36px; }
-  .content     { padding: 82px var(--space-8) 54px; }
+  .topStrip    { top: 32px; }
+  .bottomStrip { bottom: 32px; }
+  .content     { padding: 84px var(--space-8) 56px; gap: 0; }
+  .header      { margin-bottom: var(--space-2); gap: var(--space-1); }
+  .title       { gap: 3px; }
+  .separator   { margin-bottom: var(--space-2); }
+  .tankWrap    { margin-bottom: var(--space-2); }
+  .controls    { min-height: 180px; }
   .tankGrid    { grid-template-columns: repeat(7, 10px); grid-template-rows: repeat(12, 10px); }
   .tankCell, .tankCellBarrel, .tankCellTrack, .tankCellHull { width: 10px; height: 10px; }
 }

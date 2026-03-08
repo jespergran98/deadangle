@@ -9,36 +9,27 @@ import styles from './page.module.css';
 /**
  * /  — Dead Angle start screen.
  *
- * Layout:
- *   .screen        display:flex; align-items:center; justify-content:center
- *                  Full viewport, vertically + horizontally centred.
- *   .topStrip      position:absolute; top:44px — classic arcade header
- *   .content       max-width min(96vw,760px), padding 120px 32px 100px
- *   .bottomStrip   position:absolute; bottom:44px — prompt + credits
+ * Layout (all absolute strips clear .content padding):
+ *   .screen        height:100dvh, overflow:hidden — hard viewport lock
+ *   .bgGrid        fixed phosphor-dot matrix background texture
+ *   .topStrip      absolute top:42px — score header (3-col grid + double-rule)
+ *   .marqueeBand   absolute top:96px — seamless coin-op attract ticker
+ *   .content       flex-column centred, clamp padding clears strips
+ *   .bottomStrip   absolute bottom:42px — INSERT COIN blink + credits
  *
- * Entrance animations (staggered zone reveal from original):
- *   .topStrip      fade-in-flat 1.2s
- *   .header        fade-in-flat 0.55s
- *   .tankWrap      fade-in-flat 0.7s 0.2s
- *   .controls      fade-in-up   0.5s 0.32s
- *   .bottomStrip   fade-in-flat 1.4s 0.8s
+ * Score strip (3-column grid):
+ *   .scorePanel    grid-template-columns: 1fr 1px 1.3fr 1px 1fr
+ *   .scoreSep      1px vertical hairlines between columns
+ *   .scoreRule     double-channel horizontal bar (physical glass-etch line)
  *
- * Score count-up:
- *   useEffect rAF loop, cubic ease-out over 2400ms.
+ * Seamless marquee:
+ *   .marqueeTrack  inline-flex, text duplicated — animation translateX(0→-50%)
  *
- * Tank pixel grid (TANK_GRID):
- *   12×7 matrix. 0=empty, 1=barrel(cyan), 2=track(green), 3=hull(pink).
+ * No-layout-shift guarantee:
+ *   .controls      min-height:200px hard reserve — see CSS comment for math.
  *
- * Falling sparks (SPARK_CONFIG):
- *   12 sparks. Color cycles pink→cyan→green.
- *   animationDuration + animationDelay inline; animationName from styles.spark.
- *
- * Pixel dots (PX_DOT_CONFIG):
- *   6 dots at viewport edges. All inline except animationName.
- *
- * Play button:
- *   Shown when mode==='singleplayer' OR subMode==='host'.
- *   Pink for singleplayer, green for host.
+ * Bezel corners: L-bracket (2-sided border) + vertex diamond (::before).
+ * Bezel rails: 10px height for tick marks via repeating-gradient + comet.
  *
  * CRTOverlay mounted once in layout.tsx.
  */
@@ -93,6 +84,12 @@ function fmt(n: number): string {
   return String(Math.floor(n)).padStart(5, '0');
 }
 
+/* ── Attract ticker text — duplicated for seamless loop ───── */
+const TICKER =
+  '◆ DEAD ANGLE \u00B7 NEON MAZE COMBAT \u00B7 © 1984 DEAD ANGLE SYSTEMS \u00B7 ' +
+  'INSERT COIN TO START \u00B7 P1 VS P2 \u00B7 DEFEAT ALL ENEMIES \u00B7 ' +
+  'HI-SCORE 99400 \u00B7 CREDITS 00 \u00B7 BEWARE THE DEAD ANGLE \u00B7 ';
+
 export default function StartPage() {
   const flow = useStartFlow();
 
@@ -135,6 +132,9 @@ export default function StartPage() {
   return (
     <div className={styles.screen}>
 
+      {/* ── Phosphor-dot background matrix ── */}
+      <div className={styles.bgGrid} aria-hidden="true" />
+
       {/* ── Falling sparks ── */}
       {SPARK_CONFIG.map((s, i) => (
         <span
@@ -167,29 +167,51 @@ export default function StartPage() {
         />
       ))}
 
-      {/* ── Bezel corner diamonds ── */}
+      {/* ── Bezel corner L-brackets + vertex diamonds ── */}
       <span className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerTR}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBR}`} aria-hidden="true" />
 
-      {/* ── Bezel rails ── */}
+      {/* ── Bezel rails with tick marks ── */}
       <span className={`${styles.edgeLine} ${styles.edgeLineTop}`}    aria-hidden="true" />
       <span className={`${styles.edgeLine} ${styles.edgeLineBottom}`} aria-hidden="true" />
       <span className={`${styles.vline} ${styles.vlineL}`}            aria-hidden="true" />
       <span className={`${styles.vline} ${styles.vlineR}`}            aria-hidden="true" />
 
-      {/* ── Top score strip — absolute ── */}
+      {/* ── Top score strip — 3-column with dividers ── */}
       <div className={styles.topStrip} aria-hidden="true">
-        <div className={styles.scoreRow}>
-          <span className={styles.scoreLabel}>1UP</span>
-          <span className={styles.scoreLabel}>HIGH SCORE</span>
-          <span className={styles.scoreLabel}>2UP</span>
+        <div className={styles.scorePanel}>
+
+          <div className={styles.scoreCol}>
+            <span className={`${styles.scoreLabel} ${styles.scoreLabelP1}`}>1UP</span>
+            <span className={`${styles.scoreValue} ${styles.scoreValueP1}`}>{fmt(scores.p1)}</span>
+          </div>
+
+          <div className={styles.scoreSep} />
+
+          <div className={styles.scoreCol}>
+            <span className={`${styles.scoreLabel} ${styles.scoreLabelHi}`}>HI-SCORE</span>
+            <span className={`${styles.scoreValue} ${styles.scoreValueHi}`}>{fmt(scores.hi)}</span>
+          </div>
+
+          <div className={styles.scoreSep} />
+
+          <div className={styles.scoreCol}>
+            <span className={`${styles.scoreLabel} ${styles.scoreLabelP2}`}>2UP</span>
+            <span className={`${styles.scoreValue} ${styles.scoreValueP2}`}>{fmt(scores.p2)}</span>
+          </div>
+
         </div>
-        <div className={styles.scoreRow}>
-          <span className={`${styles.scoreValue} ${styles.scoreValueP1}`}>{fmt(scores.p1)}</span>
-          <span className={`${styles.scoreValue} ${styles.scoreValueHi}`}>{fmt(scores.hi)}</span>
-          <span className={`${styles.scoreValue} ${styles.scoreValueP2}`}>{fmt(scores.p2)}</span>
+        {/* Double-channel glass-etch line below score block */}
+        <div className={styles.scoreRule} />
+      </div>
+
+      {/* ── Attract marquee ticker — text doubled for seamless loop ── */}
+      <div className={styles.marqueeBand} aria-hidden="true">
+        <div className={styles.marqueeTrack}>
+          <span className={styles.marqueeText}>{TICKER}</span>
+          <span className={styles.marqueeText}>{TICKER}</span>
         </div>
       </div>
 
@@ -208,6 +230,7 @@ export default function StartPage() {
         {/* SEPARATOR */}
         <div className={styles.separator} aria-hidden="true">
           <span className={styles.sepLine} />
+          <span className={styles.sepStar}>✦</span>
           <span className={styles.sepLine} />
         </div>
 
@@ -228,6 +251,7 @@ export default function StartPage() {
         {/* SEPARATOR */}
         <div className={styles.separator} aria-hidden="true">
           <span className={styles.sepLine} />
+          <span className={styles.sepStar}>✦</span>
           <span className={styles.sepLine} />
         </div>
 

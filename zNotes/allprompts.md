@@ -556,3 +556,46 @@ The goal is a pixel-perfect recreation of what a 1984 coin-op machine would have
 **What to push creatively:** The visual treatment of every layer — the bezel geometry, the title rendering, the mascot, the ambient atmosphere, the structural rhythm between zones. Make bold choices. Reference real arcade attract screens: the score strip, the INSERT COIN blink, the scrolling ticker, the corner diamonds. Make them feel physical, not decorative.
 
 The code quality matters as much as the visuals. Deliver a single clean `page.module.css` and updated `page.tsx`. All `@keyframes` declared locally in the CSS module. No dead rules. Sections clearly commented. Color values as hex literals inside keyframes (CSS variables don't interpolate reliably in all `@keyframes` contexts).
+
+---
+
+
+
+---
+
+Update the visual design of this 1980s arcade cabinet attract screen.
+
+The goal is a pixel-perfect recreation of what a 1984 coin-op machine would have looked like in a dark arcade — competing directly with Pac-Man, Donkey Kong, and Galaga for a player's quarter. Every design decision should be justified by that context.
+
+The entire 1UP, 2UP and high score display and the outer border design needs a complete overhaul to match the 1980s arcade aesthetic perfectly. The tank itself looks good, but the line above and below need major improvements for that 1980s retro arcade aesthetic, please ensure maximum perfection and clean, streamlined refactored and performant code.
+
+**Palette:** `#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on pure `#000000`. No other colors. No gradients between hues — real arcade hardware couldn't render them.
+
+**Non-negotiables:**
+- The screen must fit entirely within the viewport with zero scrolling — `height: 100dvh; overflow: hidden` is a hard requirement
+- The DEAD ANGLE title must have clear vertical separation between the two stacked words — no overlap
+- The design must not shift when different menues are opened (It currently shift up when 2 players are selected because a 3rd row appears with host room/ join room)
+- All blinking and state-change animations must use `step-end` timing — real CRT hardware had no easing.
+- Nothing should feel static.
+
+**What to push creatively:** The visual treatment of every layer — the bezel geometry, the title rendering, the mascot, the ambient atmosphere, the structural rhythm between zones. Make bold choices. Reference real arcade attract screens: the score strip, the INSERT COIN blink, the scrolling ticker, the corner diamonds. Make them feel physical, not decorative.
+
+The code quality matters as much as the visuals. Deliver a single clean `page.module.css` and updated `page.tsx`. All `@keyframes` declared locally in the CSS module. No dead rules. Sections clearly commented. Color values as hex literals inside keyframes (CSS variables don't interpolate reliably in all `@keyframes` contexts).
+
+---
+
+https://itch.io/game-assets/free/tag-8-bit/tag-sound-effects
+
+---
+
+Update the visual design of this 1980s arcade cabinet attract screen.
+
+The goal is a pixel-perfect recreation of what a 1984 coin-op machine would have looked like in a dark arcade — competing directly with Pac-Man, Donkey Kong, and Galaga for a player's quarter. Every design decision should be justified by that context.
+
+**Palette:** `#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on pure `#000000`. No other colors. No gradients between hues — real arcade hardware couldn't render them.
+
+Rework the tank design and the lines appearing above and below it. Instead of one tank aiming upwards with a blue line above and pink line below, it should be two tanks aiming towards each other: A pink tank on the left aiming to the right, and a green tank on the right aiming left. The line above and below needs a major improvement, remove the separate line with an animated star, instead make both lines blue and improve their design with two lines appearing below and above, and remove the fade out in the center, it should be one consecutive line. The design of the lines should fit the 1980s theme perfectly. A square bullet travels in between the two tanks with a trailing animation, the bullet shifts color as it travels between the pink and green tank.
+
+**What to push creatively:** The visual treatment of every layer — the bezel geometry, the title rendering, the mascot, the ambient atmosphere, the structural rhythm between zones. Make bold choices. Reference real arcade attract screens: the score strip, the INSERT COIN blink, the scrolling ticker, the corner diamonds. Make them feel physical, not decorative.
+
+The code quality matters as much as the visuals. Deliver a single clean `page.module.css` and updated `page.tsx`. All `@keyframes` declared locally in the CSS module. No dead rules. Sections clearly commented. Color values as hex literals inside keyframes (CSS variables don't interpolate reliably in all `@keyframes` contexts).
