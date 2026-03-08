@@ -1320,3 +1320,249 @@ PROVIDE THE TWO UPDATED FILES.
 ---
 
 Analyze all the logic and ensure power-ups, overall game flow and scoring system is flawlessly implemented into the file structure and claude.md file (claude.md acts as the source of truth), following the absolute best 2026 practices for backend and frontend. Go through each line one by one, and each power up one by one, and ensure all the correct logic is added. Ensure the file and folder structure is following the perfect feature based design, and follows absolute best practices. Ensure all text is crystal clear, easy to understand and truly perfect and logical.
+
+---
+
+Analyze the CLAUDE.md and filestructure carefully, and analyze all the existing files. Your task is now to create a text prompt I can attach together with the CLAUDE.md and filestructure, the goal is that I should be able to click "Start Game" on the start screen, and the game against the bot is started. The bot should be reffered to as "CPU" in all code and within the game evoking the nostalgia of 80s and 90s cabinet games. This means you have to implement the maze generation logic, singleplayer HUD, player design and opponent design (should match the tank on the start screen, player is pink, CPU is green).
+
+---
+
+Based on the details in `CLAUDE.md`, here is a concise, high-impact prompt you can use to generate the singleplayer gameplay screen:
+
+---
+
+### **Prompt for Singleplayer Implementation**
+
+Implement the **Singleplayer Gameplay Screen** for Dead Angle by strictly following the filestructure.md architecture and mechanics in `CLAUDE.md`.
+
+* **Navigation:** Connect the "Start Game" button to the live maze arena.
+* **Theming:** Refer to the opponent exclusively as **CPU** in all code and UI elements to evoke a 1980s/90s arcade aesthetic.
+* **Visuals:** Render the Player as a **pink tank** and the CPU as a **green tank** (matching startscreen pixelated layouts).
+* **Core Logic:** Implement the `mazeGenerator.ts` for round starts and the 7-bullet magazine system with a 3-second reload.
+* **HUD & Scoring:** Build the Singleplayer Hud to display Level, Hearts, and real-time Efficiency Tiers (Dead Angle, Quick Draw, Sustained, Suppression).
+* **Progression:** Integrate the Level/Heart scaling and the "100 * Level * Multiplier" scoring formula.
+
+-------------------------------------------------------------------------------------------
+
+### **Prompt for Singleplayer Implementation**
+
+Implement the **Singleplayer Gameplay Screen** for Dead Angle. Use `CLAUDE.md` and the existing codebase as the authoritative source for all logic, scoring formulas, and architectural patterns.
+
+* **Navigation:** Connect the "Start Game" button to the live maze arena.
+* **Theming:** Refer to the opponent exclusively as **CPU** to evoke a 1980s arcade aesthetic.
+* **Visuals:** Render the Player as a **pink tank** (`#FF2D78`) and the CPU as a **green tank** (`#C8FF00`). Walls should be **cyan** (`#00F0FF`). The tanks should match the pixel logic of the tanks on the start screen.
+* **Core Logic:** Implement `mazeGenerator.ts` for round starts and the 7-bullet magazine system with its 3-second reload.
+* **HUD & Scoring:** Build the `SingleplayerHud` to display Level, Score, Hearts, and real-time Efficiency Tiers (Dead Angle, Quick Draw, Sustained, Suppression), all with a 1980s arcade
+* **Progression:** Integrate `SingleplayerContext` to handle level-ups every 3 kills, the scoring formula, and scaling CPU difficulty.
+
+The goal is a pixel-perfect recreation of what a 1984 coin-op machine would have looked like in a dark arcade — competing directly with Pac-Man, Donkey Kong, and Galaga for a player's quarter. Every design decision should be justified by that context.
+
+Would you like me to generate the **CPU AI logic** for pathfinding and aiming to ensure it provides a challenging arcade experience?
+
+---------------
+
+Improve this prompt I will use to add the gameplay screen for singleplayer, keep it short, concise and straight to the point, ensuring the screen will flawlessly be implemented, the prompt will be attached together with the filestructure.md, CLAUDE.md and all exisatinf project files:
+
+### **Prompt for Singleplayer Implementation**
+
+Implement the **Singleplayer Gameplay Screen** for Dead Angle. Use `CLAUDE.md` and the existing codebase as the authoritative source for all logic, scoring formulas, and architectural patterns.
+
+* **Navigation:** Connect the "Start Game" button to the live maze arena.
+* **Theming:** Refer to the opponent exclusively as **CPU** in all code and UI to evoke a 1980s arcade aesthetic.
+* **Visuals:** Render the Player as a **pink tank** (`#FF2D78`) and the CPU as a **green tank** (`#C8FF00`) with **cyan** walls (`#00F0FF`). Tanks must strictly match the pixelated layout and mascot design of the start screen.
+* **Core Logic:** Implement logic for round starts and the 7-bullet magazine system with its 3-second reload.
+* **HUD & Scoring:** Build the Hud to display Level, Score, Hearts using pixelated high-contrast 1984 arcade visual style.
+* **Progression:** Integrate `SingleplayerContext` to handle level-ups every 3 kills, the scoring formula, and scaling CPU difficulty (speed, lead-aiming, and pathing).
+
+Analyze the filestructure.md carefully to ensure each 
+
+**The Goal:** A pixel-perfect recreation of a 1984 coin-op machine in a dark arcade—competing with *Pac-Man* and *Galaga*. Every design decision (flicker, sharp pixels, UI placement) should be justified by that hardware context.
+
+---
+
+Here's the improved prompt:
+
+---
+
+**Implement the Singleplayer Gameplay Screen.**
+
+Refer to `CLAUDE.md` as the source of truth for all logic, and `filestructure.md` for every file path, responsibility, and naming convention. Do not deviate from either.
+
+**Scope — create or complete exactly these files:**
+`GameCanvas`, `SingleplayerHud`, `PowerUpIndicator`, `RoundTransition`, `useGameLoop`, `useKeyboardInput`, `projectileSimulation`, `wallReflection`, `powerUpEffects`, `bot`, `hitDetection`, `mazeGenerator`, `scoring`, `levelProgression`, `powerUpManager`, `drawMaze`, `drawPlayers`, `drawProjectiles`, `drawPowerUps`, `drawPowerUpEffects`, `SingleplayerContext`, `GameContext`, `GameProvider`.
+
+**Visual identity — 1984 coin-op CRT:**
+- Player tank: `#FF2D78` (pink). CPU tank: `#C8FF00` (green). Maze walls: `#00F0FF` (cyan). Background: `#000000`.
+- All text and HUD elements use a pixelated bitmap font (e.g. `Press Start 2P`), high-contrast, no anti-aliasing. (import styling from global.css for )
+- Canvas rendering: `imageSmoothingEnabled = false`. Tanks are pixel-art sprites, not smooth shapes.
+- The CPU is always called **CPU** — never "bot", "enemy", or "opponent" — in UI text and code identifiers.
+
+> **Styling:** Before writing any CSS, read `globals.css` in full. Use every relevant existing custom property (colours, font stacks, spacing, animation keyframes) rather than hardcoding values. Do not introduce a new token for anything already defined there.
+
+**Logic — implement exactly as specified in `CLAUDE.md`:**
+- 7-bullet magazine → 3s reload → 7 bullets. Magazine freezes on power-up pickup; resumes on expiry or spend.
+- Scoring: `100 × level × efficiencyMultiplier(roundProjectileCount)`. Tier boundaries: Dead Angle 1–3 (×4), Quick Draw 4–7 (×3), Sustained 8–14 (×2), Suppression 15+ (×1).
+- Level-up every 3 kills (`totalKills > 0 AND totalKills mod 3 === 0`), +1 heart capped at 6, deferred via `pendingLevelUp`.
+- Round start: reset `roundProjectileCount` to 0, both magazines to 7, clear mines and active power-ups, apply pending level-up, generate new maze, spawn at opposite ends.
+- `SingleplayerHud` displays: level, hearts (up to 6 icons), cumulative score, live efficiency tier label, ammo count or reload countdown.
+- `RoundTransition`: 3s countdown. On bot kill: show score earned + tier label + level-up banner if triggered. On player hit: countdown only.
+
+**CPU AI scales with level** via `botScalingForLevel()`: speed, turn rate, aim accuracy (spread cone), and pathing quality all increase. CPU competes for power-up pickups on equal terms.
+
+------------------------------------------------------------
+
+**Implement the Singleplayer Gameplay Screen.**
+
+`CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention. Do not deviate from either.
+
+**Scope — create or complete exactly these files:**
+`game/page.tsx`, `GameCanvas`, `SingleplayerHud`, `PowerUpIndicator`, `PowerUpIcon`, `RoundTransition`, `useGameLoop`, `useKeyboardInput`, `usePowerUpState`, `trajectoryPreview`, `projectileSimulation`, `wallReflection`, `powerUpEffects`, `bot`, `hitDetection`, `mazeGenerator`, `scoring`, `levelProgression`, `powerUpManager`, `drawMaze`, `drawPlayers`, `drawProjectiles`, `drawPowerUps`, `drawPowerUpEffects`, `SingleplayerContext`, `GameContext`, `GameProvider`, `RoomContext`, `highScore`.
+
+**Navigation:**
+- Selecting Singleplayer sets `RoomContext.mode = 'singleplayer'` and navigates to `/game`.
+- On GAME OVER (hearts reach 0): call `highScore.saveHighScore(cumulativeScore, level)` if the new score exceeds the stored best, then navigate to `/summary`.
+
+**Controls:** WASD to move, Q to fire. Arrow keys to move, Space to fire. Both schemes active simultaneously.
+
+**Visual identity — 1984 coin-op CRT:**
+- Player tank: `#FF2D78`. CPU tank: `#C8FF00`. Maze walls: `#00F0FF`. Background: `#000000`.
+- All HUD text uses `Press Start 2P`, high-contrast, no anti-aliasing. `imageSmoothingEnabled = false` on the canvas context. Tanks are pixel-art sprites, not smooth shapes. (copy pixel layout of tanks on start screen).
+- Before writing any CSS, read `globals.css` in full. Use every relevant existing custom property (colours, font stacks, spacing, animation keyframes) rather than hardcoding values. Do not introduce a new token for anything already defined there.
+- The CPU is always called **CPU** — never "bot", "enemy", or "opponent" — in all UI text and code identifiers.
+
+**useGameLoop — exact per-frame order:**
+1. Advance physics: `projectileSimulation` → `powerUpEffects`
+2. Run `bot` tick
+3. Run `hitDetection`
+4. Run `powerUpManager` tick
+5. If player holds RicochetLaser and has not yet fired → call `trajectoryPreview` and store result for rendering
+6. Draw in this exact order: `drawMaze` → `drawPowerUps` → `drawPowerUpEffects` → `drawPlayers` → `drawProjectiles`
+
+**useKeyboardInput:**
+- Movement input is suppressed for the player while `GameContext.phaseBeamLockedSlots` includes the player's slot (Phase Beam in flight — 4s lock).
+- Firing input is suppressed while PhaseShift is active for the player.
+
+**Magazine — implement exactly:**
+- 7 bullets → fire last → 3s reload → 7 bullets.
+- On power-up pickup: snapshot `{ bulletsRemaining, reloadTimeRemaining }` and freeze both. On power-up spent or expired: restore snapshot and resume. On round end: discard active power-up, reset both player and CPU magazines to 7.
+
+**Projectile counter — critical rule:**
+`roundProjectileCount` increments by +1 for every projectile that visibly travels, from **any source without exception** — including every child projectile spawned by power-ups (Cluster Orb children, ShotgunBlast shells, SplitterRound children and grandchildren, etc.).
+
+**Efficiency tiers:** Dead Angle 1–3 (×4), Quick Draw 4–7 (×3), Sustained 8–14 (×2), Suppression 15+ (×1). Displayed live in `SingleplayerHud` as `roundProjectileCount` climbs.
+
+**Scoring:** `100 × level × multiplier`. On every CPU kill: `hitDetection` calls `scoring.ts`, which writes the earned score into `SingleplayerContext` and calls `updateBestEfficiencyTier(tier)` to keep `bestEfficiencyTierThisRun` current. On every player hit: `hitDetection` calls `levelProgression.ts`.
+
+**Level-up:** `checkLevelUp(totalKills)` returns true when `totalKills > 0 AND totalKills mod 3 === 0`. On level-up: both the player and the CPU gain movement speed and turning rate; the CPU additionally gains tighter aim (spread cone narrows) and better pathing. The level-up is deferred via `pendingLevelUp` and applied at the next round start — including the +1 heart grant (capped at 6) — even if the player also took a hit that same round.
+
+**Round start — exact sequence:**
+1. Apply `pendingLevelUp` if flagged (level +1, hearts +1 capped at 6)
+2. Generate new maze (`mazeGenerator`)
+3. Spawn player and CPU at opposite ends
+4. Reset `roundProjectileCount` to 0
+5. Reset both player and CPU magazines to 7
+6. Clear all mines; discard all active power-ups for both player and CPU
+7. Schedule first power-up spawn 5–10s from now
+
+**powerUpManager — spawn rules:**
+First pickup 5–10s after round start; each subsequent pickup 10–15s after the previous spawn; max 3 uncollected on the map at once; type chosen randomly from all 19 types. Neither player nor CPU can collect while already holding one. **Exception:** during Phase Shift the player CAN collect a new pickup to end the shift immediately and replace it with the new power-up.
+
+**CPU AI (bot.ts) — scales via `botScalingForLevel(level)` → `{ speedMultiplier, turnRate, aimAccuracy, pathingQuality }`:**
+- Pathfinds to the nearest uncollected pickup when not holding one; activates collected power-ups under the same rules as the player.
+- When a Decoy is active, retargets to whichever of the real player or the Decoy is currently closer.
+- Knows positions of its own placed mines and avoids them.
+
+**SingleplayerHud displays:** level, hearts row (up to 6 icons, filled/empty), cumulative score, live efficiency tier label, ammo count or reload countdown in seconds. Reads from `SingleplayerContext`.
+
+**RoundTransition:** On CPU kill — show score earned, tier label, and level-up banner if triggered. On player hit — show countdown only.
+
+**The aesthetic goal:** A pixel-perfect recreation of a 1984 coin-op machine. Every design decision must be justified by that hardware context — sharp pixels, flicker, hard-edged neon on black.
+
+---------------------------------------------------------------------------------------------
+
+**Implement the Singleplayer Gameplay Screen.**
+
+`CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention. Do not deviate from either.
+
+**Scope — create or complete exactly these files:**
+`game/page.tsx`, `game/page.module.css`, `GameCanvas`, `SingleplayerHud`, `PowerUpIndicator`, `PowerUpIcon`, `RoundTransition`, `useGameLoop`, `useKeyboardInput`, `usePowerUpState`, `trajectoryPreview`, `projectileSimulation`, `wallReflection`, `powerUpEffects`, `bot`, `hitDetection`, `mazeGenerator`, `scoring`, `levelProgression`, `powerUpManager`, `drawMaze`, `drawPlayers`, `drawProjectiles`, `drawPowerUps`, `drawPowerUpEffects`, `SingleplayerContext`, `GameContext`, `GameProvider`, `RoomContext`, `highScore`, `game.types.ts`, `powerup.types.ts`.
+
+`PowerUpIcon` is a shared component — it lives at `src/components/PowerUpIcon/`, not inside `features/game/`.
+
+**Navigation:**
+- Selecting Singleplayer sets `RoomContext.mode = 'singleplayer'` and navigates to `/game`.
+- On GAME OVER (hearts reach 0): navigate to `/summary`. `ScoreBoard` (on the summary screen) is responsible for reading `SingleplayerContext`, calling `highScore.saveHighScore(cumulativeScore, level)` if the new score exceeds the stored best, and showing the personal best banner. The game screen only navigates — it does not call `saveHighScore`.
+
+**Controls:** WASD to move, Q to fire. Arrow keys to move, Space to fire. Both schemes active simultaneously. GatlingSpin requires the fire button to be held for 1s to spin up before the first bullet fires.
+
+**Visual identity — 1984 coin-op CRT:**
+- Player tank: `#FF2D78`. CPU tank: `#C8FF00`. Maze walls: `#00F0FF`. Background: `#000000`.
+- All HUD text uses `Press Start 2P`, high-contrast, no anti-aliasing. `imageSmoothingEnabled = false` on the canvas context. Tanks are pixel-art sprites, not smooth shapes.
+- Before writing any CSS, read `globals.css` in full. Use every relevant existing custom property (colours, font stacks, spacing, animation keyframes) rather than hardcoding values. Do not introduce a new token for anything already defined there.
+- The CPU is always called **CPU** — never "bot", "enemy", or "opponent" — in all UI text and code identifiers.
+
+**Types — define before implementing any logic:**
+- `game.types.ts`: `Player`, `Projectile` (with `powerUpType: PowerUpType | null`, `generation: number`, `isReturning: boolean`), `MazeWall`, `MazeLayout`, `GameState`, `PlayerSlot`, `DecoyState`, `MineState` (`position`, `placedAt`, `isInvisible`), `GravityWellState` (`position`, `expiresAt`).
+- `powerup.types.ts`: `PowerUpType` enum (all 19 values), `PowerUpPickup`, `ActivePowerUp` (`type`, `activatedAt`, `durationMs`, `shotsRemaining?: number` — present and starts at 3 for ShotgunBlast and TripleBarrel; absent for all other types), `POWER_UP_METADATA` (readonly record keyed by `PowerUpType` with `{ projectileCost, durationMs | null }` — the single source of truth for costs and durations consumed by `scoring.ts`, `powerUpManager`, and `PowerUpIndicator`; derive `isZeroCost` as `projectileCost === 0`, do not store it separately).
+
+**useGameLoop — exact per-frame order:**
+1. Call `projectileSimulation` — this internally calls `powerUpEffects` for per-type mutations after standard wall-bounce processing; do not call `powerUpEffects` separately at the game loop level
+2. Run `bot` tick
+3. Run `hitDetection`
+4. Run `powerUpManager` tick
+5. If player holds RicochetLaser and has not yet fired → call `trajectoryPreview` and store result for rendering
+6. Draw in this exact order: `drawMaze` → `drawPowerUps` → `drawPowerUpEffects` → `drawPlayers` → `drawProjectiles`
+
+**Rendering boundaries — strictly enforced:**
+- `drawPlayers` draws only the real player and CPU tank tokens, plus per-tank visual overlays (PhaseShift shimmer, ProtectiveShield ring, OrbitalGuard orbit circle, GatlingSpin barrel animation, Swap flash). It never draws the Decoy.
+- `drawPowerUpEffects` is the sole renderer of the Decoy ghost token. It also draws: RicochetLaser pre-fire preview line, PhaseShift world-space pulse ring, GravityWell distortion rings, TimeWarp slow-motion overlay, WallBreaker highlight flash, Mine token (visible for 3s then hidden), Swap flash, Boomerang return-path arc, LockOnMissile target reticle.
+- `drawPowerUps` renders uncollected pickup tokens using `PowerUpIcon` glyphs via **DOM overlays positioned above the canvas** — not canvas drawing.
+
+**projectileSimulation — per-type lifetimes to enforce:**
+Normal bullets 10s; PhaseBeam 4s; LockOnMissile 8s; Boomerang 8s; ShotgunBlast shells 2s; ClusterOrb 4s; OrbitalGuard 6s. RicochetLaser has no time limit — it expires on its 10th wall contact instead.
+
+**useKeyboardInput:**
+- Movement input is suppressed for the player while `GameContext.phaseBeamLockedSlots` includes the player's slot (Phase Beam in flight — 4s lock).
+- Firing input is suppressed while PhaseShift is active for the player.
+
+**Magazine — implement exactly:**
+- 7 bullets → fire last → 3s reload → 7 bullets.
+- On power-up pickup: snapshot `{ bulletsRemaining, reloadTimeRemaining }` and freeze both. On power-up spent or expired: restore snapshot and resume. On round end: discard active power-up, reset both player and CPU magazines to 7.
+
+**Projectile counter — critical rule:**
+`roundProjectileCount` increments by +1 for every projectile that visibly travels, from **any source without exception** — including every child projectile spawned by power-ups (Cluster Orb children, ShotgunBlast shells, SplitterRound children and grandchildren, etc.).
+
+**Efficiency tiers:** Dead Angle 1–3 (×4), Quick Draw 4–7 (×3), Sustained 8–14 (×2), Suppression 15+ (×1). Displayed live in `SingleplayerHud` as `roundProjectileCount` climbs.
+
+**Scoring:** `100 × level × multiplier`. On every CPU kill: `hitDetection` calls `scoring.ts`, which writes the earned score into `SingleplayerContext` and calls `updateBestEfficiencyTier(tier)`. `bestEfficiencyTierThisRun` tracks the **best** (lowest projectile count) tier achieved across all rounds of the run — Dead Angle beats Quick Draw beats Sustained beats Suppression. On every player hit: `hitDetection` calls `levelProgression.ts`.
+
+**SingleplayerContext — initial values on run start:** `level = 1`, `hearts = 3` (max 6), `totalKills = 0`, `cumulativeScore = 0`, `roundProjectileCount = 0`, `bestEfficiencyTierThisRun = null`, `pendingLevelUp = false`.
+
+**Level-up:** `checkLevelUp(totalKills)` returns true when `totalKills > 0 AND totalKills mod 3 === 0`. On level-up: both the player and the CPU gain movement speed and turning rate; the CPU additionally gains tighter aim (spread cone narrows) and better pathing. The level-up is deferred via `pendingLevelUp` and applied at the next round start — including the +1 heart grant (capped at 6) — even if the player also took a hit that same round.
+
+**Round start — exact sequence:**
+1. Apply `pendingLevelUp` if flagged (level +1, hearts +1 capped at 6, `pendingLevelUp = false`)
+2. Generate new maze (`mazeGenerator`)
+3. Spawn player and CPU at opposite ends
+4. Reset `roundProjectileCount` to 0
+5. Reset both player and CPU magazines to 7
+6. Clear all mines; discard all active power-ups for both player and CPU
+7. Schedule first power-up spawn 5–10s from now
+
+**powerUpManager — spawn and lifecycle rules:**
+First pickup 5–10s after round start; each subsequent pickup 10–15s after the previous spawn; max 3 uncollected on the map at once; type chosen randomly from all 19 types. Use `POWER_UP_METADATA` for all cost and duration lookups. Neither player nor CPU can collect while already holding one. **Exception:** during Phase Shift the player CAN collect a new pickup to end the shift immediately and replace it with the new power-up. ShotgunBlast and TripleBarrel track remaining trigger pulls via `ActivePowerUp.shotsRemaining` (starts at 3, decremented on each fire; magazine resumes when it reaches 0).
+
+**CPU AI (bot.ts) — scales via `botScalingForLevel(level)` → `{ speedMultiplier, turnRate, aimAccuracy, pathingQuality }`:**
+- Pathfinds to the nearest uncollected pickup when not holding one; activates collected power-ups under the same rules as the player.
+- When a Decoy is active, retargets to whichever of the real player or the Decoy is currently closer.
+- Knows positions of its own placed mines and avoids them.
+
+**SingleplayerHud displays:** level, hearts row (up to 6 icons, filled/empty), cumulative score, live efficiency tier label, ammo count or reload countdown in seconds. Reads from `SingleplayerContext`.
+
+**RoundTransition:** On CPU kill — show score earned, tier label, and level-up banner if triggered. On player hit — show countdown only.
+
+**The aesthetic goal:** A pixel-perfect recreation of a 1984 coin-op machine. Every design decision must be justified by that hardware context — sharp pixels, flicker, hard-edged neon on black.
+
+---
+
+Implement the **Singleplayer Gameplay Screen** for Dead Angle. `CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention, `GameplayImplementation.md` is your implementation guide you need to follow. Do not deviate from either. All other files are the existing files within the project.

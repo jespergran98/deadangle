@@ -81,9 +81,13 @@ dead-angle/
 │   │   │   │   ├── PowerUpIndicator/                # Both modes
 │   │   │   │   │   ├── PowerUpIndicator.tsx         # Shows the local player's active power-up slot:
 │   │   │   │   │   │                                # renders PowerUpIcon for the held type, a circular
-│   │   │   │   │   │                                # countdown ring for timed types, and the type name
-│   │   │   │   │   │                                # label; shows an empty state when no power-up is
-│   │   │   │   │   │                                # held; reads from usePowerUpState
+│   │   │   │   │   │                                # countdown ring only for power-ups with a non-null
+│   │   │   │   │   │                                # durationMs (timed types — ProtectiveShield 8s,
+│   │   │   │   │   │                                # PhaseBeam 4s, PhaseShift 3s, OrbitalGuard 6s,
+│   │   │   │   │   │                                # TimeWarp 10s, GravityWell 8s; instant power-ups
+│   │   │   │   │   │                                # show no ring), and the type name label; shows an
+│   │   │   │   │   │                                # empty state when no power-up is held; reads from
+│   │   │   │   │   │                                # usePowerUpState
 │   │   │   │   │   └── PowerUpIndicator.module.css
 │   │   │   │   │
 │   │   │   │   └── RoundTransition/
@@ -92,7 +96,11 @@ dead-angle/
 │   │   │   │       │                                # bot kill, shows the score earned (amount +
 │   │   │   │       │                                # tier label) and a level-up banner if a
 │   │   │   │       │                                # level-up was triggered; if the round ended
-│   │   │   │       │                                # with a player hit, shows only the countdown
+│   │   │   │       │                                # with a player hit, shows only the countdown;
+│   │   │   │       │                                # in multiplayer: shows "Player 1 wins" or
+│   │   │   │       │                                # "Player 2 wins" based on RoundEndedEvent.
+│   │   │   │       │                                # WinnerSlot, plus the live kill score for
+│   │   │   │       │                                # both players, and the 3-second countdown
 │   │   │   │       └── RoundTransition.module.css
 │   │   │   │
 │   │   │   ├── hooks/
@@ -110,7 +118,13 @@ dead-angle/
 │   │   │   │   │
 │   │   │   │   ├── useKeyboardInput.ts              # Captures WASD+Q / Arrow+Space; in multiplayer
 │   │   │   │   │                                    # sends playerInput to server each frame; in
-│   │   │   │   │                                    # singleplayer drives local player movement directly
+│   │   │   │   │                                    # singleplayer drives local player movement directly;
+│   │   │   │   │                                    # movement input is suppressed for the local player
+│   │   │   │   │                                    # while GameContext.phaseBeamLockedSlots.includes(
+│   │   │   │   │                                    # localSlot) is true (Phase Beam movement lock —
+│   │   │   │   │                                    # lasts 4s while beam is in flight); firing input
+│   │   │   │   │                                    # is suppressed while PhaseShift is active for the
+│   │   │   │   │                                    # local player
 │   │   │   │   │
 │   │   │   │   ├── useMultiplayerSync.ts            # Subscribes to all SignalR events: gameTick,
 │   │   │   │   │                                    # projectileFired, roundEnded, sessionEnded,
@@ -174,11 +188,18 @@ dead-angle/
 │   │   │   │                                        # PhaseBeam — wall collision suppressed entirely
 │   │   │   │                                        #   (passes through every wall without deflecting);
 │   │   │   │                                        #   applies a gentle per-tick drift toward the
-│   │   │   │                                        #   opponent's current position over its 4s lifetime;
-│   │   │   │                                        #   counts as 1 projectile total
+│   │   │   │                                        #   opponent's current position, but only when the
+│   │   │   │                                        #   opponent is within close proximity of the beam
+│   │   │   │                                        #   path, over its 4s lifetime;
+│   │   │   │                                        #   counts as 1 projectile total;
+│   │   │   │                                        #   IMPORTANT: while this projectile is in flight,
+│   │   │   │                                        #   the firer's movement input is locked — tracked
+│   │   │   │                                        #   via GameContext.phaseBeamLockedSlots; movement
+│   │   │   │                                        #   resumes the moment the beam expires or is
+│   │   │   │                                        #   removed
 │   │   │   │                                        #
 │   │   │   │                                        # LockOnMissile — travels straight for the first
-│   │   │   │                                        #   1s of flight; after 1s computes the nearest
+│   │   │   │                                        #   4s of flight; after 4s computes the nearest
 │   │   │   │                                        #   player (this includes the firer if they are
 │   │   │   │                                        #   closer than the opponent at that moment) and
 │   │   │   │                                        #   applies a fixed-radius turn toward that target
@@ -187,33 +208,40 @@ dead-angle/
 │   │   │   │                                        #   on wall contact or after 8s total; counts as
 │   │   │   │                                        #   1 projectile total
 │   │   │   │                                        #
-│   │   │   │                                        # ClusterOrb — travels at reduced speed; on wall
-│   │   │   │                                        #   contact or after 4s lifetime the orb detonates:
-│   │   │   │                                        #   removed and replaced by 8 new projectiles
-│   │   │   │                                        #   evenly spaced at 45° intervals from the
-│   │   │   │                                        #   detonation point; the orb costs +1 when it
-│   │   │   │                                        #   leaves the barrel; each of the 8 children
-│   │   │   │                                        #   costs +1 when it spawns; 9 total
+│   │   │   │                                        # ClusterOrb — travels at reduced speed and
+│   │   │   │                                        #   bounces off walls normally; detonates after
+│   │   │   │                                        #   its 4s timer expires (wall contact does NOT
+│   │   │   │                                        #   trigger detonation); on detonation: removed
+│   │   │   │                                        #   and replaced by 8 new projectiles evenly
+│   │   │   │                                        #   spaced at 45° intervals from the detonation
+│   │   │   │                                        #   point; the orb costs +1 when it leaves the
+│   │   │   │                                        #   barrel; each of the 8 children costs +1 when
+│   │   │   │                                        #   it spawns; 9 total
 │   │   │   │                                        #
-│   │   │   │                                        # ShotgunBlast — fires 20 shells in a tight
-│   │   │   │                                        #   forward spread simultaneously; each shell
-│   │   │   │                                        #   bounces off walls normally; each expires after
-│   │   │   │                                        #   2s of travel; each costs +1 as it leaves the
-│   │   │   │                                        #   barrel; 20 total; always guarantees Suppression
+│   │   │   │                                        # ShotgunBlast — player gets 3 trigger pulls;
+│   │   │   │                                        #   each pull fires 10 shells simultaneously in
+│   │   │   │                                        #   a tight forward spread; each shell bounces
+│   │   │   │                                        #   off walls normally; each shell expires after
+│   │   │   │                                        #   2s of travel; each shell costs +1 as it
+│   │   │   │                                        #   leaves the barrel (10 per shot); 30 total
+│   │   │   │                                        #   shells across 3 shots; always guarantees
+│   │   │   │                                        #   Suppression; after all 3 shots are spent the
+│   │   │   │                                        #   magazine resumes from its frozen state
 │   │   │   │                                        #
-│   │   │   │                                        # TripleBarrel — each trigger pull fires 3 bullets
-│   │   │   │                                        #   in a tight forward fan; all ricochet normally;
-│   │   │   │                                        #   3 per shot, up to 9 total across 3 shots; tier
-│   │   │   │                                        #   from zero prior bullets: 1 shot = Dead Angle
-│   │   │   │                                        #   ceiling (3), 2 shots = Quick Draw (6), 3 shots
-│   │   │   │                                        #   = Sustained entry (9)
+│   │   │   │                                        # TripleBarrel — player gets 3 trigger pulls;
+│   │   │   │                                        #   each pull fires 3 bullets in a tight forward
+│   │   │   │                                        #   fan; all ricochet normally; 3 per shot, 9
+│   │   │   │                                        #   total across 3 shots; tier from zero prior
+│   │   │   │                                        #   bullets: 1 shot = Dead Angle ceiling (3),
+│   │   │   │                                        #   2 shots = Quick Draw (6), 3 shots = Sustained
+│   │   │   │                                        #   entry (9)
 │   │   │   │                                        #
-│   │   │   │                                        # GatlingSpin — requires a 1s spin-up (fire button
-│   │   │   │                                        #   held) before first bullet; then fires one bullet
-│   │   │   │                                        #   every 200ms automatically until power-up expires;
-│   │   │   │                                        #   each bullet applies a backward recoil impulse
-│   │   │   │                                        #   to the tank; ~25 total bullets; always guarantees
-│   │   │   │                                        #   Suppression
+│   │   │   │                                        # GatlingSpin — requires a 1s spin-up (fire
+│   │   │   │                                        #   button held) before first bullet; then fires
+│   │   │   │                                        #   one bullet every 200ms automatically; each
+│   │   │   │                                        #   bullet applies a backward recoil impulse to
+│   │   │   │                                        #   the tank; expires after exactly 25 bullets
+│   │   │   │                                        #   are fired; always guarantees Suppression
 │   │   │   │                                        #
 │   │   │   │                                        # Boomerang — normal bounce behaviour until the
 │   │   │   │                                        #   5th wall contact; path log records every
@@ -229,20 +257,28 @@ dead-angle/
 │   │   │   │                                        #   on its first wall contact it is removed and
 │   │   │   │                                        #   replaced by 2 child projectiles at symmetric
 │   │   │   │                                        #   reflection angles from the impact point, each
-│   │   │   │                                        #   ricocheting independently; original costs +1
-│   │   │   │                                        #   when it leaves the barrel; each child costs +1
-│   │   │   │                                        #   when it spawns; 3 total; if the original kills
-│   │   │   │                                        #   the opponent before any wall contact, no split
-│   │   │   │                                        #   occurs and the cost is only 1
+│   │   │   │                                        #   ricocheting independently; each child can split
+│   │   │   │                                        #   once more on its own first wall contact (2
+│   │   │   │                                        #   generations maximum — grandchildren do not
+│   │   │   │                                        #   split); original costs +1 when it leaves the
+│   │   │   │                                        #   barrel; each new projectile spawned by a split
+│   │   │   │                                        #   costs +1 when it spawns; maximum total cost is
+│   │   │   │                                        #   7 (1 + 2 + 4) if both children and all four
+│   │   │   │                                        #   grandchildren are spawned; if the original
+│   │   │   │                                        #   kills the opponent before any wall contact, no
+│   │   │   │                                        #   split occurs and the cost is only 1
 │   │   │   │                                        #
 │   │   │   │                                        # OrbitalGuard — guard bullet moves in a tight
 │   │   │   │                                        #   circular orbit at a fixed radius around the
-│   │   │   │                                        #   owner's tank; orbit centre updates to the tank's
-│   │   │   │                                        #   current position every tick; any enemy projectile
-│   │   │   │                                        #   whose position intersects the orbit path is
-│   │   │   │                                        #   immediately destroyed — not deflected, cancelled;
-│   │   │   │                                        #   orbit ends after 6s or when the guard bullet
-│   │   │   │                                        #   itself reaches the opponent; counts as 1 total
+│   │   │   │                                        #   owner's tank; orbit centre updates to the
+│   │   │   │                                        #   tank's current position every tick; any enemy
+│   │   │   │                                        #   projectile whose position intersects the orbit
+│   │   │   │                                        #   path is immediately destroyed — not deflected,
+│   │   │   │                                        #   cancelled; if the orbit path passes through the
+│   │   │   │                                        #   opponent's hitbox, that counts as the guard
+│   │   │   │                                        #   bullet reaching the opponent and ends the round;
+│   │   │   │                                        #   orbit ends after 6s or on that kill contact;
+│   │   │   │                                        #   counts as 1 total
 │   │   │   │                                        #
 │   │   │   │                                        # ProtectiveShield — each tick checks whether any
 │   │   │   │                                        #   projectile has entered the shield perimeter;
@@ -250,18 +286,21 @@ dead-angle/
 │   │   │   │                                        #   reflection (same logic as wallReflection) and
 │   │   │   │                                        #   continues the projectile at full speed; the
 │   │   │   │                                        #   deflected projectile remains lethal to both
-│   │   │   │                                        #   players; the shield deflects unlimited projectiles
-│   │   │   │                                        #   and expires after 8s regardless of how many
-│   │   │   │                                        #   it has deflected
+│   │   │   │                                        #   players; the shield deflects unlimited
+│   │   │   │                                        #   projectiles and expires after 8s regardless
+│   │   │   │                                        #   of how many it has deflected
 │   │   │   │                                        #
 │   │   │   │                                        # GravityWell — each tick applies a proximity-
 │   │   │   │                                        #   proportional pull toward the fixed attractor
 │   │   │   │                                        #   point to every in-flight projectile from both
 │   │   │   │                                        #   players; bullets close to the well are strongly
 │   │   │   │                                        #   curved; bullets far away are barely affected;
-│   │   │   │                                        #   only one well can be active per round across
-│   │   │   │                                        #   both players — a new placement by either player
-│   │   │   │                                        #   immediately cancels the existing one; lasts 8s
+│   │   │   │                                        #   the attractor is placed at the opponent's
+│   │   │   │                                        #   position at the moment of activation and stays
+│   │   │   │                                        #   fixed there; only one well can be active per
+│   │   │   │                                        #   round across both players — a new placement by
+│   │   │   │                                        #   either player immediately cancels the existing
+│   │   │   │                                        #   one; lasts 8s
 │   │   │   │                                        #
 │   │   │   │                                        # Repulsor — instantaneous, no wind-up; at the
 │   │   │   │                                        #   moment of activation computes the outward
@@ -271,12 +310,13 @@ dead-angle/
 │   │   │   │                                        #   full speed; affects both players' projectiles;
 │   │   │   │                                        #   harmless if no projectiles are in flight
 │   │   │   │                                        #
-│   │   │   │                                        # TimeWarp — for 4s, scales every in-flight
+│   │   │   │                                        # TimeWarp — for 10s, scales every in-flight
 │   │   │   │                                        #   projectile's velocity to 25% of normal each
 │   │   │   │                                        #   tick; also applies to all new projectiles fired
 │   │   │   │                                        #   during the effect window; projectile lifetimes
-│   │   │   │                                        #   and bounce counts are unaffected; tank movement
-│   │   │   │                                        #   speed is not altered; affects both players equally
+│   │   │   │                                        #   and bounce counts are unaffected by the slow;
+│   │   │   │                                        #   tank movement speed is not altered; affects
+│   │   │   │                                        #   both players equally
 │   │   │   │                                        #
 │   │   │   │                                        # WallBreaker, PhaseShift, Swap, Decoy, Mine —
 │   │   │   │                                        #   no per-tick projectile physics; all effects
@@ -305,14 +345,14 @@ dead-angle/
 │   │   │   │   │                                    # projectile-vs-player (suppressed while PhaseShift
 │   │   │   │   │                                    # is active for the player), projectile-vs-bot,
 │   │   │   │   │                                    # projectile-vs-decoy (decoy absorbs the first hit
-│   │   │   │   │                                    # and vanishes; the bot's targeting then reverts to
-│   │   │   │   │                                    # the real player), projectile-vs-OrbitalGuard orbit
-│   │   │   │   │                                    # zone (destroys intersecting projectile; does not
-│   │   │   │   │                                    # count as a hit on either player), player-vs-mine,
-│   │   │   │   │                                    # bot-vs-mine; Decoy cannot trigger mines; on any
-│   │   │   │   │                                    # terminal hit calls scoring.ts (bot hit) or
-│   │   │   │   │                                    # levelProgression.ts (player hit) and signals
-│   │   │   │   │                                    # round resolution
+│   │   │   │   │                                    # and vanishes; the bot's targeting then reverts
+│   │   │   │   │                                    # to the real player), projectile-vs-OrbitalGuard
+│   │   │   │   │                                    # orbit zone (destroys intersecting projectile;
+│   │   │   │   │                                    # does not count as a hit on either player),
+│   │   │   │   │                                    # player-vs-mine, bot-vs-mine (Decoy cannot
+│   │   │   │   │                                    # trigger mines); on any terminal hit calls
+│   │   │   │   │                                    # scoring.ts (bot hit) or levelProgression.ts
+│   │   │   │   │                                    # (player hit) and signals round resolution
 │   │   │   │   │
 │   │   │   │   ├── mazeGenerator.ts                 # Procedural maze generation; called at round
 │   │   │   │   │                                    # start; returns a MazeLayout with guaranteed
@@ -325,14 +365,19 @@ dead-angle/
 │   │   │   │   │                                    # (15+, ×1); calculateKillScore(level, tier)
 │   │   │   │   │                                    # returns 100 × level × multiplier (always an
 │   │   │   │   │                                    # integer); called by hitDetection on every bot
-│   │   │   │   │                                    # kill; result written into SingleplayerContext
+│   │   │   │   │                                    # kill; writes earned score into
+│   │   │   │   │                                    # SingleplayerContext and calls
+│   │   │   │   │                                    # updateBestEfficiencyTier(tier) to keep
+│   │   │   │   │                                    # bestEfficiencyTierThisRun current
 │   │   │   │   │
 │   │   │   │   ├── levelProgression.ts              # Level and heart state machine — singleplayer only:
 │   │   │   │   │                                    # checkLevelUp(totalKills) returns true when
-│   │   │   │   │                                    # totalKills mod 3 === 0 (every 3 kills);
-│   │   │   │   │                                    # level increment and +1 heart (capped at 6) are
-│   │   │   │   │                                    # stored as pendingLevelUp in SingleplayerContext
-│   │   │   │   │                                    # and applied before the next round begins — this
+│   │   │   │   │                                    # totalKills > 0 AND totalKills mod 3 === 0
+│   │   │   │   │                                    # (the totalKills > 0 guard prevents a spurious
+│   │   │   │   │                                    # level-up at game start when totalKills is 0); level
+│   │   │   │   │                                    # increment and +1 heart (capped at 6) are stored
+│   │   │   │   │                                    # as pendingLevelUp in SingleplayerContext and
+│   │   │   │   │                                    # applied before the next round begins — this
 │   │   │   │   │                                    # ensures that if the player takes a hit on the
 │   │   │   │   │                                    # same tick that a bot kill triggers a level-up,
 │   │   │   │   │                                    # the heart is still granted before round restart;
@@ -360,46 +405,68 @@ dead-angle/
 │   │   │   │                                        #   natural expiry the magazine snapshot is restored
 │   │   │   │                                        #   and resumes exactly where it was frozen; on
 │   │   │   │                                        #   round end the active power-up is discarded and
-│   │   │   │                                        #   the magazine resets to 7 for the next round
+│   │   │   │                                        #   both player and bot magazines reset to 7 for
+│   │   │   │                                        #   the next round
+│   │   │   │                                        #
+│   │   │   │                                        # Phase Beam movement lock: when a PhaseBeam
+│   │   │   │                                        #   projectile is fired, adds the firer's slot to
+│   │   │   │                                        #   GameContext.phaseBeamLockedSlots; removes it
+│   │   │   │                                        #   when the beam expires (4s); useKeyboardInput
+│   │   │   │                                        #   reads this list and suppresses movement input
+│   │   │   │                                        #   for any locked slot; this is separate from
+│   │   │   │                                        #   the magazine freeze — both are active
+│   │   │   │                                        #   simultaneously while the beam is in flight;
+│   │   │   │                                        #   supports the edge case where both players
+│   │   │   │                                        #   fire Phase Beams at the same time
 │   │   │   │                                        #
 │   │   │   │                                        # Phase Shift exception: during Phase Shift the
 │   │   │   │                                        #   player CAN deliberately collect a new pickup
 │   │   │   │                                        #   to end the shift immediately in exchange for
 │   │   │   │                                        #   the new power-up; this is an intentional
-│   │   │   │                                        #   player trade-off, not an edge case — the
-│   │   │   │                                        #   general one-at-a-time rule is the only other
-│   │   │   │                                        #   exception and does not apply to Phase Shift
+│   │   │   │                                        #   player trade-off — the general one-at-a-time
+│   │   │   │                                        #   rule is the only other exception and does not
+│   │   │   │                                        #   apply to Phase Shift
 │   │   │   │                                        #
 │   │   │   │                                        # Mine lifecycle: placement is instant — the Mine
-│   │   │   │                                        #   power-up slot is freed immediately after placing,
-│   │   │   │                                        #   allowing up to 3 mines to be active on the map
-│   │   │   │                                        #   from a single player simultaneously; each mine
-│   │   │   │                                        #   becomes invisible 3s after placement (flag set;
-│   │   │   │                                        #   renderer stops drawing the token; detonation
-│   │   │   │                                        #   check continues); detonates on position overlap
-│   │   │   │                                        #   with either the player or bot and ends the round
-│   │   │   │                                        #   as a direct hit would; the Decoy cannot trigger
-│   │   │   │                                        #   mines; all mines are cleared on round start and
-│   │   │   │                                        #   are never carried between rounds
+│   │   │   │                                        #   power-up slot is freed immediately after
+│   │   │   │                                        #   placing, allowing up to 3 mines to be active
+│   │   │   │                                        #   on the map from a single player simultaneously;
+│   │   │   │                                        #   each mine becomes invisible 3s after placement
+│   │   │   │                                        #   (flag set; renderer stops drawing the token;
+│   │   │   │                                        #   detonation check continues); detonates on
+│   │   │   │                                        #   position overlap with either the player or bot
+│   │   │   │                                        #   and ends the round as a direct hit would; the
+│   │   │   │                                        #   Decoy cannot trigger mines; all mines are
+│   │   │   │                                        #   cleared on round start and are never carried
+│   │   │   │                                        #   between rounds
+│   │   │   │                                        #
+│   │   │   │                                        # GravityWell: when activated, the attractor
+│   │   │   │                                        #   position is set to the opponent's current
+│   │   │   │                                        #   position at that exact moment and stays fixed
+│   │   │   │                                        #   there for 8s; at most one well can be active
+│   │   │   │                                        #   per round across both players — a new
+│   │   │   │                                        #   activation immediately cancels the existing
+│   │   │   │                                        #   well regardless of who placed it
 │   │   │   │                                        #
 │   │   │   │                                        # WallBreaker: finds the wall segment geometrically
-│   │   │   │                                        #   nearest to the player's current tank position and
-│   │   │   │                                        #   permanently removes it from the MazeLayout for
-│   │   │   │                                        #   the rest of the round; the nearest segment may
-│   │   │   │                                        #   not be the intended one
+│   │   │   │                                        #   nearest to the player's current tank position
+│   │   │   │                                        #   and permanently removes it from the MazeLayout
+│   │   │   │                                        #   for the rest of the round; the nearest segment
+│   │   │   │                                        #   may not be the intended one
 │   │   │   │                                        #
-│   │   │   │                                        # Decoy: spawns a ghost tank at the player's current
-│   │   │   │                                        #   position moving on autopilot in the last known
-│   │   │   │                                        #   movement direction for up to 5s; the decoy cannot
-│   │   │   │                                        #   fire, collect pickups, or trigger mines; it
-│   │   │   │                                        #   absorbs exactly one projectile hit before
-│   │   │   │                                        #   vanishing; bot retargets to whichever of the
-│   │   │   │                                        #   real player or the decoy is currently closer
+│   │   │   │                                        # Decoy: spawns a ghost tank at the player's
+│   │   │   │                                        #   current position moving on autopilot in the
+│   │   │   │                                        #   last known movement direction for up to 15s;
+│   │   │   │                                        #   the decoy cannot fire, collect pickups, or
+│   │   │   │                                        #   trigger mines; it absorbs exactly one
+│   │   │   │                                        #   projectile hit before vanishing; bot retargets
+│   │   │   │                                        #   to whichever of the real player or the decoy
+│   │   │   │                                        #   is currently closer
 │   │   │   │                                        #
 │   │   │   │                                        # Swap: instantly exchanges the player's and bot's
 │   │   │   │                                        #   positions with no animation; all in-flight
-│   │   │   │                                        #   projectiles continue on their current trajectories
-│   │   │   │                                        #   unchanged and do not retarget after the swap
+│   │   │   │                                        #   projectiles continue on their current
+│   │   │   │                                        #   trajectories unchanged and do not retarget
 │   │   │   │
 │   │   │   └── rendering/
 │   │   │       ├── drawMaze.ts                      # Draws the wall grid each frame
@@ -418,7 +485,8 @@ dead-angle/
 │   │   │       │                                    # GatlingSpin — spinning barrel animation during
 │   │   │       │                                    #   the 1s spin-up phase before first bullet fires;
 │   │   │       │                                    # Swap — simultaneous brief flash at both the
-│   │   │       │                                    #   player's origin and the bot's origin positions
+│   │   │       │                                    #   player's origin and the opponent's origin
+│   │   │       │                                    #   positions at the moment of swap
 │   │   │       │
 │   │   │       ├── drawProjectiles.ts               # Draws all in-flight projectiles with neon motion
 │   │   │       │                                    # trails; applies per-type visual treatment:
@@ -427,11 +495,13 @@ dead-angle/
 │   │   │       │                                    #   toward opponent visible;
 │   │   │       │                                    # LockOnMissile — missile body with flame trail;
 │   │   │       │                                    #   lock-on reticle appears on the target once
-│   │   │       │                                    #   the 1s straight phase ends and homing begins;
+│   │   │       │                                    #   the 4s straight phase ends and homing begins;
 │   │   │       │                                    # ClusterOrb — slow glowing orb; on detonation
-│   │   │       │                                    #   renders 8-ray expanding burst from impact point;
-│   │   │       │                                    # ShotgunBlast — 20 small shells with short trails,
-│   │   │       │                                    #   fading as the 2s expiry approaches;
+│   │   │       │                                    #   renders 8-ray expanding burst from detonation
+│   │   │       │                                    #   point;
+│   │   │       │                                    # ShotgunBlast — up to 10 shells per shot with
+│   │   │       │                                    #   short trails, fading as each shell's 2s expiry
+│   │   │       │                                    #   approaches; up to 30 shells across 3 shots;
 │   │   │       │                                    # TripleBarrel — 3 bullets per shot in fan spread,
 │   │   │       │                                    #   each treated as a standard ricocheting projectile;
 │   │   │       │                                    # GatlingSpin — rapid-fire standard bullets; tank
@@ -439,12 +509,14 @@ dead-angle/
 │   │   │       │                                    # Boomerang — standard arc until 5th wall contact,
 │   │   │       │                                    #   then direction-reversed visual on return path;
 │   │   │       │                                    # SplitterRound — normal until first wall contact;
-│   │   │       │                                    #   split-flash at impact point; two child projectiles
-│   │   │       │                                    #   rendered at symmetric angles from that point;
+│   │   │       │                                    #   split-flash at impact point; child and grandchild
+│   │   │       │                                    #   projectiles rendered at symmetric angles from
+│   │   │       │                                    #   each split point;
 │   │   │       │                                    # OrbitalGuard — guard bullet drawn at its
 │   │   │       │                                    #   circular position around the tank centre;
 │   │   │       │                                    # TimeWarp — all projectiles rendered with a
-│   │   │       │                                    #   slow-motion colour tint while the effect is active
+│   │   │       │                                    #   slow-motion colour tint while the 10s effect
+│   │   │       │                                    #   is active
 │   │   │       │
 │   │   │       ├── drawPowerUps.ts                  # Draws uncollected pickup tokens on the canvas;
 │   │   │       │                                    # each token uses its PowerUpType to select the
@@ -473,15 +545,16 @@ dead-angle/
 │   │   │                                            # Decoy — the sole renderer of the ghost tank:
 │   │   │                                            #   draws the full ghost token at the decoy's
 │   │   │                                            #   world-space autopilot position plus a
-│   │   │                                            #   movement direction indicator; disappears
-│   │   │                                            #   after 5s or when the first projectile hits it;
+│   │   │                                            #   movement direction indicator; disappears after
+│   │   │                                            #   15s or when the first projectile hits it;
 │   │   │                                            # GravityWell — distortion rings at the fixed
-│   │   │                                            #   world-space attractor point for 8s; at most
-│   │   │                                            #   one active per round globally — a new
-│   │   │                                            #   placement by either player immediately
-│   │   │                                            #   cancels and replaces the previous one;
+│   │   │                                            #   world-space attractor point (the opponent's
+│   │   │                                            #   position at activation) for 8s; at most one
+│   │   │                                            #   active per round globally — a new placement
+│   │   │                                            #   by either player immediately cancels and
+│   │   │                                            #   replaces the previous one;
 │   │   │                                            # TimeWarp — full-screen slow-motion wave
-│   │   │                                            #   overlay for 4s;
+│   │   │                                            #   overlay for 10s;
 │   │   │                                            # WallBreaker — highlight flash on the nearest
 │   │   │                                            #   wall segment immediately before removal;
 │   │   │                                            # Mine — solid visible token at placement
@@ -495,7 +568,7 @@ dead-angle/
 │   │   │                                            #   the 5th wall contact onward, showing the
 │   │   │                                            #   exact recorded return trajectory;
 │   │   │                                            # LockOnMissile — target reticle on the nearest
-│   │   │                                            #   player, appearing once the 1s straight phase
+│   │   │                                            #   player, appearing once the 4s straight phase
 │   │   │                                            #   ends and homing begins
 │   │   │
 │   │   └── summary/                                 # Summary screen — final results and quit
@@ -534,7 +607,13 @@ dead-angle/
 │   │   │                                            # [{ id, type, position }], active power-up per
 │   │   │                                            # player, mine positions and visibility state,
 │   │   │                                            # decoy state (position, movementDirection, alive),
-│   │   │                                            # gravity well state (position, expiresAt or null)
+│   │   │                                            # gravity well state (position, expiresAt or null),
+│   │   │                                            # phaseBeamLockedSlots: PlayerSlot[] — list of
+│   │   │                                            # slots whose movement is currently suppressed
+│   │   │                                            # because their Phase Beam is in flight; empty
+│   │   │                                            # when no beams are active; an array (not a
+│   │   │                                            # single slot) to correctly handle the edge case
+│   │   │                                            # where both players fire Phase Beams at once
 │   │   ├── SingleplayerContext.ts                   # Run state persisting across rounds — singleplayer
 │   │   │                                            # only: level (starts at 1), hearts (starts at 3,
 │   │   │                                            # max 6), totalKills (cumulative), cumulativeScore,
@@ -553,10 +632,18 @@ dead-angle/
 │   │
 │   ├── types/
 │   │   ├── game.types.ts                            # Shared primitives: Player, Projectile (with
-│   │   │                                            # powerUpType: PowerUpType | null), MazeWall,
-│   │   │                                            # MazeLayout, GameState, PlayerSlot, DecoyState,
-│   │   │                                            # MineState (position, placedAt, isInvisible),
-│   │   │                                            # GravityWellState (position, expiresAt)
+│   │   │                                            # powerUpType: PowerUpType | null,
+│   │   │                                            # generation: number — 0 for SplitterRound
+│   │   │                                            # originals, 1 for children; controls whether
+│   │   │                                            # this projectile can split on wall contact;
+│   │   │                                            # 0 for all other projectile types,
+│   │   │                                            # isReturning: boolean — false during outbound
+│   │   │                                            # Boomerang phase, true once reversed at 5th
+│   │   │                                            # wall contact; false for all other types),
+│   │   │                                            # MazeWall, MazeLayout, GameState, PlayerSlot,
+│   │   │                                            # DecoyState, MineState (position, placedAt,
+│   │   │                                            # isInvisible), GravityWellState (position,
+│   │   │                                            # expiresAt)
 │   │   ├── powerup.types.ts                         # PowerUpType enum — 19 values:
 │   │   │                                            #   RicochetLaser, PhaseBeam, LockOnMissile,
 │   │   │                                            #   ClusterOrb, ShotgunBlast, TripleBarrel,
@@ -565,7 +652,11 @@ dead-angle/
 │   │   │                                            #   PhaseShift, GravityWell, Swap, Repulsor,
 │   │   │                                            #   OrbitalGuard, TimeWarp;
 │   │   │                                            # PowerUpPickup: { id, type, position };
-│   │   │                                            # ActivePowerUp: { type, activatedAt, durationMs };
+│   │   │                                            # ActivePowerUp: { type, activatedAt, durationMs,
+│   │   │                                            #   shotsRemaining?: number — present and
+│   │   │                                            #   decremented on each trigger pull for
+│   │   │                                            #   ShotgunBlast (starts at 3) and TripleBarrel
+│   │   │                                            #   (starts at 3); absent for all other types };
 │   │   │                                            # POWER_UP_METADATA: readonly record keyed by
 │   │   │                                            #   PowerUpType containing { projectileCost,
 │   │   │                                            #   durationMs | null } — the single source of
@@ -632,7 +723,7 @@ dead-angle/
 │                                                    #                     aqua
 │                                                    #   .timeWarp         clock face with warped hands,
 │                                                    #                     magenta
-│
+
 ├── .env.local
 ├── next.config.ts
 ├── tsconfig.json
@@ -685,12 +776,17 @@ dead-angle-api/
 │   │                                                # positions from latest input, calls
 │   │                                                # ProjectileSimulator and PowerUpPhysics for hit
 │   │                                                # detection, resolves round end with a Reason of
-│   │                                                # DirectHit or MineTrigger, resets magazine to 7
-│   │                                                # on round start, tracks integer kill scores
-│   │                                                # (1 per kill — no tiers, multipliers, or levels
-│   │                                                # in multiplayer); suppresses projectile-vs-player
-│   │                                                # hit detection while PhaseShift is active for
-│   │                                                # that player; skips mine detonation on Decoy contact
+│   │                                                # DirectHit or MineTrigger, resets both player
+│   │                                                # magazines to 7 on round start, tracks integer
+│   │                                                # kill scores (1 per kill — no tiers, multipliers,
+│   │                                                # or levels in multiplayer); suppresses
+│   │                                                # projectile-vs-player hit detection while
+│   │                                                # PhaseShift is active for that player; ignores
+│   │                                                # mine detonation on Decoy contact; blocks
+│   │                                                # movement input from a player whose Phase Beam
+│   │                                                # projectile is currently in flight (tracked via
+│   │                                                # Player.phaseBeamActive flag, cleared when the
+│   │                                                # beam expires after 4s)
 │   │
 │   ├── RoomService.cs                               # Room lifecycle — create, join, end; session ID
 │   │                                                # generation; Player1 / Player2 slot assignment
@@ -712,6 +808,14 @@ dead-angle-api/
 │   │                                                #   restored on expiry;
 │   │                                                # activation: emits the appropriate event(s) per
 │   │                                                #   type (see DTOs/Events);
+│   │                                                # Phase Beam: on activation sets
+│   │                                                #   Player.phaseBeamActive = true; clears it
+│   │                                                #   after 4s when the beam expires; GameService
+│   │                                                #   ignores movement input from this player
+│   │                                                #   while the flag is true; PhaseBeamActive is
+│   │                                                #   included in every GameTickEvent per-player
+│   │                                                #   payload so clients can maintain
+│   │                                                #   phaseBeamLockedSlots in GameContext;
 │   │                                                # Phase Shift: flags the player as intangible in
 │   │                                                #   GameService for 3s; player cannot fire; the
 │   │                                                #   player CAN collect a new pickup during the
@@ -724,13 +828,17 @@ dead-angle-api/
 │   │                                                #   delegated to GameService each tick; Decoy
 │   │                                                #   cannot trigger mines; all mines cleared on
 │   │                                                #   round start;
-│   │                                                # GravityWell: at most one active well per round
-│   │                                                #   globally across both players; a new placement
-│   │                                                #   by either player cancels the existing well
-│   │                                                #   regardless of who placed it, and emits a new
+│   │                                                # GravityWell: the attractor position is set to
+│   │                                                #   the activating player's opponent's current
+│   │                                                #   position at the moment of activation and stays
+│   │                                                #   fixed there for 8s; at most one active well
+│   │                                                #   per round globally across both players — a new
+│   │                                                #   activation by either player cancels the
+│   │                                                #   existing well and emits a new
 │   │                                                #   GravityWellPlacedEvent;
 │   │                                                # round-end cleanup: discards all active power-ups,
-│   │                                                #   restores magazines to 7, clears mines and decoys
+│   │                                                #   restores both player magazines to 7, clears
+│   │                                                #   mines and decoys
 │   │
 │   └── DiscordWebhookService.cs                     # Outbound POST to Discord webhook on session end
 │                                                    # with formatted match summary
@@ -755,27 +863,43 @@ dead-angle-api/
 │                                                    # powerUpEffects.ts for the full per-type spec;
 │                                                    # key multiplayer-only concerns: Boomerang path
 │                                                    # log stored on the Projectile model; ClusterOrb
-│                                                    # detonation emits ClusterOrbDetonatedEvent then
-│                                                    # individual ProjectileFiredEvents for each child;
+│                                                    # detonation triggers after 4s timer (wall contact
+│                                                    # does NOT trigger it) — emits
+│                                                    # ClusterOrbDetonatedEvent then 8 individual
+│                                                    # ProjectileFiredEvents for child projectiles;
 │                                                    # GatlingSpin auto-fire emits ProjectileFiredEvent
-│                                                    # at 200ms intervals and applies recoil to the
-│                                                    # player's position in GameService
+│                                                    # at 200ms intervals until 25 bullets are fired and
+│                                                    # applies recoil to the player's position in
+│                                                    # GameService; PhaseBeam movement lock sets and
+│                                                    # clears Player.phaseBeamActive in GameService
 │
 ├── Models/
 │   ├── Room.cs                                      # Room state — code, phase, player list, scores
 │   ├── Player.cs                                    # Player — slot, sessionId, connectionId, position,
 │   │                                                # angle, bulletsRemaining, reloadTimeRemaining,
 │   │                                                # activePowerUp (nullable), magazineSnapshot
-│   │                                                # (nullable), isIntangible (PhaseShift flag)
+│   │                                                # (nullable), isIntangible (PhaseShift flag),
+│   │                                                # phaseBeamActive (bool — true while the player's
+│   │                                                # Phase Beam projectile is in flight; movement
+│   │                                                # input ignored by GameService while true)
 │   ├── Projectile.cs                                # Projectile — id, position, velocity, ownerSlot,
 │   │                                                # powerUpType (nullable), remainingLifetime,
 │   │                                                # wallContactCount, pathLog (List<Vector2> used
-│   │                                                # by Boomerang to record and retrace waypoints)
+│   │                                                # by Boomerang to record and retrace waypoints),
+│   │                                                # isReturning (bool — false during outbound phase,
+│   │                                                # true once Boomerang reverses at 5th contact),
+│   │                                                # generation (int — 0 = original SplitterRound,
+│   │                                                # 1 = child; grandchildren are generation 1 too
+│   │                                                # since only gen-0 originals and gen-1 children
+│   │                                                # split; used to enforce the 2-generation cap)
 │   ├── PowerUp.cs                                   # PowerUpType enum (19 values); PowerUpPickup
 │   │                                                # { Id, Type, Position, SpawnedAt };
 │   │                                                # ActivePowerUp { HolderSlot, Type, ActivatedAt,
-│   │                                                # DurationMs }; Mine { MineId, OwnerSlot,
-│   │                                                # Position, PlacedAt, IsInvisible }
+│   │                                                # DurationMs, ShotsRemaining: int? — non-null
+│   │                                                # for ShotgunBlast (starts at 3) and TripleBarrel
+│   │                                                # (starts at 3); null for all other types };
+│   │                                                # Mine { MineId, OwnerSlot, Position, PlacedAt,
+│   │                                                # IsInvisible }
 │   ├── MazeLayout.cs                                # Wall grid — list of wall rectangles, each with
 │   │                                                # a unique WallId for removal events
 │   ├── GamePhase.cs                                 # Enum: Lobby, Playing, RoundTransition, Summary
@@ -791,10 +915,14 @@ dead-angle-api/
 │       ├── GameTickEvent.cs                         # ~20Hz broadcast:
 │       │                                            # { Players: [{ Slot, Position, Angle,
 │       │                                            #     BulletsRemaining, Reloading,
-│       │                                            #     ActivePowerUp? }],
+│       │                                            #     ActivePowerUp?: { Type, ActivatedAt,
+│       │                                            #       DurationMs, ShotsRemaining?: int },
+│       │                                            #     PhaseBeamActive: bool }],
 │       │                                            #   Pickups: [{ Id, Type, Position }],
 │       │                                            #   Mines: [{ MineId, OwnerSlot, Position,
 │       │                                            #     IsInvisible }] }
+│       │                                            # Clients derive phaseBeamLockedSlots from the
+│       │                                            # per-player PhaseBeamActive flags in this tick
 │       │
 │       ├── ProjectileFiredEvent.cs                  # { ProjectileId, OwnerSlot, StartPosition,
 │       │                                            # Angle, Velocity, FiredAt, PowerUpType? } —
@@ -820,18 +948,26 @@ dead-angle-api/
 │       │                                            # ProtectiveShield (8s reflective barrier — true
 │       │                                            #   reflection angle, deflected projectiles remain
 │       │                                            #   lethal to both players; unlimited deflections);
+│       │                                            # PhaseBeam (4s beam in flight — player who fired
+│       │                                            #   cannot move for the full 4s; movement resumes
+│       │                                            #   when beam expires; clients update
+│       │                                            #   phaseBeamLockedSlots in GameContext using
+│       │                                            #   the per-player PhaseBeamActive flag in each
+│       │                                            #   GameTickEvent — no separate event needed);
 │       │                                            # PhaseShift (3s intangibility — hit detection
 │       │                                            #   suppressed for that player; player cannot
 │       │                                            #   fire; uniquely, the player CAN collect a new
 │       │                                            #   pickup during the shift, which ends it
 │       │                                            #   immediately and activates the new power-up);
 │       │                                            # OrbitalGuard (6s orbit — enemy projectiles that
-│       │                                            #   intersect the orbit are destroyed, not deflected;
-│       │                                            #   ends early if guard bullet reaches opponent);
-│       │                                            # TimeWarp (4s — all projectiles at 25% speed,
+│       │                                            #   intersect the orbit are destroyed, not
+│       │                                            #   deflected; ends early if guard bullet reaches
+│       │                                            #   opponent);
+│       │                                            # TimeWarp (10s — all projectiles at 25% speed,
 │       │                                            #   tank movement unchanged, both players affected);
 │       │                                            # GatlingSpin (1s spin-up then auto-fire at 200ms
-│       │                                            #   intervals; each burst applies backward recoil
+│       │                                            #   intervals; expires after exactly 25 bullets
+│       │                                            #   are fired; each burst applies backward recoil
 │       │                                            #   to the player's position in GameService)
 │       │
 │       ├── PowerUpExpiredEvent.cs                   # { Slot } — timed effect elapsed; clients clean
@@ -850,20 +986,23 @@ dead-angle-api/
 │       │                                            # deflected projectiles continue at full speed and
 │       │                                            # remain lethal to both players
 │       │
-│       ├── GravityWellPlacedEvent.cs                # { Slot, Position } — both clients begin applying
+│       ├── GravityWellPlacedEvent.cs                # { Slot, Position } — Position is the opponent's
+│       │                                            # world-space coordinates at the moment of
+│       │                                            # activation; both clients begin applying
 │       │                                            # proximity-proportional trajectory bending toward
-│       │                                            # this point each tick; there is at most one active
-│       │                                            # well per round across both players — if any well
-│       │                                            # is already active when this event arrives,
-│       │                                            # regardless of which player placed it, it is
-│       │                                            # immediately cancelled and replaced by this one
+│       │                                            # this fixed point each tick; there is at most one
+│       │                                            # active well per round across both players — if
+│       │                                            # any well is already active when this event
+│       │                                            # arrives, regardless of which player placed it,
+│       │                                            # it is immediately cancelled and replaced by this
+│       │                                            # one
 │       │
 │       ├── DecoySpawnedEvent.cs                     # { Slot, Position, MovementDirection } — clients
 │       │                                            # render a ghost tank at Position moving in
-│       │                                            # MovementDirection on autopilot for 5s or until
-│       │                                            # one projectile hits it; decoy cannot fire,
-│       │                                            # collect pickups, or trigger mines; bot targets
-│       │                                            # whichever of player or decoy is currently closer
+│       │                                            # MovementDirection on autopilot for 15s or until
+│       │                                            # one projectile hits it; the decoy cannot fire,
+│       │                                            # collect pickups, or trigger mines; it absorbs
+│       │                                            # one hit then vanishes
 │       │
 │       ├── MinePlacedEvent.cs                       # { MineId, OwnerSlot, Position } — both clients
 │       │                                            # render the mine token visibly for the first 3s
@@ -873,8 +1012,11 @@ dead-angle-api/
 │       │                                            # on round start; Decoy cannot trigger mines
 │       │
 │       ├── ClusterOrbDetonatedEvent.cs              # { OriginalProjectileId, DetonationPosition } —
-│       │                                            # explicit sync point for the orb explosion; server
-│       │                                            # removes the orb and immediately emits 8 individual
+│       │                                            # explicit sync point for the orb explosion;
+│       │                                            # triggered by the 4s timer only (wall contact
+│       │                                            # does NOT detonate the orb — it bounces normally
+│       │                                            # until the timer expires); server removes the orb
+│       │                                            # and immediately emits 8 individual
 │       │                                            # ProjectileFiredEvents for the child projectiles
 │       │                                            # (evenly spaced at 45° intervals from the
 │       │                                            # detonation point); clients render the burst visual
@@ -884,7 +1026,7 @@ dead-angle-api/
 │                                                    # segment from their local MazeLayout; the wall
 │                                                    # selected is geometrically nearest to the
 │                                                    # activating player's current position
-│
+
 ├── Program.cs                                       # DI registration, SignalR, CORS, routing
 ├── appsettings.json
 ├── appsettings.Development.json

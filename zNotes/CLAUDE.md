@@ -61,23 +61,23 @@ There are **19 power-up types**, grouped below by their core mechanic:
 | Power-up | Projectile cost | Notes |
 |---|---|---|
 | Ricochet Laser | 1 | 10× speed; up to 10 wall bounces before fading; full trajectory shown as a preview line before firing — the only power-up with a pre-fire visual |
-| Phase Beam | 1 | Passes through every wall without deflecting; bends slightly toward the opponent if they are near the beam. Lasts 4 seconds 4s then dissipates, player can not move while the power-up is active |
-| Lock-On Missile | 1 | Travels straight for 4s, then homes on the nearest player — including the firer if they are closer than the opponent at that moment; fixed-radius turn; expires on wall contact or after 8s |
-| Cluster Orb | 9 (1 on launch + 8 on detonation) | Slow orb that detonates after 4s into 8 projectiles spread evenly at 45° intervals; each child costs +1 when it spawns; guarantees Suppression if 6 or more core bullets were fired before launch (6 + 9 = 15+); stays within Sustained if 5 or fewer core bullets preceded it (5 + 9 = 14) |
-| Shotgun Blast | 10(x3) | Replaces magazine with 3x10 shells in a tight forward spread; each bounces off walls; each expires after 2s of travel; after all 30 shells are spent the magazine resumes from its frozen state |
-| Triple Barrel | 9 (3 shots × 3 bullets) | 3 shots available; each fires 3 bullets in a tight forward fan, all ricocheting normally; after all 3 shots are spent the magazine resumes from its frozen state |
-| Gatling Spin | 25 | Hold fire for 1s to spin up; then auto-fires every 200ms; each burst pushes the tank backward slightly |
-| Splitter Round | (1 on fire + 2 on first wall contact + 2 on additional wall contacts) | Normal bullet until first wall contact, then splits into 2 at symmetric reflection angles, these bullets can also split again on impact; if the original kills before wall contact, no split occurs and cost is 1 |
+| Phase Beam | 1 | Passes through every wall without deflecting; bends slightly toward the opponent if they are near the beam; lasts 4s then dissipates; the firer cannot move for the full 4s while the beam is in flight — movement resumes the moment the beam expires |
+| Lock-On Missile | 1 | Travels straight for 4s, then homes on the nearest player — including the firer if they are closer than the opponent at that moment; fixed-radius turn; expires on wall contact or after 8s total |
+| Cluster Orb | 9 (1 on launch + 8 on detonation) | Slow orb that bounces off walls normally and detonates after 4s into 8 projectiles spread evenly at 45° intervals; detonation is timer-based only — wall contact does not trigger it; each child costs +1 when it spawns; guarantees Suppression if 6 or more core bullets were fired before launch (6 + 9 = 15+); stays within Sustained if 5 or fewer core bullets preceded it (5 + 9 = 14) |
+| Shotgun Blast | 10 (×3) | Replaces magazine with 3 shots; each shot fires 10 shells in a tight forward spread simultaneously (30 shells total); each shell bounces off walls; each shell expires after 2s of travel; after all 3 shots are spent the magazine resumes from its frozen state; always guarantees Suppression |
+| Triple Barrel | 9 (3 shots × 3 bullets) | 3 shots available; each shot fires 3 bullets in a tight forward fan, all ricocheting normally; after all 3 shots are spent the magazine resumes from its frozen state |
+| Gatling Spin | 25 | Hold fire for 1s to spin up; then auto-fires one bullet every 200ms; each burst pushes the tank backward slightly; expires after exactly 25 bullets are fired |
+| Splitter Round | 1 on fire; +2 per split (each split spawns 2 children at +1 each) | Normal bullet until first wall contact, then splits into 2 at symmetric reflection angles; each child can split once more on its own first wall contact (grandchildren do not split further — 2 generations maximum); if the original kills before any wall contact, no split occurs and the total cost is 1; maximum total cost is 7 (1 original + 2 children + 4 grandchildren) if all generations split |
 | Boomerang | 1 | Normal bounce until 5th wall contact; path is recorded; at the 5th contact the projectile retraces the exact recorded path in reverse to the origin; expires on opponent contact, reaching origin, or after 8s |
-| Orbital Guard | 1 | Single bullet enters a tight orbit at a fixed radius around the tank, moving with it; any enemy projectile that intersects the orbit is destroyed (not deflected), if the orbiting projectile hits the opponents tank they die, ends after 6s or when the guard bullet reaches the opponent |
+| Orbital Guard | 1 | Single bullet enters a tight orbit at a fixed radius around the tank, moving with it; any enemy projectile that intersects the orbit path is destroyed (not deflected); if the orbit path passes through the opponent's hitbox, that counts as the guard bullet reaching the opponent and ends the round; ends after 6s or on that kill contact |
 
 **Tactical power-ups** affect position, the maze, or player state. They cost 0 projectiles and do not touch the efficiency counter:
 
 | Power-up | Notes |
 |---|---|
-| Wall Breaker | Permanently removes the wall segment geometrically nearest to the player's tank when fired for the rest of the round; the nearest segment may not be the intended one |
-| Mine | Places a mine at the player's current position when activated; becomes invisible 3s after placement; detonates on contact with either player (including the placer) and ends the round as a direct hit would; Decoy can trigger mines; mines are cleared on round start and never carried between rounds |
-| Decoy | Spawns a ghost copy of the player's tank that moves on autopilot for 15s or until one projectile hits it; the bot treats the decoy as a real player and targets whichever is closer; the decoy fire decoy bullets, collect pickups, and trigger mines |
+| Wall Breaker | Permanently removes the wall segment geometrically nearest to the player's tank when activated for the rest of the round; the nearest segment may not be the intended one |
+| Mine | Places a mine at the player's current position when activated; placement is instant — the power-up slot is freed immediately after placing, allowing a player to hold up to 3 active mines on the map simultaneously; becomes invisible 3s after placement; detonates on contact with either player (including the placer) and ends the round as a direct hit would; the Decoy cannot trigger mines; mines are cleared on round start and never carried between rounds |
+| Decoy | Spawns a ghost copy of the player's tank that moves on autopilot for 15s or until one projectile hits it; the decoy cannot fire, collect pickups, or trigger mines; the bot treats the decoy as a real player and targets whichever is closer |
 | Phase Shift | Tank becomes intangible for 3s — all projectiles pass through without triggering a hit; player cannot fire during the shift; uniquely, the player CAN collect a new pickup while Phase Shift is active — doing so ends the shift immediately and replaces it with the new power-up |
 | Swap | Instantly exchanges positions with the opponent; no animation delay; in-flight projectiles continue on their existing trajectories |
 
@@ -147,8 +147,8 @@ ROUND START
  ├─ New maze generated (mazeGenerator.ts)
  ├─ Player and bot spawn at opposite ends
  ├─ roundProjectileCount resets to 0
- ├─ Player magazine resets to 7
- ├─ All mines cleared; active power-ups discarded
+ ├─ Player and bot magazines reset to 7
+ ├─ All mines cleared; all active power-ups for both player and bot discarded
  └─ First power-up spawns 5–10s in
     (subsequent: every 10–15s; max 3 uncollected on map at once)
 
@@ -161,7 +161,7 @@ ROUND ACTIVE
 BOT HIT
  ├─ cumulativeScore += 100 × level × efficiencyMultiplier(roundProjectileCount)
  ├─ totalKills += 1
- ├─ If totalKills mod 3 === 0 → set pendingLevelUp = true
+ ├─ If totalKills > 0 AND totalKills mod 3 === 0 → set pendingLevelUp = true
  └─ 3-second countdown → ROUND START
 
 PLAYER HIT
@@ -189,9 +189,9 @@ Multiplayer scoring is strictly **1 point per kill**. There are no efficiency ti
 
 Runs entirely in the browser. The bot, physics, hit detection, maze generation, power-up management, and scoring are all client-side. The backend is not contacted.
 
-`SingleplayerContext` holds all run state that persists across rounds: level, hearts, totalKills, cumulativeScore, roundProjectileCount, bestEfficiencyTierThisRun, and the pendingLevelUp flag. `GameContext` holds the live per-frame state shared with the multiplayer rendering pipeline: player positions, projectiles, maze, pickups, active power-ups, mine states, decoy state, and gravity well state.
+`SingleplayerContext` holds all run state that persists across rounds: level, hearts, totalKills, cumulativeScore, roundProjectileCount, bestEfficiencyTierThisRun, and the pendingLevelUp flag. `GameContext` holds the live per-frame state shared with the multiplayer rendering pipeline: player positions, projectiles, maze, pickups, active power-ups, mine states, decoy state, gravity well state, and phaseBeamLockedSlots (a list of PlayerSlots whose movement is currently suppressed because their Phase Beam is in flight; empty when no beams are active; supports the edge case where both players fire Phase Beams simultaneously).
 
-`powerUpManager.ts` owns the full singleplayer power-up lifecycle — spawn scheduling, pickup placement, collection enforcement, magazine freeze/resume, mine timers, and round-end cleanup. `scoring.ts` owns tier lookup and score calculation; it is called by `hitDetection.ts` on every bot kill and writes into `SingleplayerContext`. `levelProgression.ts` owns the level-up check, heart management, bot scaling curve, and the deferred heart-grant logic for the same-tick edge case.
+`powerUpManager.ts` owns the full singleplayer power-up lifecycle — spawn scheduling, pickup placement, collection enforcement, magazine freeze/resume, Phase Beam movement lock, mine timers, and round-end cleanup. `scoring.ts` owns tier lookup and score calculation; it is called by `hitDetection.ts` on every bot kill, writes the earned score into `SingleplayerContext`, and calls `updateBestEfficiencyTier(tier)` to keep `bestEfficiencyTierThisRun` current. `levelProgression.ts` owns the level-up check, heart management, bot scaling curve, and the deferred heart-grant logic for the same-tick edge case.
 
 ### Multiplayer — communication channels
 
@@ -213,7 +213,7 @@ The backend is the authoritative source for all game **outcomes**: hit detection
 
 **Player positions — server-authoritative**
 
-Clients send `playerInput` each frame. The server updates positions at ~20Hz and broadcasts via `gameTick`. `gameTick` also carries each player's current ammo state, active power-up, uncollected pickup list, and mine states so clients remain in sync. Clients interpolate between ticks via `interpolation.ts` for smooth 60fps rendering.
+Clients send `playerInput` each frame. The server updates positions at ~20Hz and broadcasts via `gameTick`. `gameTick` also carries each player's current ammo state, active power-up, uncollected pickup list, mine states, and a per-player `PhaseBeamActive` boolean so clients remain in sync. Clients derive `phaseBeamLockedSlots` (a list of slots whose movement is currently suppressed) from these per-player flags. Clients interpolate between ticks via `interpolation.ts` for smooth 60fps rendering. A player whose Phase Beam is in flight has their movement input ignored by the server for the beam's 4s lifetime.
 
 **Power-ups — server-authoritative in multiplayer**
 
@@ -223,12 +223,12 @@ Clients send `playerInput` each frame. The server updates positions at ~20Hz and
 |---|---|---|
 | Shield deflection / Repulsor pulse | `projectilesDeflected` | New velocity per affected projectile; projectiles continue at full speed and remain lethal to both players |
 | Positional swap | `swapExecuted` | Authoritative new positions for both players; in-flight projectiles do not retarget |
-| Gravity well placed | `gravityWellPlaced` | Fixed attractor position; both clients apply bending each tick; at most one well exists globally per round — any new placement by either player cancels the current one |
-| Decoy spawned | `decoySpawned` | Position and initial movement direction; decoy absorbs one hit then vanishes; cannot fire, collect, or trigger mines |
+| Gravity well placed | `gravityWellPlaced` | Fixed attractor at the opponent's current position at the moment of activation; both clients apply bending each tick; at most one well exists globally per round — any new placement by either player cancels the current one |
+| Decoy spawned | `decoySpawned` | Position and initial movement direction; decoy absorbs one hit then vanishes; cannot fire, collect pickups, or trigger mines |
 | Mine placed | `minePlaced` | Position and owner; clients render token for 3s then hide it; server continues detonation checks |
 | Cluster orb detonated | `clusterOrbDetonated` | Explicit sync point; server follows with 8 individual `projectileFired` events for child projectiles |
 | Wall removed | `wallRemoved` | WallId; clients remove segment from their local MazeLayout |
-| Self-contained timed effects | `powerUpActivated` | Covers: ProtectiveShield (8s), PhaseShift (3s intangibility — player cannot fire; player CAN collect a new pickup to end it early), OrbitalGuard (6s), TimeWarp (4s at 25% speed), GatlingSpin (auto-fire sequence) |
+| Self-contained timed effects | `powerUpActivated` | Covers: ProtectiveShield (8s), PhaseBeam (firer movement-locked for 4s while beam is in flight), PhaseShift (3s intangibility — player cannot fire; player CAN collect a new pickup to end it early), OrbitalGuard (6s), TimeWarp (10s at 25% projectile speed), GatlingSpin (1s spin-up then auto-fire at 200ms intervals until 25 bullets are fired; each burst applies backward recoil) |
 | Any timed effect ends | `powerUpExpired` | Clients clean up all associated visual state |
 
 **Physics parity**
