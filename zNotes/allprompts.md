@@ -1319,4 +1319,4 @@ PROVIDE THE TWO UPDATED FILES.
 
 ---
 
-Analyze all the logic within the design document, and ensure power-ups, overall game flow and scoring system is flawlessly implemented into the file structure and claude.md file, following the absolute best 2026 practices for backend and frontend. Go through each line one by one, and each power up one by one, and ensure all the correct logic is added. Ensure the file and folder structure is following the perfect feature based design, and follows absolute best practices. Ensure all text is crystal clear, easy to understand and truly perfect and logical.
+Analyze all the logic and ensure power-ups, overall game flow and scoring system is flawlessly implemented into the file structure and claude.md file (claude.md acts as the source of truth), following the absolute best 2026 practices for backend and frontend. Go through each line one by one, and each power up one by one, and ensure all the correct logic is added. Ensure the file and folder structure is following the perfect feature based design, and follows absolute best practices. Ensure all text is crystal clear, easy to understand and truly perfect and logical.

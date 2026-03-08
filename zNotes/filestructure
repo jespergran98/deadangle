@@ -19,97 +19,619 @@ dead-angle/
 │   │   ├── summary/
 │   │   │   ├── page.tsx
 │   │   │   └── page.module.css
-│   │   ├── globals.css                         # Design tokens, reset, base, keyframes only
-│   │   ├── layout.tsx                          # Mounts CRTOverlay once — persists across all screens
+│   │   ├── globals.css                              # Design tokens, reset, base styles, and all
+│   │   │                                            # @keyframes — no component styles; keyframes
+│   │   │                                            # are referenced by module CSS files
+│   │   ├── layout.tsx                               # Mounts CRTOverlay once; persists across all screens
 │   │   ├── layout.module.css
 │   │   ├── not-found.tsx
 │   │   ├── not-found.module.css
-│   │   ├── page.tsx                            # Start screen
+│   │   ├── page.tsx                                 # Start screen; reads local high score via
+│   │   │                                            # highScore.ts and displays best score + level
 │   │   └── page.module.css
 │   │
 │   ├── features/
 │   │   │
-│   │   ├── start/                              # Start screen — mode selection and room join
+│   │   ├── start/                                   # Start screen — mode selection and room join
 │   │   │   ├── components/
 │   │   │   │   ├── ModeSelector/
-│   │   │   │   │   ├── ModeSelector.tsx        # Singleplayer / Multiplayer choice
+│   │   │   │   │   ├── ModeSelector.tsx             # Singleplayer / Multiplayer choice buttons;
+│   │   │   │   │   │                                # reads and displays local high score (best
+│   │   │   │   │   │                                # score + level reached) via highScore.ts
 │   │   │   │   │   └── ModeSelector.module.css
 │   │   │   │   └── RoomCodeInput/
-│   │   │   │       ├── RoomCodeInput.tsx       # Room code entry field for Player 2
+│   │   │   │       ├── RoomCodeInput.tsx            # Room code entry field for Player 2
 │   │   │   │       └── RoomCodeInput.module.css
 │   │   │   └── hooks/
-│   │   │       └── useStartFlow.ts             # Handles create/join REST calls and navigation
+│   │   │       └── useStartFlow.ts                  # Handles create/join REST calls and navigation
 │   │   │
-│   │   ├── lobby/                              # Both players — host sees START button; both wait here
+│   │   ├── lobby/                                   # Both players wait here; host sees START button
 │   │   │   ├── components/
 │   │   │   │   └── RoomCode/
-│   │   │   │       ├── RoomCode.tsx            # Displays and copies the room code
+│   │   │   │       ├── RoomCode.tsx                 # Displays and copies the room code
 │   │   │   │       └── RoomCode.module.css
 │   │   │   └── hooks/
-│   │   │       └── useLobby.ts                 # Listens for gameStarted event, navigates to /game;
-│   │   │                                       # host: sends start signal to server
+│   │   │       └── useLobby.ts                      # Listens for gameStarted event; navigates to
+│   │   │                                            # /game; host sends startGame message to server
 │   │   │
-│   │   ├── game/                               # Game screen — canvas, input, HUD
+│   │   ├── game/                                    # Core game screen — canvas, input, HUD
+│   │   │   │
 │   │   │   ├── components/
 │   │   │   │   ├── GameCanvas/
-│   │   │   │   │   ├── GameCanvas.tsx          # HTML Canvas element
+│   │   │   │   │   ├── GameCanvas.tsx               # HTML Canvas element sized to the maze;
+│   │   │   │   │   │                                # passes canvas ref to useGameLoop
 │   │   │   │   │   └── GameCanvas.module.css
-│   │   │   │   ├── ScoreHud/
-│   │   │   │   │   ├── ScoreHud.tsx            # Live score and ammo overlay
+│   │   │   │   │
+│   │   │   │   ├── ScoreHud/                        # Multiplayer only
+│   │   │   │   │   ├── ScoreHud.tsx                 # Displays live kill counts for both players
+│   │   │   │   │   │                                # (integer kills only — no tiers, no multipliers);
+│   │   │   │   │   │                                # reads from GameContext
 │   │   │   │   │   └── ScoreHud.module.css
+│   │   │   │   │
+│   │   │   │   ├── SingleplayerHud/                 # Singleplayer only
+│   │   │   │   │   ├── SingleplayerHud.tsx          # Displays: current level; hearts row (filled /
+│   │   │   │   │   │                                # empty icons, up to 6); cumulative score;
+│   │   │   │   │   │                                # current round efficiency tier label (Dead Angle
+│   │   │   │   │   │                                # / Quick Draw / Sustained / Suppression) updated
+│   │   │   │   │   │                                # live as the round projectile count climbs;
+│   │   │   │   │   │                                # ammo state (bullets remaining or reload
+│   │   │   │   │   │                                # countdown in seconds); reads SingleplayerContext
+│   │   │   │   │   └── SingleplayerHud.module.css
+│   │   │   │   │
+│   │   │   │   ├── PowerUpIndicator/                # Both modes
+│   │   │   │   │   ├── PowerUpIndicator.tsx         # Shows the local player's active power-up slot:
+│   │   │   │   │   │                                # renders PowerUpIcon for the held type, a circular
+│   │   │   │   │   │                                # countdown ring for timed types, and the type name
+│   │   │   │   │   │                                # label; shows an empty state when no power-up is
+│   │   │   │   │   │                                # held; reads from usePowerUpState
+│   │   │   │   │   └── PowerUpIndicator.module.css
+│   │   │   │   │
 │   │   │   │   └── RoundTransition/
-│   │   │   │       ├── RoundTransition.tsx     # 3-second countdown overlay shown between rounds
+│   │   │   │       ├── RoundTransition.tsx          # 3-second countdown overlay between rounds;
+│   │   │   │       │                                # in singleplayer: if the round ended with a
+│   │   │   │       │                                # bot kill, shows the score earned (amount +
+│   │   │   │       │                                # tier label) and a level-up banner if a
+│   │   │   │       │                                # level-up was triggered; if the round ended
+│   │   │   │       │                                # with a player hit, shows only the countdown
 │   │   │   │       └── RoundTransition.module.css
+│   │   │   │
 │   │   │   ├── hooks/
-│   │   │   │   ├── useGameLoop.ts              # requestAnimationFrame loop — drives all rendering
-│   │   │   │   ├── useKeyboardInput.ts         # Captures WASD+Q / arrow+space; sends to server in multiplayer
-│   │   │   │   └── useMultiplayerSync.ts       # Subscribes to gameTick, projectileFired, roundEnded,
-│   │   │   │                                   # sessionEnded; writes authoritative state to GameContext;
-│   │   │   │                                   # navigates to /summary on sessionEnded
+│   │   │   │   ├── useGameLoop.ts                   # requestAnimationFrame loop — each frame:
+│   │   │   │   │                                    # (1) in singleplayer, advances physics via
+│   │   │   │   │                                    # projectileSimulation + powerUpEffects, runs
+│   │   │   │   │                                    # bot.ts tick, runs hitDetection.ts, drives
+│   │   │   │   │                                    # powerUpManager tick; (2) if the player holds
+│   │   │   │   │                                    # RicochetLaser and has not yet fired, calls
+│   │   │   │   │                                    # trajectoryPreview.ts to compute the current
+│   │   │   │   │                                    # preview path; (3) calls all draw functions
+│   │   │   │   │                                    # in order: drawMaze → drawPowerUps →
+│   │   │   │   │                                    # drawPowerUpEffects → drawPlayers →
+│   │   │   │   │                                    # drawProjectiles
+│   │   │   │   │
+│   │   │   │   ├── useKeyboardInput.ts              # Captures WASD+Q / Arrow+Space; in multiplayer
+│   │   │   │   │                                    # sends playerInput to server each frame; in
+│   │   │   │   │                                    # singleplayer drives local player movement directly
+│   │   │   │   │
+│   │   │   │   ├── useMultiplayerSync.ts            # Subscribes to all SignalR events: gameTick,
+│   │   │   │   │                                    # projectileFired, roundEnded, sessionEnded,
+│   │   │   │   │                                    # powerUpSpawned, powerUpCollected,
+│   │   │   │   │                                    # powerUpActivated, powerUpExpired,
+│   │   │   │   │                                    # swapExecuted, projectilesDeflected,
+│   │   │   │   │                                    # gravityWellPlaced, decoySpawned, wallRemoved,
+│   │   │   │   │                                    # minePlaced, clusterOrbDetonated;
+│   │   │   │   │                                    # writes all authoritative state into GameContext;
+│   │   │   │   │                                    # navigates to /summary on sessionEnded
+│   │   │   │   │
+│   │   │   │   └── usePowerUpState.ts               # Tracks the active power-up and remaining duration
+│   │   │   │                                        # for both the local player and the opponent; in
+│   │   │   │                                        # singleplayer updated by powerUpManager; in
+│   │   │   │                                        # multiplayer updated exclusively by server events;
+│   │   │   │                                        # exposed to PowerUpIndicator and the render pipeline
+│   │   │   │
 │   │   │   ├── physics/
-│   │   │   │   ├── projectileSimulation.ts     # Deterministic local projectile simulation (both modes)
-│   │   │   │   ├── wallReflection.ts           # Reflection math — must stay identical to server
-│   │   │   │   └── interpolation.ts            # Linear interpolation of player positions between
-│   │   │   │                                   # server ticks (~20Hz → 60fps smooth rendering)
+│   │   │   │   ├── projectileSimulation.ts          # Deterministic projectile simulation used in both
+│   │   │   │   │                                    # modes; advances all in-flight projectile positions
+│   │   │   │   │                                    # each tick; invokes wallReflection for standard
+│   │   │   │   │                                    # bounces; calls powerUpEffects for per-type
+│   │   │   │   │                                    # mutations; enforces per-type lifetimes: 10s for
+│   │   │   │   │                                    # normal bullets, 4s for PhaseBeam, 8s for
+│   │   │   │   │                                    # LockOnMissile and Boomerang, 2s for ShotgunBlast
+│   │   │   │   │                                    # shells, 4s for ClusterOrb, 6s for OrbitalGuard;
+│   │   │   │   │                                    # RicochetLaser has no time limit — it expires on
+│   │   │   │   │                                    # its 10th wall contact instead; must stay
+│   │   │   │   │                                    # logically identical to ProjectileSimulator.cs
+│   │   │   │   │
+│   │   │   │   ├── wallReflection.ts                # True angle-of-incidence reflection for all
+│   │   │   │   │                                    # bouncing projectiles; must stay logically
+│   │   │   │   │                                    # identical to WallReflection.cs
+│   │   │   │   │
+│   │   │   │   ├── interpolation.ts                 # Linearly interpolates player positions between
+│   │   │   │   │                                    # server ticks (~20Hz) for smooth 60fps rendering;
+│   │   │   │   │                                    # multiplayer only
+│   │   │   │   │
+│   │   │   │   ├── trajectoryPreview.ts             # Ricochet Laser pre-fire trajectory computation;
+│   │   │   │   │                                    # called every frame while RicochetLaser is the
+│   │   │   │   │                                    # held power-up and the trigger has not yet been
+│   │   │   │   │                                    # pulled; ray-casts from the tank's current
+│   │   │   │   │                                    # position and aim angle, simulates up to 10 wall
+│   │   │   │   │                                    # bounces using wallReflection, and returns an
+│   │   │   │   │                                    # ordered array of line segments representing the
+│   │   │   │   │                                    # complete projected path; result passed directly
+│   │   │   │   │                                    # to drawPowerUpEffects each frame; this is the
+│   │   │   │   │                                    # only power-up that shows its full trajectory
+│   │   │   │   │                                    # before the trigger is pulled
+│   │   │   │   │
+│   │   │   │   └── powerUpEffects.ts                # All power-up physics mutations applied per
+│   │   │   │                                        # simulation tick; called by projectileSimulation
+│   │   │   │                                        # after standard wall-bounce processing; must stay
+│   │   │   │                                        # logically identical to PowerUpPhysics.cs
+│   │   │   │                                        #
+│   │   │   │                                        # RicochetLaser — travels at 10× normal bullet
+│   │   │   │                                        #   speed; enforces a hard ceiling of 10 wall
+│   │   │   │                                        #   bounces; bolt fades and is removed after the
+│   │   │   │                                        #   10th contact; counts as 1 projectile total
+│   │   │   │                                        #
+│   │   │   │                                        # PhaseBeam — wall collision suppressed entirely
+│   │   │   │                                        #   (passes through every wall without deflecting);
+│   │   │   │                                        #   applies a gentle per-tick drift toward the
+│   │   │   │                                        #   opponent's current position over its 4s lifetime;
+│   │   │   │                                        #   counts as 1 projectile total
+│   │   │   │                                        #
+│   │   │   │                                        # LockOnMissile — travels straight for the first
+│   │   │   │                                        #   1s of flight; after 1s computes the nearest
+│   │   │   │                                        #   player (this includes the firer if they are
+│   │   │   │                                        #   closer than the opponent at that moment) and
+│   │   │   │                                        #   applies a fixed-radius turn toward that target
+│   │   │   │                                        #   each tick; carries forward momentum so sharp
+│   │   │   │                                        #   player movement can outmanoeuvre it; expires
+│   │   │   │                                        #   on wall contact or after 8s total; counts as
+│   │   │   │                                        #   1 projectile total
+│   │   │   │                                        #
+│   │   │   │                                        # ClusterOrb — travels at reduced speed; on wall
+│   │   │   │                                        #   contact or after 4s lifetime the orb detonates:
+│   │   │   │                                        #   removed and replaced by 8 new projectiles
+│   │   │   │                                        #   evenly spaced at 45° intervals from the
+│   │   │   │                                        #   detonation point; the orb costs +1 when it
+│   │   │   │                                        #   leaves the barrel; each of the 8 children
+│   │   │   │                                        #   costs +1 when it spawns; 9 total
+│   │   │   │                                        #
+│   │   │   │                                        # ShotgunBlast — fires 20 shells in a tight
+│   │   │   │                                        #   forward spread simultaneously; each shell
+│   │   │   │                                        #   bounces off walls normally; each expires after
+│   │   │   │                                        #   2s of travel; each costs +1 as it leaves the
+│   │   │   │                                        #   barrel; 20 total; always guarantees Suppression
+│   │   │   │                                        #
+│   │   │   │                                        # TripleBarrel — each trigger pull fires 3 bullets
+│   │   │   │                                        #   in a tight forward fan; all ricochet normally;
+│   │   │   │                                        #   3 per shot, up to 9 total across 3 shots; tier
+│   │   │   │                                        #   from zero prior bullets: 1 shot = Dead Angle
+│   │   │   │                                        #   ceiling (3), 2 shots = Quick Draw (6), 3 shots
+│   │   │   │                                        #   = Sustained entry (9)
+│   │   │   │                                        #
+│   │   │   │                                        # GatlingSpin — requires a 1s spin-up (fire button
+│   │   │   │                                        #   held) before first bullet; then fires one bullet
+│   │   │   │                                        #   every 200ms automatically until power-up expires;
+│   │   │   │                                        #   each bullet applies a backward recoil impulse
+│   │   │   │                                        #   to the tank; ~25 total bullets; always guarantees
+│   │   │   │                                        #   Suppression
+│   │   │   │                                        #
+│   │   │   │                                        # Boomerang — normal bounce behaviour until the
+│   │   │   │                                        #   5th wall contact; path log records every
+│   │   │   │                                        #   waypoint in order; at the 5th contact the
+│   │   │   │                                        #   projectile reverses direction and retraces the
+│   │   │   │                                        #   recorded waypoints in exact reverse order back
+│   │   │   │                                        #   to the origin; return trip is the same
+│   │   │   │                                        #   projectile — no additional counter cost; expires
+│   │   │   │                                        #   on opponent contact, on reaching origin, or
+│   │   │   │                                        #   after 8s total travel time; counts as 1 total
+│   │   │   │                                        #
+│   │   │   │                                        # SplitterRound — original bullet bounces normally;
+│   │   │   │                                        #   on its first wall contact it is removed and
+│   │   │   │                                        #   replaced by 2 child projectiles at symmetric
+│   │   │   │                                        #   reflection angles from the impact point, each
+│   │   │   │                                        #   ricocheting independently; original costs +1
+│   │   │   │                                        #   when it leaves the barrel; each child costs +1
+│   │   │   │                                        #   when it spawns; 3 total; if the original kills
+│   │   │   │                                        #   the opponent before any wall contact, no split
+│   │   │   │                                        #   occurs and the cost is only 1
+│   │   │   │                                        #
+│   │   │   │                                        # OrbitalGuard — guard bullet moves in a tight
+│   │   │   │                                        #   circular orbit at a fixed radius around the
+│   │   │   │                                        #   owner's tank; orbit centre updates to the tank's
+│   │   │   │                                        #   current position every tick; any enemy projectile
+│   │   │   │                                        #   whose position intersects the orbit path is
+│   │   │   │                                        #   immediately destroyed — not deflected, cancelled;
+│   │   │   │                                        #   orbit ends after 6s or when the guard bullet
+│   │   │   │                                        #   itself reaches the opponent; counts as 1 total
+│   │   │   │                                        #
+│   │   │   │                                        # ProtectiveShield — each tick checks whether any
+│   │   │   │                                        #   projectile has entered the shield perimeter;
+│   │   │   │                                        #   on contact applies true angle-of-incidence
+│   │   │   │                                        #   reflection (same logic as wallReflection) and
+│   │   │   │                                        #   continues the projectile at full speed; the
+│   │   │   │                                        #   deflected projectile remains lethal to both
+│   │   │   │                                        #   players; the shield deflects unlimited projectiles
+│   │   │   │                                        #   and expires after 8s regardless of how many
+│   │   │   │                                        #   it has deflected
+│   │   │   │                                        #
+│   │   │   │                                        # GravityWell — each tick applies a proximity-
+│   │   │   │                                        #   proportional pull toward the fixed attractor
+│   │   │   │                                        #   point to every in-flight projectile from both
+│   │   │   │                                        #   players; bullets close to the well are strongly
+│   │   │   │                                        #   curved; bullets far away are barely affected;
+│   │   │   │                                        #   only one well can be active per round across
+│   │   │   │                                        #   both players — a new placement by either player
+│   │   │   │                                        #   immediately cancels the existing one; lasts 8s
+│   │   │   │                                        #
+│   │   │   │                                        # Repulsor — instantaneous, no wind-up; at the
+│   │   │   │                                        #   moment of activation computes the outward
+│   │   │   │                                        #   direction from the tank's position to each
+│   │   │   │                                        #   in-flight projectile and reassigns that
+│   │   │   │                                        #   projectile's velocity along that vector at
+│   │   │   │                                        #   full speed; affects both players' projectiles;
+│   │   │   │                                        #   harmless if no projectiles are in flight
+│   │   │   │                                        #
+│   │   │   │                                        # TimeWarp — for 4s, scales every in-flight
+│   │   │   │                                        #   projectile's velocity to 25% of normal each
+│   │   │   │                                        #   tick; also applies to all new projectiles fired
+│   │   │   │                                        #   during the effect window; projectile lifetimes
+│   │   │   │                                        #   and bounce counts are unaffected; tank movement
+│   │   │   │                                        #   speed is not altered; affects both players equally
+│   │   │   │                                        #
+│   │   │   │                                        # WallBreaker, PhaseShift, Swap, Decoy, Mine —
+│   │   │   │                                        #   no per-tick projectile physics; all effects
+│   │   │   │                                        #   are resolved at the moment of activation and
+│   │   │   │                                        #   managed by powerUpManager (singleplayer) or
+│   │   │   │                                        #   PowerUpService + GameService (multiplayer)
+│   │   │   │
 │   │   │   ├── singleplayer/
-│   │   │   │   ├── bot.ts                      # Bot movement and firing logic
-│   │   │   │   ├── hitDetection.ts             # Client-side hit detection (singleplayer only)
-│   │   │   │   └── mazeGenerator.ts            # Maze generation (singleplayer only)
+│   │   │   │   ├── bot.ts                           # Bot AI — movement, aiming, and firing logic;
+│   │   │   │   │                                    # all behaviour scales with current level via
+│   │   │   │   │                                    # botScalingForLevel() from levelProgression.ts:
+│   │   │   │   │                                    # movement speed and turning rate increase each
+│   │   │   │   │                                    # level; aim accuracy tightens each level (spread
+│   │   │   │   │                                    # cone narrows); pathing quality improves (more
+│   │   │   │   │                                    # deliberate routing toward player, less random
+│   │   │   │   │                                    # wandering); competes for power-up pickups on the
+│   │   │   │   │                                    # same terms as the player — pathfinds to the
+│   │   │   │   │                                    # nearest uncollected pickup when none is held,
+│   │   │   │   │                                    # and activates collected power-ups with the same
+│   │   │   │   │                                    # rules; when a Decoy is active for the player,
+│   │   │   │   │                                    # bot retargets to whichever of the real player
+│   │   │   │   │                                    # or the decoy is currently closer; knows positions
+│   │   │   │   │                                    # of its own placed mines and avoids them
+│   │   │   │   │
+│   │   │   │   ├── hitDetection.ts                  # Collision checks run each singleplayer tick:
+│   │   │   │   │                                    # projectile-vs-player (suppressed while PhaseShift
+│   │   │   │   │                                    # is active for the player), projectile-vs-bot,
+│   │   │   │   │                                    # projectile-vs-decoy (decoy absorbs the first hit
+│   │   │   │   │                                    # and vanishes; the bot's targeting then reverts to
+│   │   │   │   │                                    # the real player), projectile-vs-OrbitalGuard orbit
+│   │   │   │   │                                    # zone (destroys intersecting projectile; does not
+│   │   │   │   │                                    # count as a hit on either player), player-vs-mine,
+│   │   │   │   │                                    # bot-vs-mine; Decoy cannot trigger mines; on any
+│   │   │   │   │                                    # terminal hit calls scoring.ts (bot hit) or
+│   │   │   │   │                                    # levelProgression.ts (player hit) and signals
+│   │   │   │   │                                    # round resolution
+│   │   │   │   │
+│   │   │   │   ├── mazeGenerator.ts                 # Procedural maze generation; called at round
+│   │   │   │   │                                    # start; returns a MazeLayout with guaranteed
+│   │   │   │   │                                    # open-tile paths for spawning and pickup placement
+│   │   │   │   │
+│   │   │   │   ├── scoring.ts                       # Pure scoring logic — singleplayer only:
+│   │   │   │   │                                    # determineEfficiencyTier(roundProjectileCount)
+│   │   │   │   │                                    # returns Dead Angle (1–3, ×4), Quick Draw (4–7,
+│   │   │   │   │                                    # ×3), Sustained (8–14, ×2), or Suppression
+│   │   │   │   │                                    # (15+, ×1); calculateKillScore(level, tier)
+│   │   │   │   │                                    # returns 100 × level × multiplier (always an
+│   │   │   │   │                                    # integer); called by hitDetection on every bot
+│   │   │   │   │                                    # kill; result written into SingleplayerContext
+│   │   │   │   │
+│   │   │   │   ├── levelProgression.ts              # Level and heart state machine — singleplayer only:
+│   │   │   │   │                                    # checkLevelUp(totalKills) returns true when
+│   │   │   │   │                                    # totalKills mod 3 === 0 (every 3 kills);
+│   │   │   │   │                                    # level increment and +1 heart (capped at 6) are
+│   │   │   │   │                                    # stored as pendingLevelUp in SingleplayerContext
+│   │   │   │   │                                    # and applied before the next round begins — this
+│   │   │   │   │                                    # ensures that if the player takes a hit on the
+│   │   │   │   │                                    # same tick that a bot kill triggers a level-up,
+│   │   │   │   │                                    # the heart is still granted before round restart;
+│   │   │   │   │                                    # botScalingForLevel(level) returns a scaling
+│   │   │   │   │                                    # descriptor { speedMultiplier, turnRate,
+│   │   │   │   │                                    # aimAccuracy, pathingQuality } consumed by bot.ts
+│   │   │   │   │
+│   │   │   │   └── powerUpManager.ts                # Power-up system for singleplayer — owns all
+│   │   │   │                                        # pickup and active power-up state for the round:
+│   │   │   │                                        #
+│   │   │   │                                        # Spawn scheduling: first pickup 5–10s after round
+│   │   │   │                                        #   start; each subsequent pickup 10–15s after the
+│   │   │   │                                        #   previous spawn; maximum 3 uncollected pickups
+│   │   │   │                                        #   on the map simultaneously; type assigned from
+│   │   │   │                                        #   the full 19-type pool randomly on spawn
+│   │   │   │                                        #
+│   │   │   │                                        # Pickup collection: neither player nor bot can
+│   │   │   │                                        #   collect a pickup while already holding an active
+│   │   │   │                                        #   power-up (one at a time enforced for both); on
+│   │   │   │                                        #   collection the current magazine state is
+│   │   │   │                                        #   snapshotted as { bulletsRemaining,
+│   │   │   │                                        #   reloadTimeRemaining } and both values are paused
+│   │   │   │                                        #
+│   │   │   │                                        # Magazine freeze/resume: on power-up spent or
+│   │   │   │                                        #   natural expiry the magazine snapshot is restored
+│   │   │   │                                        #   and resumes exactly where it was frozen; on
+│   │   │   │                                        #   round end the active power-up is discarded and
+│   │   │   │                                        #   the magazine resets to 7 for the next round
+│   │   │   │                                        #
+│   │   │   │                                        # Phase Shift exception: during Phase Shift the
+│   │   │   │                                        #   player CAN deliberately collect a new pickup
+│   │   │   │                                        #   to end the shift immediately in exchange for
+│   │   │   │                                        #   the new power-up; this is an intentional
+│   │   │   │                                        #   player trade-off, not an edge case — the
+│   │   │   │                                        #   general one-at-a-time rule is the only other
+│   │   │   │                                        #   exception and does not apply to Phase Shift
+│   │   │   │                                        #
+│   │   │   │                                        # Mine lifecycle: placement is instant — the Mine
+│   │   │   │                                        #   power-up slot is freed immediately after placing,
+│   │   │   │                                        #   allowing up to 3 mines to be active on the map
+│   │   │   │                                        #   from a single player simultaneously; each mine
+│   │   │   │                                        #   becomes invisible 3s after placement (flag set;
+│   │   │   │                                        #   renderer stops drawing the token; detonation
+│   │   │   │                                        #   check continues); detonates on position overlap
+│   │   │   │                                        #   with either the player or bot and ends the round
+│   │   │   │                                        #   as a direct hit would; the Decoy cannot trigger
+│   │   │   │                                        #   mines; all mines are cleared on round start and
+│   │   │   │                                        #   are never carried between rounds
+│   │   │   │                                        #
+│   │   │   │                                        # WallBreaker: finds the wall segment geometrically
+│   │   │   │                                        #   nearest to the player's current tank position and
+│   │   │   │                                        #   permanently removes it from the MazeLayout for
+│   │   │   │                                        #   the rest of the round; the nearest segment may
+│   │   │   │                                        #   not be the intended one
+│   │   │   │                                        #
+│   │   │   │                                        # Decoy: spawns a ghost tank at the player's current
+│   │   │   │                                        #   position moving on autopilot in the last known
+│   │   │   │                                        #   movement direction for up to 5s; the decoy cannot
+│   │   │   │                                        #   fire, collect pickups, or trigger mines; it
+│   │   │   │                                        #   absorbs exactly one projectile hit before
+│   │   │   │                                        #   vanishing; bot retargets to whichever of the
+│   │   │   │                                        #   real player or the decoy is currently closer
+│   │   │   │                                        #
+│   │   │   │                                        # Swap: instantly exchanges the player's and bot's
+│   │   │   │                                        #   positions with no animation; all in-flight
+│   │   │   │                                        #   projectiles continue on their current trajectories
+│   │   │   │                                        #   unchanged and do not retarget after the swap
+│   │   │   │
 │   │   │   └── rendering/
-│   │   │       ├── drawMaze.ts                 # Draws the wall grid onto canvas
-│   │   │       ├── drawPlayers.ts              # Draws player tokens
-│   │   │       └── drawProjectiles.ts          # Draws projectiles and neon motion trails
+│   │   │       ├── drawMaze.ts                      # Draws the wall grid each frame
+│   │   │       │
+│   │   │       ├── drawPlayers.ts                   # Draws only the real player and bot tank tokens;
+│   │   │       │                                    # overlays per-tank visual state on top of each
+│   │   │       │                                    # base token (the Decoy ghost is a separate
+│   │   │       │                                    # world-space entity and is rendered exclusively
+│   │   │       │                                    # by drawPowerUpEffects.ts, not here):
+│   │   │       │                                    # PhaseShift — translucent intangibility shimmer
+│   │   │       │                                    #   on the real tank token for the 3s duration;
+│   │   │       │                                    # ProtectiveShield — pulsing reflective barrier
+│   │   │       │                                    #   ring at fixed radius around the tank for 8s;
+│   │   │       │                                    # OrbitalGuard — orbit circle drawn at the tank's
+│   │   │       │                                    #   live position and updated every frame;
+│   │   │       │                                    # GatlingSpin — spinning barrel animation during
+│   │   │       │                                    #   the 1s spin-up phase before first bullet fires;
+│   │   │       │                                    # Swap — simultaneous brief flash at both the
+│   │   │       │                                    #   player's origin and the bot's origin positions
+│   │   │       │
+│   │   │       ├── drawProjectiles.ts               # Draws all in-flight projectiles with neon motion
+│   │   │       │                                    # trails; applies per-type visual treatment:
+│   │   │       │                                    # RicochetLaser — bright bolt with long fast trail;
+│   │   │       │                                    # PhaseBeam — translucent beam, faint drift arc
+│   │   │       │                                    #   toward opponent visible;
+│   │   │       │                                    # LockOnMissile — missile body with flame trail;
+│   │   │       │                                    #   lock-on reticle appears on the target once
+│   │   │       │                                    #   the 1s straight phase ends and homing begins;
+│   │   │       │                                    # ClusterOrb — slow glowing orb; on detonation
+│   │   │       │                                    #   renders 8-ray expanding burst from impact point;
+│   │   │       │                                    # ShotgunBlast — 20 small shells with short trails,
+│   │   │       │                                    #   fading as the 2s expiry approaches;
+│   │   │       │                                    # TripleBarrel — 3 bullets per shot in fan spread,
+│   │   │       │                                    #   each treated as a standard ricocheting projectile;
+│   │   │       │                                    # GatlingSpin — rapid-fire standard bullets; tank
+│   │   │       │                                    #   recoil push visible as backward positional nudge;
+│   │   │       │                                    # Boomerang — standard arc until 5th wall contact,
+│   │   │       │                                    #   then direction-reversed visual on return path;
+│   │   │       │                                    # SplitterRound — normal until first wall contact;
+│   │   │       │                                    #   split-flash at impact point; two child projectiles
+│   │   │       │                                    #   rendered at symmetric angles from that point;
+│   │   │       │                                    # OrbitalGuard — guard bullet drawn at its
+│   │   │       │                                    #   circular position around the tank centre;
+│   │   │       │                                    # TimeWarp — all projectiles rendered with a
+│   │   │       │                                    #   slow-motion colour tint while the effect is active
+│   │   │       │
+│   │   │       ├── drawPowerUps.ts                  # Draws uncollected pickup tokens on the canvas;
+│   │   │       │                                    # each token uses its PowerUpType to select the
+│   │   │       │                                    # correct PowerUpIcon glyph via a DOM overlay
+│   │   │       │                                    # positioned above the canvas; tokens are hidden
+│   │   │       │                                    # immediately when collected
+│   │   │       │
+│   │   │       └── drawPowerUpEffects.ts            # Draws world-space overlay effects each frame
+│   │   │                                            # for active power-ups whose visuals are NOT
+│   │   │                                            # part of the tank token (tank-attached effects
+│   │   │                                            # such as ProtectiveShield ring, OrbitalGuard
+│   │   │                                            # orbit circle, and PhaseShift shimmer are drawn
+│   │   │                                            # by drawPlayers.ts instead; the Decoy is a
+│   │   │                                            # world-space entity and is drawn exclusively here
+│   │   │                                            # — drawPlayers.ts only draws real tank tokens):
+│   │   │                                            # RicochetLaser — preview line (ordered segment
+│   │   │                                            #   array from trajectoryPreview.ts) recomputed
+│   │   │                                            #   and redrawn every frame while the laser is
+│   │   │                                            #   held and the trigger has not yet been pulled;
+│   │   │                                            #   this is the only power-up with a pre-fire
+│   │   │                                            #   visual;
+│   │   │                                            # PhaseShift — expanding world-space pulse ring
+│   │   │                                            #   radiating outward from the tank centre for
+│   │   │                                            #   3s; complements the shimmer on the tank token
+│   │   │                                            #   drawn by drawPlayers.ts;
+│   │   │                                            # Decoy — the sole renderer of the ghost tank:
+│   │   │                                            #   draws the full ghost token at the decoy's
+│   │   │                                            #   world-space autopilot position plus a
+│   │   │                                            #   movement direction indicator; disappears
+│   │   │                                            #   after 5s or when the first projectile hits it;
+│   │   │                                            # GravityWell — distortion rings at the fixed
+│   │   │                                            #   world-space attractor point for 8s; at most
+│   │   │                                            #   one active per round globally — a new
+│   │   │                                            #   placement by either player immediately
+│   │   │                                            #   cancels and replaces the previous one;
+│   │   │                                            # TimeWarp — full-screen slow-motion wave
+│   │   │                                            #   overlay for 4s;
+│   │   │                                            # WallBreaker — highlight flash on the nearest
+│   │   │                                            #   wall segment immediately before removal;
+│   │   │                                            # Mine — solid visible token at placement
+│   │   │                                            #   position for the first 3s, then hidden
+│   │   │                                            #   (renderer skips the token once the invisible
+│   │   │                                            #   flag is set);
+│   │   │                                            # Swap — simultaneous flash at both the player's
+│   │   │                                            #   and opponent's positions at the moment of
+│   │   │                                            #   swap;
+│   │   │                                            # Boomerang — reverse-path arc line drawn from
+│   │   │                                            #   the 5th wall contact onward, showing the
+│   │   │                                            #   exact recorded return trajectory;
+│   │   │                                            # LockOnMissile — target reticle on the nearest
+│   │   │                                            #   player, appearing once the 1s straight phase
+│   │   │                                            #   ends and homing begins
 │   │   │
-│   │   └── summary/                            # Summary screen — final scores, quit
+│   │   └── summary/                                 # Summary screen — final results and quit
 │   │       └── components/
 │   │           └── ScoreBoard/
-│   │               ├── ScoreBoard.tsx          # Final score display; reads GameContext directly;
-│   │               │                           # quit button calls router.push('/')
+│   │               ├── ScoreBoard.tsx               # Mode-aware final results display:
+│   │               │                                # singleplayer — final score, level reached, total
+│   │               │                                #   kills, best efficiency tier achieved this run,
+│   │               │                                #   high score comparison (reads current best via
+│   │               │                                #   highScore.ts, overwrites if final score exceeds
+│   │               │                                #   it, shows new personal best banner);
+│   │               │                                # multiplayer — kill counts for both players only;
+│   │               │                                # quit button calls router.push('/')
 │   │               └── ScoreBoard.module.css
 │   │
 │   ├── services/
-│   │   └── api.ts                              # HTTP client — REST calls to create/join rooms
+│   │   ├── api.ts                                   # HTTP client — REST calls to create/join rooms
+│   │   └── highScore.ts                             # Singleplayer local high score persistence;
+│   │                                                # reads and writes { score: number, level: number }
+│   │                                                # to localStorage; getHighScore() called by
+│   │                                                # ModeSelector to display the best score and level
+│   │                                                # on the start screen; saveHighScore(score, level)
+│   │                                                # called by ScoreBoard at GAME OVER — only writes
+│   │                                                # if the new score exceeds the stored best
 │   │
 │   ├── hooks/
-│   │   └── useSignalR.ts                       # Manages the SignalR HubConnection for multiplayer
+│   │   └── useSignalR.ts                            # Manages the SignalR HubConnection for multiplayer
 │   │
 │   ├── context/
-│   │   ├── GameProvider.tsx                    # Root provider — mounts at layout level; opens SignalR only in multiplayer
-│   │   ├── GameContext.ts                      # Live game state (player positions, projectiles, scores, maze)
-│   │   └── RoomContext.ts                      # Session metadata (roomCode, sessionId, playerSlot, mode)
+│   │   ├── GameProvider.tsx                         # Root provider — mounts at layout level; opens
+│   │   │                                            # SignalR connection only in multiplayer mode
+│   │   ├── GameContext.ts                           # Live per-frame state shared across both modes:
+│   │   │                                            # player positions, all in-flight projectiles
+│   │   │                                            # (each with a nullable powerUpType field),
+│   │   │                                            # current MazeLayout, uncollected pickups
+│   │   │                                            # [{ id, type, position }], active power-up per
+│   │   │                                            # player, mine positions and visibility state,
+│   │   │                                            # decoy state (position, movementDirection, alive),
+│   │   │                                            # gravity well state (position, expiresAt or null)
+│   │   ├── SingleplayerContext.ts                   # Run state persisting across rounds — singleplayer
+│   │   │                                            # only: level (starts at 1), hearts (starts at 3,
+│   │   │                                            # max 6), totalKills (cumulative), cumulativeScore,
+│   │   │                                            # roundProjectileCount (resets to 0 at each round
+│   │   │                                            # start; increments by 1 for every projectile that
+│   │   │                                            # visibly travels, from any source without exception),
+│   │   │                                            # bestEfficiencyTierThisRun (tracks the highest tier
+│   │   │                                            # — lowest projectile count — achieved across all
+│   │   │                                            # rounds; shown at GAME OVER), pendingLevelUp flag
+│   │   │                                            # (set to true when a bot kill triggers a level-up;
+│   │   │                                            # level increment and heart grant are applied before
+│   │   │                                            # the next round begins regardless of whether the
+│   │   │                                            # player also took a hit in that same round)
+│   │   └── RoomContext.ts                           # Session metadata: roomCode, sessionId, playerSlot,
+│   │                                                # mode (singleplayer | multiplayer)
 │   │
 │   ├── types/
-│   │   ├── game.types.ts                       # Player, Projectile, MazeWall, GameState, PlayerSlot
-│   │   └── events.types.ts                     # Typed SignalR event payloads (multiplayer only)
+│   │   ├── game.types.ts                            # Shared primitives: Player, Projectile (with
+│   │   │                                            # powerUpType: PowerUpType | null), MazeWall,
+│   │   │                                            # MazeLayout, GameState, PlayerSlot, DecoyState,
+│   │   │                                            # MineState (position, placedAt, isInvisible),
+│   │   │                                            # GravityWellState (position, expiresAt)
+│   │   ├── powerup.types.ts                         # PowerUpType enum — 19 values:
+│   │   │                                            #   RicochetLaser, PhaseBeam, LockOnMissile,
+│   │   │                                            #   ClusterOrb, ShotgunBlast, TripleBarrel,
+│   │   │                                            #   GatlingSpin, WallBreaker, ProtectiveShield,
+│   │   │                                            #   SplitterRound, Mine, Decoy, Boomerang,
+│   │   │                                            #   PhaseShift, GravityWell, Swap, Repulsor,
+│   │   │                                            #   OrbitalGuard, TimeWarp;
+│   │   │                                            # PowerUpPickup: { id, type, position };
+│   │   │                                            # ActivePowerUp: { type, activatedAt, durationMs };
+│   │   │                                            # POWER_UP_METADATA: readonly record keyed by
+│   │   │                                            #   PowerUpType containing { projectileCost,
+│   │   │                                            #   durationMs | null } — the single source of
+│   │   │                                            #   truth for projectile costs and duration data
+│   │   │                                            #   consumed by scoring.ts, powerUpManager, and
+│   │   │                                            #   PowerUpIndicator; isZeroCost is not stored
+│   │   │                                            #   separately — derive it as projectileCost === 0
+│   │   └── events.types.ts                          # Typed SignalR event payload interfaces —
+│   │                                                # multiplayer only; one interface per event emitted
+│   │                                                # by the server; mirrors the backend DTOs exactly
 │   │
 │   └── components/
 │       ├── CRTOverlay/
-│       │   ├── CRTOverlay.tsx                  # Fixed full-viewport div; pointer-events: none; z-index above all content
-│       │   └── CRTOverlay.module.css           # repeating-linear-gradient scanlines + radial-gradient vignette;
-│       │                                       # optional flicker animation via @keyframes defined in globals.css
-│       └── NeonButton/
-│           ├── NeonButton.tsx                  # Reusable neon-styled button
-│           └── NeonButton.module.css
+│       │   ├── CRTOverlay.tsx                       # Fixed full-viewport overlay; pointer-events: none;
+│       │   │                                        # highest z-index; persists across all screens
+│       │   └── CRTOverlay.module.css                # repeating-linear-gradient scanlines + radial-
+│       │                                            # gradient vignette; flicker animation references
+│       │                                            # @keyframes defined in globals.css
+│       ├── NeonButton/
+│       │   ├── NeonButton.tsx                       # Reusable neon-styled button
+│       │   └── NeonButton.module.css
+│       └── PowerUpIcon/
+│           ├── PowerUpIcon.tsx                      # Renders the CSS icon for a given PowerUpType prop;
+│           │                                        # consumed by PowerUpIndicator (HUD active slot) and
+│           │                                        # by drawPowerUps (pickup token DOM overlays on
+│           │                                        # canvas); accepts size and dimmed boolean props
+│           └── PowerUpIcon.module.css               # 19 distinct CSS-only icon shapes — one modifier
+│                                                    # class per PowerUpType, zero images or SVGs;
+│                                                    # shapes constructed from border, clip-path,
+│                                                    # box-shadow, transform, and ::before / ::after
+│                                                    # pseudo-elements; base .icon class sets shared
+│                                                    # dimensions, neon glow drop-shadow, and a pulse
+│                                                    # @keyframe; each modifier supplies unique geometry
+│                                                    # and a distinct accent colour so all 19 types are
+│                                                    # recognisable at a glance:
+│                                                    #   .ricochetLaser    diagonal bolt, electric blue
+│                                                    #   .phaseBeam        horizontal penetrating line,
+│                                                    #                     cyan with wall-pass alpha
+│                                                    #   .lockOnMissile    pointed missile silhouette,
+│                                                    #                     orange-red
+│                                                    #   .clusterOrb       circle with 8 radial spikes,
+│                                                    #                     purple
+│                                                    #   .shotgunBlast     wide forward spread fan,
+│                                                    #                     gold
+│                                                    #   .tripleBarrel     three parallel lines, green
+│                                                    #   .gatlingSpin      rotating gear ring, white
+│                                                    #   .wallBreaker      brick outline with crack,
+│                                                    #                     amber
+│                                                    #   .protectiveShield dome arc outline, sky blue
+│                                                    #   .splitterRound    single line forking to two,
+│                                                    #                     lime
+│                                                    #   .mine             circle with trigger spike,
+│                                                    #                     dark red
+│                                                    #   .decoy            hollow ghost duplicate,
+│                                                    #                     translucent white
+│                                                    #   .boomerang        curved returning arc, teal
+│                                                    #   .phaseShift       diamond with faded fill,
+│                                                    #                     violet
+│                                                    #   .gravityWell      concentric pull rings,
+│                                                    #                     deep indigo
+│                                                    #   .swap             two opposing arrows, yellow
+│                                                    #   .repulsor         outward burst rays, white
+│                                                    #   .orbitalGuard     small circle in orbit ring,
+│                                                    #                     aqua
+│                                                    #   .timeWarp         clock face with warped hands,
+│                                                    #                     magenta
 │
 ├── .env.local
 ├── next.config.ts
@@ -144,44 +666,226 @@ dead-angle/
 dead-angle-api/
 │
 ├── Controllers/
-│   └── RoomsController.cs                      # POST /rooms → create room, return sessionId + roomCode
-│                                               # POST /rooms/{code}/join → join room, return sessionId
+│   └── RoomsController.cs                           # POST /rooms → create room; returns sessionId,
+│                                                    # roomCode, and Player1 slot assignment
+│                                                    # POST /rooms/{code}/join → join room; returns
+│                                                    # sessionId and Player2 slot assignment
 │
 ├── Hubs/
-│   └── GameHub.cs                              # SignalR hub — maps sessionId to player slot in OnConnectedAsync;
-│                                               # receives player input and host start signal; emits all game events;
-│                                               # detects disconnection and ends session
+│   └── GameHub.cs                                   # SignalR hub — maps sessionId to player slot in
+│                                                    # OnConnectedAsync; receives playerInput each
+│                                                    # frame, startGame from the host, and
+│                                                    # activatePowerUp when a player uses their held
+│                                                    # power-up; emits all game events to the room
+│                                                    # group; handles disconnection by emitting
+│                                                    # sessionEnded and ending the session
 │
 ├── Services/
-│   ├── GameService.cs                          # Game loop (~20Hz), player positions, projectile hit detection,
-│   │                                           # round resolution, ammo lifecycle, score tracking
-│   ├── RoomService.cs                          # Room lifecycle — create, join, end; session ID generation;
-│   │                                           # Player1/Player2 slot assignment
-│   ├── MazeGenerator.cs                        # Procedural maze generation — called when host starts and each round end
-│   └── DiscordWebhookService.cs                # Outbound POST to Discord webhook on session end
+│   ├── GameService.cs                               # Core game loop at ~20Hz: advances player
+│   │                                                # positions from latest input, calls
+│   │                                                # ProjectileSimulator and PowerUpPhysics for hit
+│   │                                                # detection, resolves round end with a Reason of
+│   │                                                # DirectHit or MineTrigger, resets magazine to 7
+│   │                                                # on round start, tracks integer kill scores
+│   │                                                # (1 per kill — no tiers, multipliers, or levels
+│   │                                                # in multiplayer); suppresses projectile-vs-player
+│   │                                                # hit detection while PhaseShift is active for
+│   │                                                # that player; skips mine detonation on Decoy contact
+│   │
+│   ├── RoomService.cs                               # Room lifecycle — create, join, end; session ID
+│   │                                                # generation; Player1 / Player2 slot assignment
+│   │
+│   ├── MazeGenerator.cs                             # Procedural maze generation — called when the
+│   │                                                # host starts and at each round end; produces a
+│   │                                                # MazeLayout with guaranteed open-tile paths for
+│   │                                                # spawning and power-up placement
+│   │
+│   ├── PowerUpService.cs                            # All power-up state for the session:
+│   │                                                # spawn scheduling (first pickup 5–10s after
+│   │                                                #   round start; each subsequent 10–15s after the
+│   │                                                #   previous; max 3 uncollected on map at once;
+│   │                                                #   type chosen randomly from all 19 types);
+│   │                                                # collection enforcement (blocks pickup if the
+│   │                                                #   player already holds one; one at a time per
+│   │                                                #   player); magazine snapshot { BulletsRemaining,
+│   │                                                #   ReloadTimeRemaining } taken on collection and
+│   │                                                #   restored on expiry;
+│   │                                                # activation: emits the appropriate event(s) per
+│   │                                                #   type (see DTOs/Events);
+│   │                                                # Phase Shift: flags the player as intangible in
+│   │                                                #   GameService for 3s; player cannot fire; the
+│   │                                                #   player CAN collect a new pickup during the
+│   │                                                #   shift — doing so ends it immediately and
+│   │                                                #   activates the new power-up (intentional design,
+│   │                                                #   not an error);
+│   │                                                # Mine lifecycle: placement is instant (slot freed
+│   │                                                #   immediately); up to 3 active per player; 3s
+│   │                                                #   invisibility timer; detonation detection
+│   │                                                #   delegated to GameService each tick; Decoy
+│   │                                                #   cannot trigger mines; all mines cleared on
+│   │                                                #   round start;
+│   │                                                # GravityWell: at most one active well per round
+│   │                                                #   globally across both players; a new placement
+│   │                                                #   by either player cancels the existing well
+│   │                                                #   regardless of who placed it, and emits a new
+│   │                                                #   GravityWellPlacedEvent;
+│   │                                                # round-end cleanup: discards all active power-ups,
+│   │                                                #   restores magazines to 7, clears mines and decoys
+│   │
+│   └── DiscordWebhookService.cs                     # Outbound POST to Discord webhook on session end
+│                                                    # with formatted match summary
 │
 ├── Physics/
-│   ├── ProjectileSimulator.cs                  # Server-side projectile simulation — authoritative hit detection only
-│   └── WallReflection.cs                       # Reflection math — must stay identical to client wallReflection.ts
+│   ├── ProjectileSimulator.cs                       # Server-side deterministic projectile simulation;
+│   │                                                # used solely for authoritative hit detection;
+│   │                                                # enforces per-type lifetimes (10s normal, 4s
+│   │                                                # PhaseBeam, 8s LockOnMissile / Boomerang, 2s
+│   │                                                # ShotgunBlast shells, 4s ClusterOrb, 6s
+│   │                                                # OrbitalGuard); RicochetLaser has no time limit
+│   │                                                # — expires on its 10th wall contact instead;
+│   │                                                # must stay logically identical to
+│   │                                                # projectileSimulation.ts
+│   │
+│   ├── WallReflection.cs                            # True angle-of-incidence reflection math; must
+│   │                                                # stay logically identical to wallReflection.ts
+│   │
+│   └── PowerUpPhysics.cs                            # Per-tick power-up physics mutations for server
+│                                                    # hit detection; must stay logically identical to
+│                                                    # powerUpEffects.ts; handles all 19 types — see
+│                                                    # powerUpEffects.ts for the full per-type spec;
+│                                                    # key multiplayer-only concerns: Boomerang path
+│                                                    # log stored on the Projectile model; ClusterOrb
+│                                                    # detonation emits ClusterOrbDetonatedEvent then
+│                                                    # individual ProjectileFiredEvents for each child;
+│                                                    # GatlingSpin auto-fire emits ProjectileFiredEvent
+│                                                    # at 200ms intervals and applies recoil to the
+│                                                    # player's position in GameService
 │
 ├── Models/
-│   ├── Room.cs                                 # Room state — code, phase, players, scores
-│   ├── Player.cs                               # Player — slot, sessionId, connectionId, position, angle, ammo count, reload state
-│   ├── Projectile.cs                           # Projectile — id, position, velocity, ownerSlot, remaining lifetime (max 10s)
-│   ├── MazeLayout.cs                           # Wall grid — list of wall rectangles defining the maze
-│   ├── GamePhase.cs                            # Enum: Lobby, Playing, RoundTransition, Summary
-│   └── PlayerSlot.cs                           # Enum: Player1, Player2
+│   ├── Room.cs                                      # Room state — code, phase, player list, scores
+│   ├── Player.cs                                    # Player — slot, sessionId, connectionId, position,
+│   │                                                # angle, bulletsRemaining, reloadTimeRemaining,
+│   │                                                # activePowerUp (nullable), magazineSnapshot
+│   │                                                # (nullable), isIntangible (PhaseShift flag)
+│   ├── Projectile.cs                                # Projectile — id, position, velocity, ownerSlot,
+│   │                                                # powerUpType (nullable), remainingLifetime,
+│   │                                                # wallContactCount, pathLog (List<Vector2> used
+│   │                                                # by Boomerang to record and retrace waypoints)
+│   ├── PowerUp.cs                                   # PowerUpType enum (19 values); PowerUpPickup
+│   │                                                # { Id, Type, Position, SpawnedAt };
+│   │                                                # ActivePowerUp { HolderSlot, Type, ActivatedAt,
+│   │                                                # DurationMs }; Mine { MineId, OwnerSlot,
+│   │                                                # Position, PlacedAt, IsInvisible }
+│   ├── MazeLayout.cs                                # Wall grid — list of wall rectangles, each with
+│   │                                                # a unique WallId for removal events
+│   ├── GamePhase.cs                                 # Enum: Lobby, Playing, RoundTransition, Summary
+│   └── PlayerSlot.cs                                # Enum: Player1, Player2
 │
 ├── DTOs/
-│   ├── RoomResponse.cs                         # { SessionId, PlayerSlot, RoomCode? } — RoomCode populated on create, null on join
+│   ├── RoomResponse.cs                              # { SessionId, PlayerSlot, RoomCode? } —
+│   │                                                # RoomCode populated on create, null on join
 │   └── Events/
-│       ├── GameStartedEvent.cs                 # Emitted when host clicks Start — { maze: MazeLayout }; both clients navigate to /game
-│       ├── GameTickEvent.cs                    # ~20Hz broadcast — { players: [{ slot, position, angle, ammoCount, reloading }] }
-│       ├── ProjectileFiredEvent.cs             # { projectileId, ownerSlot, startPosition, angle, velocity, firedAt }
-│       ├── RoundEndedEvent.cs                  # { winnerSlot, scores, newMaze: MazeLayout }
-│       └── SessionEndedEvent.cs                # { finalScores } — emitted on disconnect; triggers Discord webhook server-side
+│       ├── GameStartedEvent.cs                      # { Maze: MazeLayout } — emitted when host clicks
+│       │                                            # Start; both clients navigate to /game
+│       │
+│       ├── GameTickEvent.cs                         # ~20Hz broadcast:
+│       │                                            # { Players: [{ Slot, Position, Angle,
+│       │                                            #     BulletsRemaining, Reloading,
+│       │                                            #     ActivePowerUp? }],
+│       │                                            #   Pickups: [{ Id, Type, Position }],
+│       │                                            #   Mines: [{ MineId, OwnerSlot, Position,
+│       │                                            #     IsInvisible }] }
+│       │
+│       ├── ProjectileFiredEvent.cs                  # { ProjectileId, OwnerSlot, StartPosition,
+│       │                                            # Angle, Velocity, FiredAt, PowerUpType? } —
+│       │                                            # PowerUpType is set for every power-up projectile
+│       │                                            # so clients apply the correct physics and visuals
+│       │
+│       ├── RoundEndedEvent.cs                       # { WinnerSlot, Scores: { Player1: int,
+│       │                                            # Player2: int }, NewMaze: MazeLayout,
+│       │                                            # Reason: DirectHit | MineTrigger }
+│       │                                            # Scores are integer kill counts only — no tiers,
+│       │                                            # multipliers, levels, or hearts in multiplayer
+│       │
+│       ├── SessionEndedEvent.cs                     # { FinalScores: { Player1: int, Player2: int } }
+│       │                                            # emitted on disconnect; triggers Discord webhook
+│       │
+│       ├── PowerUpSpawnedEvent.cs                   # { Id, Type, Position } — new pickup on the map
+│       │
+│       ├── PowerUpCollectedEvent.cs                 # { PowerUpId, CollectedBySlot } — pickup taken;
+│       │                                            # clients hide the token immediately
+│       │
+│       ├── PowerUpActivatedEvent.cs                 # { Slot, Type, ActivatedAt } — player used their
+│       │                                            # power-up; covers all self-contained timed effects:
+│       │                                            # ProtectiveShield (8s reflective barrier — true
+│       │                                            #   reflection angle, deflected projectiles remain
+│       │                                            #   lethal to both players; unlimited deflections);
+│       │                                            # PhaseShift (3s intangibility — hit detection
+│       │                                            #   suppressed for that player; player cannot
+│       │                                            #   fire; uniquely, the player CAN collect a new
+│       │                                            #   pickup during the shift, which ends it
+│       │                                            #   immediately and activates the new power-up);
+│       │                                            # OrbitalGuard (6s orbit — enemy projectiles that
+│       │                                            #   intersect the orbit are destroyed, not deflected;
+│       │                                            #   ends early if guard bullet reaches opponent);
+│       │                                            # TimeWarp (4s — all projectiles at 25% speed,
+│       │                                            #   tank movement unchanged, both players affected);
+│       │                                            # GatlingSpin (1s spin-up then auto-fire at 200ms
+│       │                                            #   intervals; each burst applies backward recoil
+│       │                                            #   to the player's position in GameService)
+│       │
+│       ├── PowerUpExpiredEvent.cs                   # { Slot } — timed effect elapsed; clients clean
+│       │                                            # up all associated visual state
+│       │
+│       ├── SwapExecutedEvent.cs                     # { Player1Position, Player2Position } —
+│       │                                            # authoritative post-swap positions for both players;
+│       │                                            # in-flight projectiles continue on their existing
+│       │                                            # trajectories and do not retarget after the swap
+│       │
+│       ├── ProjectilesDeflectedEvent.cs             # { Deflections: [{ ProjectileId, NewVelocity }] }
+│       │                                            # emitted after a Repulsor pulse (all in-flight
+│       │                                            # projectiles deflected outward from activating
+│       │                                            # player's position) or a ProtectiveShield contact
+│       │                                            # (individual projectile reflected at true angle);
+│       │                                            # deflected projectiles continue at full speed and
+│       │                                            # remain lethal to both players
+│       │
+│       ├── GravityWellPlacedEvent.cs                # { Slot, Position } — both clients begin applying
+│       │                                            # proximity-proportional trajectory bending toward
+│       │                                            # this point each tick; there is at most one active
+│       │                                            # well per round across both players — if any well
+│       │                                            # is already active when this event arrives,
+│       │                                            # regardless of which player placed it, it is
+│       │                                            # immediately cancelled and replaced by this one
+│       │
+│       ├── DecoySpawnedEvent.cs                     # { Slot, Position, MovementDirection } — clients
+│       │                                            # render a ghost tank at Position moving in
+│       │                                            # MovementDirection on autopilot for 5s or until
+│       │                                            # one projectile hits it; decoy cannot fire,
+│       │                                            # collect pickups, or trigger mines; bot targets
+│       │                                            # whichever of player or decoy is currently closer
+│       │
+│       ├── MinePlacedEvent.cs                       # { MineId, OwnerSlot, Position } — both clients
+│       │                                            # render the mine token visibly for the first 3s
+│       │                                            # then hide it; server tracks position for
+│       │                                            # detonation detection each tick; up to 3 active
+│       │                                            # mines per player simultaneously; mines cleared
+│       │                                            # on round start; Decoy cannot trigger mines
+│       │
+│       ├── ClusterOrbDetonatedEvent.cs              # { OriginalProjectileId, DetonationPosition } —
+│       │                                            # explicit sync point for the orb explosion; server
+│       │                                            # removes the orb and immediately emits 8 individual
+│       │                                            # ProjectileFiredEvents for the child projectiles
+│       │                                            # (evenly spaced at 45° intervals from the
+│       │                                            # detonation point); clients render the burst visual
+│       │
+│       └── WallRemovedEvent.cs                      # { WallId } — permanent wall removal for the
+│                                                    # remainder of the round; both clients remove the
+│                                                    # segment from their local MazeLayout; the wall
+│                                                    # selected is geometrically nearest to the
+│                                                    # activating player's current position
 │
-├── Program.cs                                  # DI, SignalR, CORS, routing
+├── Program.cs                                       # DI registration, SignalR, CORS, routing
 ├── appsettings.json
 ├── appsettings.Development.json
 ├── dead-angle-api.csproj
