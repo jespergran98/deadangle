@@ -1497,7 +1497,7 @@ First pickup 5–10s after round start; each subsequent pickup 10–15s after th
 
 **Visual identity — 1984 coin-op CRT:**
 - Player tank: `#FF2D78`. CPU tank: `#C8FF00`. Maze walls: `#00F0FF`. Background: `#000000`.
-- All HUD text uses `Press Start 2P`, high-contrast, no anti-aliasing. `imageSmoothingEnabled = false` on the canvas context. Tanks are pixel-art sprites, not smooth shapes.
+- All HUD text uses `Press Start 2P`, high-contrast, no anti-aliasing. `imageSmoothingEnabled = false` on the canvas context. Tanks are pixel-art sprites, not smooth shapes (use the same pixel art layout as the start screen, but with smaller tanks that fit perfectly across all viewports, following best 2026 practices)
 - Before writing any CSS, read `globals.css` in full. Use every relevant existing custom property (colours, font stacks, spacing, animation keyframes) rather than hardcoding values. Do not introduce a new token for anything already defined there.
 - The CPU is always called **CPU** — never "bot", "enemy", or "opponent" — in all UI text and code identifiers.
 
@@ -1565,4 +1565,6 @@ First pickup 5–10s after round start; each subsequent pickup 10–15s after th
 
 ---
 
-Implement the **Singleplayer Gameplay Screen** for Dead Angle. `CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention, `GameplayImplementation.md` is your implementation guide you need to follow. Do not deviate from either. All other files are the existing files within the project.
+Implement the **Singleplayer Gameplay Screen** for Dead Angle. `GameplayImplementation.md` is your implementation guide you need to follow, `CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention.. Do not deviate from either. All other files are the existing files within the project.
+
+---
