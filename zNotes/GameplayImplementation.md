@@ -81,3 +81,5 @@ First pickup 5–10s after round start; each subsequent pickup 10–15s after th
 
 **The aesthetic goal:** A pixel-perfect recreation of a 1984 coin-op machine. Every design decision must be justified by that hardware context — sharp pixels, flicker, hard-edged neon on black.
 
+---
+

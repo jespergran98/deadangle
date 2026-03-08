@@ -2028,3 +2028,290 @@ The output is correct when:
 - TypeScript compiles with no errors under `strict: true`.
 
 ---
+
+`CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention. Do not deviate from either.
+
+Do a major visual overhaul to the gameplay screen, the tank and maze pixel sizes are way too small, and the map is too big, the UI is super small all the way up in the corners. None of the physics are correct and projectiles do not bounce between walls. The maze generator needs to create better, smaller mazes. Ensure all logic and implementations work correctly.
+
+**Visual identity — 1984 coin-op CRT:**
+- Player tank: `#FF2D78`. CPU tank: `#C8FF00`. Maze walls: `#00F0FF`. Background: `#000000`.
+- All HUD text uses `Press Start 2P`, high-contrast, no anti-aliasing. `imageSmoothingEnabled = false` on the canvas context. Tanks are pixel-art sprites, not smooth shapes.
+- Before writing any CSS, read `globals.css` in full. Use every relevant existing custom property (colours, font stacks, spacing, animation keyframes) rather than hardcoding values. Do not introduce a new token for anything already defined there.
+- The CPU is always called **CPU** — never "bot", "enemy", or "opponent" — in all UI text and code identifiers.
+
+STREAMLINE AND CLEAN UP THE FILES A LOT.
+
+-----------------------------------------------------------------------------
+
+# Dead Angle — Singleplayer MVP Prompt
+
+`CLAUDE.md` is the source of truth for all logic. The filestructure file is the source of truth for every file path, file responsibility, and naming convention. Do not deviate from either.
+
+---
+
+## Scope
+
+Create or complete exactly these files:
+
+`game/page.tsx`, `game/page.module.css`, `GameCanvas`, `useGameLoop`, `useKeyboardInput`, `projectileSimulation`, `wallReflection`, `hitDetection`, `bot`, `mazeGenerator`, `drawMaze`, `drawPlayers`, `drawProjectiles`, `GameContext`, `GameProvider`, `RoomContext`, `game.types.ts`
+
+**Do not implement** power-ups, scoring, `SingleplayerContext`, `RoundTransition`, `SingleplayerHud`, `PowerUpIndicator`, `PowerUpIcon`, `trajectoryPreview`, `powerUpEffects`, `powerUpManager`, `drawPowerUps`, `drawPowerUpEffects`, `levelProgression`, or `highScore`. These will be layered in separately.
+
+---
+
+## Navigation
+
+Selecting Singleplayer sets `RoomContext.mode = 'singleplayer'` and navigates to `/game`. There is no game-over condition for now — the game runs indefinitely.
+
+---
+
+## Controls
+
+- WASD to move, Q to fire
+- Arrow keys to move, Space to fire
+- Both schemes active simultaneously
+
+---
+
+## Visual Identity — 1984 Coin-Op CRT
+
+- Player tank: `#FF2D78` — CPU tank: `#C8FF00` — Maze walls: `#00F0FF` — Background: `#000000`
+- All text uses `Press Start 2P`
+- `imageSmoothingEnabled = false` on every canvas context
+- Tanks are pixel-art sprites — hard-edged rectangles with a barrel nub, not smooth shapes
+- Before writing any CSS, read `globals.css` in full. Use every relevant existing custom property rather than hardcoding values. Do not introduce a new token for anything already defined there.
+
+---
+
+## Types — `game.types.ts`
+
+Define before implementing any logic. Include only what this MVP needs:
+
+- `Player` — position, angle, speed
+- `Projectile` — position, velocity, `bounceCount`, `spawnedAt`
+- `MazeWall`, `MazeLayout`, `GameState`, `PlayerSlot`
+
+Do not add `powerUpType`, `generation`, `isReturning`, `DecoyState`, `MineState`, or `GravityWellState` — those will be added when the relevant systems are built.
+
+---
+
+## `mazeGenerator`
+
+Generate a grid-based maze using a recursive-backtracker or equivalent algorithm. Corridors must be wide enough for tanks to navigate. Returns a `MazeLayout` — an array of `MazeWall` segments with world-space coordinates.
+
+---
+
+## `bot` — Static for Now
+
+The CPU does not move and does not fire. It spawns at its starting position and stays there. Export a `tickBot(state: GameState): GameState` function that returns the state unchanged. Real AI will be added in a later pass.
+
+---
+
+## `projectileSimulation`
+
+Standard physics only — no power-up variants. Each frame: advance every projectile by `velocity × deltaTime`. On wall contact, apply `wallReflection` and increment `bounceCount`. Expire projectiles after 10 seconds. No `powerUpEffects` call.
+
+---
+
+## `wallReflection`
+
+Compute the true reflection angle of a projectile off a `MazeWall` segment using standard incidence/reflection geometry. No approximations. Must be logically identical to the server's `WallReflection.cs` when it is eventually written.
+
+---
+
+## `hitDetection`
+
+Check each projectile against both tank hitboxes every frame. On hit: remove the projectile and log `"HIT: player"` or `"HIT: CPU"` to the console. No scoring, no hearts, no round transition — detection only.
+
+---
+
+## `useGameLoop` — Per-Frame Order
+
+1. `projectileSimulation`
+2. `tickBot`
+3. `hitDetection`
+4. Draw: `drawMaze` → `drawPlayers` → `drawProjectiles`
+
+No `drawPowerUps`, `drawPowerUpEffects`, or `trajectoryPreview` calls.
+
+---
+
+## `useKeyboardInput`
+
+Track held keys. Expose `movement` (direction vector) and `firePressed` (boolean, edge-triggered — one projectile per keypress, not per held frame). No suppression logic yet.
+
+---
+
+## Magazine
+
+7 bullets → fire last → 3s reload → 7 bullets. Display ammo count or reload countdown as plain canvas text in the top-left corner using `Press Start 2P`. This is the only HUD element needed for the MVP.
+
+---
+
+## Renderers
+
+- **`drawMaze`** — render `MazeWall` segments as solid `#00F0FF` lines on black
+- **`drawPlayers`** — render player (`#FF2D78`) and CPU (`#C8FF00`) as pixel-art rectangles with a barrel nub indicating facing direction
+- **`drawProjectiles`** — render each in-flight projectile as a small bright square in the firing player's colour
+
+---
+
+## `GameContext` — Minimal
+
+Hold only: `players` (player + CPU), `projectiles`, `maze`. No power-up fields, no mine states, no decoy, no gravity well, no `phaseBeamLockedSlots`.
+
+## `RoomContext`
+
+Hold `mode: 'singleplayer' | 'multiplayer' | null`. The singleplayer flow sets this before navigating to `/game`.
+
+---
+
+## Aesthetic Goal
+
+A pixel-perfect recreation of a 1984 coin-op machine. Every decision must be justified by that hardware context — sharp pixels, hard-edged neon on black, no gradients, no blur.
+
+-------------------------------------------------------------------------------------------
+
+# Dead Angle — Singleplayer MVP
+
+Implement the singleplayer game loop. Refer to `CLAUDE.md` for all game logic and `filestructure` for all file paths and naming.
+
+---
+
+## Files to create
+
+```
+src/app/game/page.tsx
+src/app/game/page.module.css
+src/features/game/components/GameCanvas/GameCanvas.tsx
+src/features/game/components/GameCanvas/GameCanvas.module.css
+src/features/game/hooks/useGameLoop.ts
+src/features/game/hooks/useKeyboardInput.ts
+src/features/game/physics/projectileSimulation.ts
+src/features/game/physics/wallReflection.ts
+src/features/game/singleplayer/hitDetection.ts
+src/features/game/singleplayer/bot.ts
+src/features/game/singleplayer/mazeGenerator.ts
+src/features/game/rendering/drawMaze.ts
+src/features/game/rendering/drawPlayers.ts
+src/features/game/rendering/drawProjectiles.ts
+src/features/game/constants.ts
+src/context/GameContext.ts
+src/context/GameProvider.tsx
+src/types/game.types.ts
+```
+
+Also update `src/context/RoomContext.ts` to export a `RoomProvider` component with working state — the existing `RoomState` interface must stay intact, only add the provider.
+
+---
+
+## What to build
+
+A playable singleplayer canvas game at `/game`. The player controls a tank in a generated maze, fires bouncing projectiles, and a static CPU tank sits at the opposite end. The game runs indefinitely.
+
+---
+
+## Key behaviour
+
+- **Controls:** WASD + Q to fire, Arrow keys + Space to fire. Both schemes active simultaneously
+- **Movement:** W/S moves forward/back along facing angle, A/D rotates
+- **Magazine:** 7 bullets; firing the last triggers a 3s reload, then restores 7
+- **Bot:** Spawns opposite the player, does not move or fire — `tickBot` returns state unchanged
+- **Hit detection:** On projectile–tank collision, log `HIT: player` or `HIT: CPU`, remove the projectile — no other effects yet
+- **Game loop order:** simulate projectiles → tick bot → detect hits → draw
+
+---
+
+## HUD
+
+Drawn directly on the canvas, top-left, `Press Start 2P`. Show bullet count when loaded, reload countdown (seconds, 1 decimal) when reloading. This is the only UI element for the MVP.
+
+---
+
+## Visual rules
+
+- Colours and fonts are already defined as tokens in `globals.css` — use them, don't hardcode values
+- `imageSmoothingEnabled = false` on every canvas context
+- Integer pixel coords everywhere (`Math.round`)
+- No gradients, no blur — hard neon pixels on black
+
+---
+
+# Dead Angle — Singleplayer MVP
+
+Implement the singleplayer game loop. Refer to `CLAUDE.md` for all game logic and `filestructure` for all file paths and naming.
+
+---
+
+## Files to create
+
+```
+src/app/game/page.tsx
+src/app/game/page.module.css
+src/features/game/components/GameCanvas/GameCanvas.tsx
+src/features/game/components/GameCanvas/GameCanvas.module.css
+src/features/game/hooks/useGameLoop.ts
+src/features/game/hooks/useKeyboardInput.ts
+src/features/game/physics/projectileSimulation.ts
+src/features/game/physics/wallReflection.ts
+src/features/game/singleplayer/hitDetection.ts
+src/features/game/singleplayer/bot.ts
+src/features/game/singleplayer/mazeGenerator.ts
+src/features/game/rendering/drawMaze.ts
+src/features/game/rendering/drawPlayers.ts
+src/features/game/rendering/drawProjectiles.ts
+src/features/game/constants.ts
+src/context/GameContext.ts
+src/context/GameProvider.tsx
+src/types/game.types.ts
+```
+
+Also update `src/context/RoomContext.ts` to export a `RoomProvider` component with working state — the existing `RoomState` interface must stay intact, only add the provider.
+
+---
+
+## What to build
+
+A playable singleplayer canvas game at `/game`. The player controls a tank in a generated maze, fires bouncing projectiles, and a static CPU tank sits at the opposite end. The game runs indefinitely.
+
+---
+
+## Key behaviour
+
+- **Controls:** WASD + Q to fire, Arrow keys + Space to fire. Both schemes active simultaneously
+- **Movement:** W/S moves forward/back along facing angle, A/D rotates
+- **Magazine:** 7 bullets; firing the last triggers a 3s reload, then restores 7
+- **Bot:** Spawns opposite the player, does not move or fire — `tickBot` returns state unchanged
+- **Hit detection:** On projectile–tank collision, log `HIT: player` or `HIT: CPU`, remove the projectile — no other effects yet
+- **Game loop order:** simulate projectiles → tick bot → detect hits → draw
+
+---
+
+## Maze
+
+Recursive backtracker on a landscape grid (wider than tall). Every cell has at least one open passage to a neighbour — no cell is ever fully enclosed. The outer boundary is not a perfect rectangle: a small number of cells are removed from the corners and edges to give the maze an irregular, organic silhouette. Removed cells are treated as solid — they cannot be traversed or spawned into. Returns a `MazeLayout` of world-space `MazeWall` segments including the border walls of the remaining shape.
+
+DO NOT USE HARDCODED PIXEL SIZES FOR ANYTHING, ENSURE IT SCALES PERFECTLY ACROSS VIEWPORTS JUST LIKE THE STARTSCREEN.
+
+---
+
+## HUD
+
+Drawn directly on the canvas using `Press Start 2P`. Styled as a 1980s arcade HUD — two panels, one per tank, positioned in opposite corners of the canvas. The player panel sits underneath the canvas to the left in pink the CPU panel sits underneath the canvas in green. All colours are imported from `globals.css` tokens — nothing hardcoded. Each panel shows only the bullet count (number of bullets remaining) and a reload cooldown animation when reloading. This is the only UI element for the MVP.
+
+---
+
+## Responsive layout
+
+The canvas is landscape (wider than tall). On slim viewports where the viewport width is less than the canvas width, rotate the entire canvas 90° with CSS (`transform: rotate(90deg)`) and swap the width/height constraints so it fills the screen correctly. All gameplay logic, coordinates, and input handling remain completely unchanged — this is a pure CSS visual rotation.
+
+---
+
+## Visual rules
+
+- Colours and fonts are already defined as tokens in `globals.css` — use them, don't hardcode values
+- `imageSmoothingEnabled = false` on every canvas context
+- Integer pixel coords everywhere (`Math.round`)
+- No gradients, no blur — hard neon pixels on black
+
+Feel free to adjust and rework elements within game.types.ts
