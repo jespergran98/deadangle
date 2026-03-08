@@ -1565,6 +1565,12 @@ First pickup 5–10s after round start; each subsequent pickup 10–15s after th
 
 ---
 
-Implement the **Singleplayer Gameplay Screen** for Dead Angle. `GameplayImplementation.md` is your implementation guide you need to follow, `CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention.. Do not deviate from either. All other files are the existing files within the project.
+Implement the **Singleplayer Gameplay Screen** for Dead Angle. `GameplayImplementation.md` is your implementation guide you need to follow, `CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention. Do not deviate from either. All other files are the existing files within the project.
 
 ---
+
+Analyze all the new files one by one, and ensure all criteria within the GameplayImplementation.md, GUIDE.md and filestructure.md are met following the best 2026 practices for logic and development. Ensure all logic is refactored, streamlined and straight to the point with well made files that seamlessly work. Act as a professional developer and code analyzer. All logic should be as straight forward and perfect as possible.
+
+---
+
+Add the **Shared type system. — no logic, no implementations.** for Dead Angle. `GameplayImplementation.md` is your implementation guide you need to follow, `CLAUDE.md` is the source of truth for all logic. `filestructure.md` is the source of truth for every file path, file responsibility, and naming convention. Do not deviate from either. All other files are the existing files within the project.
