@@ -2416,3 +2416,75 @@ The two-player asymmetry (pink left, green right) must be immediately legible at
 - No dead rules. Sections clearly commented.
 - Color values as hex literals inside `@keyframes`.
 - Deliver `GameCanvas.module.css` and updated `GameCanvas.tsx` only if markup changes are needed.
+
+---
+
+You did the completely wrong things, you added a border around the canvas, even though some of the canvas is not playable, the outer walls of the maze is not always at the canvas edge. You also added absolutely no updates to the HUD under the canvas, or any improvements to the overall canvas. Analyze the original prompt I gave you and update the prompt ,ensuing next time I give the prompt to an AI it flawlessly actually improves the whole design.
+
+-------
+
+Update the visual design of the Dead Angle gameplay screen. Deliver updated `GameCanvas.module.css` and `GameCanvas.tsx` (only if markup changes are needed).
+
+Reference the attached `page.tsx` and `page.module.css` (start screen) for tone, palette usage, and component patterns.
+
+---
+
+## Context you must understand before touching any code
+
+Read `GameCanvas.tsx` and `GameCanvas.module.css` in full before writing anything.
+
+The canvas element (`560×320 px` drawing buffer, CSS-scaled) renders a **procedurally generated maze**. The maze's outer walls are not guaranteed to sit at the canvas edge — organic boundary removal means the active playfield can be inset from the canvas rectangle by one or more cells. **A CSS border, outline, or box-shadow on `.canvasWrap` or `.canvas` will frame empty black space, not the playfield.** Do not add any decoration directly to those two elements.
+
+All decorative framing must be applied to `.canvasOuter` (the sizing wrapper that already exists above `.canvasWrap`) — this is the element you style as the cabinet monitor bezel.
+
+---
+
+## Goal
+
+A pixel-perfect **1984 coin-op arcade** feel during active play. Every element should feel physically manufactured — silk-screened, machined, or phosphor-etched — not rendered by a browser.
+
+A CRT overlay (scanlines, flicker, sweep, glitch bar) is already applied globally. **Do not add any CRT simulation of any kind** (no blur, no vignette, no scanlines, no flicker, no opacity pulse).
+
+---
+
+## Palette
+
+`#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on `#000000` black.  
+No other colours. No gradients between hues. Opacity variants of these colours are allowed for dim/inactive states. (all styles from the global.css are allowed)
+
+---
+
+## What to design
+
+### 1 — Canvas surround on `.canvasOuter`
+
+Style `.canvasOuter` as a physical **cabinet monitor bezel**:
+- A layered `box-shadow` in cyan that reads as a phosphor tube glowing inside a dark room: tight hard edge → mid glow → wide ambient aura.
+- Four short **L-shaped corner tick marks** (two-sided borders, ~16×16 px) anchored at the four corners of `.canvasOuter`. Use `position: absolute` children with `::before`/`::after` pseudo-elements or separate `<span>` elements. The ticks must overhang the outer edge slightly (negative offset). Use `filter: drop-shadow` not `box-shadow` on the ticks so the L-shape glows as a silhouette, not a rectangle.
+- A thin top-border or inset rule on the HUD strip that reads as the lower bezel lip.
+
+### 2 — HUD strip (`.hud` and children)
+
+The HUD is a **physical status panel silk-screened onto the bezel face**, not a floating browser UI. Redesign it completely:
+
+**Layout:** `.hudPanel` (P1, pink, left-aligned) · `.hudSep` (vertical center divider) · `.hudPanel` (CPU, green, right-aligned). Both panels `flex: 1`, separator is a 1 px vertical line.
+
+**Player labels** (`PLAYER` / `CPU`): very dim (`opacity ≈ 0.40`), widest available letter-spacing, small font — stencil-print aesthetic, not active UI text.
+
+**Bullet pips:** Solid filled squares when loaded (with neon `filter: drop-shadow` glow in the player's colour). Hollow outlined squares when spent (`opacity ≈ 0.15`). Horizontally arranged. P2 pips right-to-left so the "barrel" end aligns with the separator.
+
+**Reload bar:** The progress fill pulses with a breathing neon glow (`@keyframes` — ease-in-out oscillation between a tight and wide `box-shadow`). The trough behind the fill is near-invisible (`rgba` of the fill colour at ~8% opacity). A blinking `RELOAD` label next to the bar.
+
+**Two-player asymmetry must be immediately legible at a glance.** Pink on the left, green on the right. The separator makes clear it is one unified panel, not two independent widgets.
+
+---
+
+## Hard constraints
+
+- **No decoration on `.canvasWrap` or `.canvas`** — these must remain visually untouched (the maze borders the active area, not the DOM element).
+- No CRT effects of any kind.
+- No gradients between hues.
+- All `@keyframes` declared locally in the CSS module (not sourced from `globals.css`).
+- Hex literals (not CSS variables) inside every `@keyframes` block.
+- No dead rules. Every rule must be used. Sections clearly commented.
+- Portrait media query (`max-aspect-ratio: 5/4`) must be preserved exactly — do not alter the rotation geometry or the `--hud-height: 0px` override.
