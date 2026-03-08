@@ -1,647 +1,430 @@
 /* ============================================================
-   page.module.css — Dead Angle start screen
-   MAXIMALIST 1984 ARCADE CABINET — redesigned for full intensity.
+   page.module.css  ·  DEAD ANGLE  ·  Start Screen
+   1984 arcade cabinet attract screen.
+   Palette: #FF2D78 pink  ·  #00F0FF cyan  ·  #C8FF00 green
+   ============================================================
 
-   LAYOUT:
-     .screen        flex, align-items:center, justify-content:center
-                    Full viewport stage.
-     .bgGrid        absolute, inset 0 — faint pixel matrix texture
-     .topStrip      absolute, top:44px — arcade score header
-     .marqueeBand   absolute, top:96px — scrolling attract text
-     .content       max-width min(96vw,760px), padding:130px 32px 110px
-     .bottomStrip   absolute, bottom:44px — prompt + credits
+   LAYOUT (budgeted at 768px viewport):
+     .screen        height:100dvh, overflow:hidden — hard lock
+     .topStrip      absolute top:44px  — score header
+     .marqueeBand   absolute top:96px  — coin-op attract ticker
+     .content       flex-centered, clamp padding clears strips
+     .bottomStrip   absolute bottom:44px — INSERT COIN + credits
 
-   BEZEL STRUCTURE:
-     Double rails: outer at 20px, inner at 32px edge-inset.
-     Corners: 30px diamonds, outer glow ring, cpop-* stagger.
-     Rails emit animated comet shimmers.
+   COLOR DISCIPLINE (authentic arcade assignment):
+     Pink  = title, P1 score, error, bottom rail, left vline
+     Cyan  = mode-select active, P2 score, top rail, right vline
+     Green = play CTA, credit counter, tank track
+     White = HI-SCORE, credit text
 
-   TITLE:
-     clamp(4.2rem,16vw,9rem). Pink base. Cyan+red ghost glitch.
-     Periodic title-shake tremor. Independent per-word pulse.
-
-   SEPARATOR:
-     flex row — line ★ line. Star pulses cyan.
-
-   TANK:
-     20px cells with stronger multi-colour glow.
-
-   PLAY BUTTON:
-     Monumental — padding 20px 52px, font 11px. Pulsing.
-
-   All @keyframes declared locally (CSS Modules scope).
+   ANIMATION TIMING:
+     Hard digital state (blink, corner pop): step-end
+     Physical sweep / phosphor glow:         ease-in-out / linear
    ============================================================ */
 
 
-/* ─────────────────────────────────────────────────────────────
-   LOCAL @keyframes
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════ */
 
-@keyframes fade-in-flat {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+/* — Entrance — */
+@keyframes fade-flat { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-up   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(7px); }
-  to   { opacity: 1; transform: translateY(0);   }
-}
-
-/* ── Title glow pulse — two words staggered 0.45s.
-   Resting spread ~52px → peak ~220px. ── */
-@keyframes title-glow-pulse {
+/* — Title: per-word neon pulse — */
+@keyframes title-pulse {
   0%, 100% {
     text-shadow:
-      4px  4px  0   #00F0FF,
-      6px  6px  0   #00F0FF,
-      0    0   12px #FF2D78,
-      0    0   32px #FF2D78,
-      0    0   60px rgba(255, 45, 120, 0.60),
-      4px  4px 16px rgba(0, 240, 255, 0.48);
+      4px 4px 0   #00F0FF, 6px 6px 0 #00F0FF,
+      0   0  12px #FF2D78, 0   0  34px #FF2D78,
+      0   0  64px rgba(255,45,120,.58),
+      4px 4px 18px rgba(0,240,255,.42);
   }
   50% {
     text-shadow:
-      4px  4px  0   #00F0FF,
-      6px  6px  0   #00F0FF,
-      0    0   28px #FF2D78,
-      0    0   80px #FF2D78,
-      0    0  150px rgba(255, 45, 120, 0.88),
-      0    0  220px rgba(255, 45, 120, 0.32),
-      4px  4px 32px rgba(0, 240, 255, 0.72);
+      4px 4px 0    #00F0FF, 6px 6px 0 #00F0FF,
+      0   0   26px #FF2D78, 0   0  72px #FF2D78,
+      0   0  140px rgba(255,45,120,.84),
+      0   0  200px rgba(255,45,120,.26),
+      4px 4px 30px rgba(0,240,255,.66);
   }
 }
 
-/* ── Periodic title tremor — fires violently at 82% ── */
+/* — Title: violent sync-loss tremor at ~82% of cycle — */
 @keyframes title-shake {
-  0%,   79.9%, 87%, 100% { transform: translate(0, 0) skewX(0deg); }
-  80%                     { transform: translate(-5px, 0) skewX(-1deg); }
-  80.5%                   { transform: translate(5px, 0) skewX(1deg); }
-  81%                     { transform: translate(-3px, 0) skewX(0.5deg); }
-  81.5%                   { transform: translate(3px, 0) skewX(-0.5deg); }
-  82%                     { transform: translate(-7px, 1px) skewX(-2deg); }
-  83%                     { transform: translate(7px, -1px) skewX(2deg); }
-  84%                     { transform: translate(-4px, 0) skewX(-1deg); }
-  85%                     { transform: translate(4px, 0) skewX(1deg); }
-  86%                     { transform: translate(-2px, 0); }
+  0%,79%,88%,100% { transform: translate(0,0) skewX(0); }
+  80%  { transform: translate(-5px, 0) skewX(-1.2deg); }
+  81%  { transform: translate( 5px, 0) skewX( 1.2deg); }
+  82%  { transform: translate(-8px,1px) skewX(-2.5deg); }
+  83%  { transform: translate( 8px,-1px) skewX( 2.5deg); }
+  84%  { transform: translate(-4px, 0) skewX(-1deg); }
+  85%  { transform: translate( 4px, 0) skewX( 1deg); }
+  86%  { transform: translate(-2px, 0); }
+  87%  { transform: translate( 2px, 0); }
 }
 
-/* ── Red ghost — sub-frame snap technique, linear timing ── */
+/* — Chromatic aberration ghosts — linear: sub-frame gaps = instant snap — */
 @keyframes ghost-red {
-  0%,    83.8% { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.72; }
-  83.9%         { transform: translate(-28px, 5px) skewX(-22deg); opacity: 1.00; }
-  84.9%         { transform: translate(-28px, 5px) skewX(-22deg); opacity: 1.00; }
-  85.0%         { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.72; }
-  85.9%         { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.72; }
-  86.0%         { transform: translate(-36px, 2px) skewX(-14deg); opacity: 0.90; }
-  87.0%         { transform: translate(-36px, 2px) skewX(-14deg); opacity: 0.90; }
-  87.1%         { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.72; }
-  100%          { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.72; }
+  0%,83.8%  { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  83.9%      { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
+  84.9%      { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
+  85.0%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  85.9%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  86.0%      { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
+  87.0%      { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
+  87.1%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  100%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
 }
-
-/* ── Cyan ghost — staggered 0.3s ── */
 @keyframes ghost-cyan {
-  0%,    80.8% { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.68; }
-  80.9%         { transform: translate(30px, -6px) skewX(22deg); opacity: 1.00; }
-  81.9%         { transform: translate(30px, -6px) skewX(22deg); opacity: 1.00; }
-  82.0%         { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.68; }
-  82.9%         { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.68; }
-  83.0%         { transform: translate(38px, -3px) skewX(14deg); opacity: 0.86; }
-  84.0%         { transform: translate(38px, -3px) skewX(14deg); opacity: 0.86; }
-  84.1%         { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.68; }
-  100%          { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.68; }
+  0%,80.8%  { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  80.9%      { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
+  81.9%      { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
+  82.0%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  82.9%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  83.0%      { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
+  84.0%      { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
+  84.1%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  100%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
 }
 
-/* ── Tagline color cycle — pink → cyan → green ── */
-@keyframes tagline-color-cycle {
-  0%,  28%  { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 14px #C8FF00; }
-  30%,  32% { color: #ffffff; text-shadow: 0 0 14px #ffffff; }
-  33%,  61% { color: #00F0FF; text-shadow: 0 0 6px #00F0FF, 0 0 14px #00F0FF; }
-  63%,  65% { color: #ffffff; text-shadow: 0 0 14px #ffffff; }
-  66%,  94% { color: #FF2D78; text-shadow: 0 0 6px #FF2D78, 0 0 14px #FF2D78; }
-  96%,  98% { color: #ffffff; text-shadow: 0 0 14px #ffffff; }
-  100%       { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 14px #C8FF00; }
+/* — Tagline: hard palette cycle green→cyan→pink — */
+@keyframes tagline-cycle {
+  0%,  28%  { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 16px #C8FF00; }
+  30%,  32% { color: #fff;    text-shadow: 0 0 14px #fff; }
+  33%,  61% { color: #00F0FF; text-shadow: 0 0 6px #00F0FF, 0 0 16px #00F0FF; }
+  63%,  65% { color: #fff;    text-shadow: 0 0 14px #fff; }
+  66%,  94% { color: #FF2D78; text-shadow: 0 0 6px #FF2D78, 0 0 16px #FF2D78; }
+  96%,  98% { color: #fff;    text-shadow: 0 0 14px #fff; }
+  100%       { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 16px #C8FF00; }
 }
-
-/* ── Tagline instability — occasional dip ── */
 @keyframes tagline-jitter {
-  0%,  100% { opacity: 1;    }
-  47%        { opacity: 1;    }
-  47.5%      { opacity: 0.40; }
-  48%        { opacity: 1;    }
-  73%        { opacity: 1;    }
-  73.5%      { opacity: 0.55; }
-  74%        { opacity: 1;    }
+  0%,47%,49%,73%,75%,100% { opacity: 1; }
+  48%                       { opacity: .35; }
+  74%                       { opacity: .50; }
 }
 
-/* ── Rail comet — light travelling along rail ── */
-@keyframes rail-comet-h {
-  0%   { background-position: -80% 0; opacity: 0; }
+/* — Tank: multi-colour phosphor lub-dub — */
+@keyframes tank-beat {
+  0%       { filter: brightness(.30) drop-shadow(0 0 1px rgba(200,255,0,.48)); }
+  6%       { filter: brightness(2.60)
+               drop-shadow(0 0 10px #FF2D78)
+               drop-shadow(0 0 20px #00F0FF)
+               drop-shadow(0 0 44px #C8FF00); }
+  13%      { filter: brightness(.44) drop-shadow(0 0 2px rgba(200,255,0,.42)); }
+  21%      { filter: brightness(2.10)
+               drop-shadow(0 0  7px #FF2D78)
+               drop-shadow(0 0 16px #00F0FF)
+               drop-shadow(0 0 30px rgba(200,255,0,.78)); }
+  34%,100% { filter: brightness(.30) drop-shadow(0 0 1px rgba(200,255,0,.48)); }
+}
+
+/* — Bezel corners: marquee-light strobe, 4-corner sequential stagger — */
+@keyframes cpop-tl {
+  0%,70%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  71%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
+  72%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  73%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
+  74%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+}
+@keyframes cpop-tr {
+  0%,73%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  74%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
+  75%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  76%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
+  77%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+}
+@keyframes cpop-bl {
+  0%,76%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  77%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
+  78%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  79%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
+  80%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+}
+@keyframes cpop-br {
+  0%,79%,100% { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  80%  { transform: rotate(45deg) scale(3.0); opacity: 1;   }
+  81%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+  82%  { transform: rotate(45deg) scale(2.0); opacity: .80; }
+  83%  { transform: rotate(45deg) scale(1.0); opacity: .48; }
+}
+
+/* — Rail comet: bright spark traverses horizontal rail — */
+@keyframes comet-h {
+  0%   { background-position: -60% 0; opacity: 0; }
   8%   { opacity: 1; }
   92%  { opacity: 1; }
-  100% { background-position: 180% 0; opacity: 0; }
+  100% { background-position: 160% 0; opacity: 0; }
 }
 
-/* ── Marquee scrolling text ── */
+/* — Attract marquee scroll — */
 @keyframes marquee-scroll {
   from { transform: translateX(100vw); }
   to   { transform: translateX(-100%); }
 }
 
-/* ── Separator star pulse ── */
-@keyframes sep-star-pulse {
-  0%,  100% {
-    color: #00F0FF;
-    text-shadow:
-      0 0  6px #00F0FF,
-      0 0 14px #00F0FF,
-      0 0 28px rgba(0, 240, 255, 0.60);
-    transform: rotate(0deg) scale(1.0);
-  }
-  25% {
-    color: #FF2D78;
-    text-shadow:
-      0 0  6px #FF2D78,
-      0 0 14px #FF2D78;
-    transform: rotate(90deg) scale(1.3);
-  }
-  50% {
-    color: #C8FF00;
-    text-shadow:
-      0 0  6px #C8FF00,
-      0 0 14px #C8FF00,
-      0 0 28px rgba(200, 255, 0, 0.60);
-    transform: rotate(180deg) scale(1.0);
-  }
-  75% {
-    color: #00F0FF;
-    text-shadow: 0 0 8px #00F0FF, 0 0 20px #00F0FF;
-    transform: rotate(270deg) scale(1.2);
-  }
+/* — Score: P1/P2 blink out of phase, step-end — */
+@keyframes blink-p1 {
+  0%,89.9%  { opacity: 1;   }
+  90%,93.9% { opacity: .10; }
+  94%,100%  { opacity: 1;   }
 }
-
-/* ── Tank heartbeat — multi-colour lub-dub ── */
-@keyframes tank-heartbeat {
-  0% {
-    filter:
-      brightness(0.32)
-      drop-shadow(0 0 1px rgba(200, 255, 0, 0.55));
-  }
-  6% {
-    filter:
-      brightness(2.60)
-      drop-shadow(0 0 10px #FF2D78)
-      drop-shadow(0 0 22px #00F0FF)
-      drop-shadow(0 0 50px rgba(200, 255, 0, 1.00));
-  }
-  13% {
-    filter:
-      brightness(0.48)
-      drop-shadow(0 0 2px rgba(200, 255, 0, 0.45));
-  }
-  20% {
-    filter:
-      brightness(2.20)
-      drop-shadow(0 0 8px  #FF2D78)
-      drop-shadow(0 0 18px #00F0FF)
-      drop-shadow(0 0 34px rgba(200, 255, 0, 0.88));
-  }
-  34%, 100% {
-    filter:
-      brightness(0.32)
-      drop-shadow(0 0 1px rgba(200, 255, 0, 0.55));
-  }
+@keyframes blink-p2 {
+  0%,83.9%  { opacity: 1;   }
+  84%,87.9% { opacity: .10; }
+  88%,100%  { opacity: 1;   }
 }
-
-/* ── Corner pop — violent marquee-light stagger ── */
-@keyframes cpop-tl {
-  0%,  70%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  71%              { transform: rotate(45deg) scale(3.0); opacity: 1.00; }
-  72%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  73%              { transform: rotate(45deg) scale(2.0); opacity: 0.85; }
-  74%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-}
-@keyframes cpop-tr {
-  0%,  73%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  74%              { transform: rotate(45deg) scale(3.0); opacity: 1.00; }
-  75%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  76%              { transform: rotate(45deg) scale(2.0); opacity: 0.85; }
-  77%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-}
-@keyframes cpop-bl {
-  0%,  76%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  77%              { transform: rotate(45deg) scale(3.0); opacity: 1.00; }
-  78%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  79%              { transform: rotate(45deg) scale(2.0); opacity: 0.85; }
-  80%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-}
-@keyframes cpop-br {
-  0%,  79%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  80%              { transform: rotate(45deg) scale(3.0); opacity: 1.00; }
-  81%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-  82%              { transform: rotate(45deg) scale(2.0); opacity: 0.85; }
-  83%              { transform: rotate(45deg) scale(1.0); opacity: 0.50; }
-}
-
-/* ── Pixel dot blink ── */
-@keyframes dot-blink {
-  0%,  100% { opacity: 1; }
-  50%        { opacity: 0; }
-}
-
-/* ── Score label flash — colors pulse distinctly ── */
-@keyframes score-blink-p1 {
-  0%,  89.9% { opacity: 1.0; }
-  90%, 93.9% { opacity: 0.15; }
-  94%, 100%  { opacity: 1.0; }
-}
-@keyframes score-blink-p2 {
-  0%,  83.9% { opacity: 1.0; }
-  84%, 87.9% { opacity: 0.15; }
-  88%, 100%  { opacity: 1.0; }
-}
-
-/* ── HIGH SCORE glow throb ── */
 @keyframes hi-throb {
-  0%,  100% {
-    color: rgba(255, 255, 255, 0.55);
-    text-shadow: none;
-  }
-  50% {
-    color: rgba(255, 255, 255, 0.95);
-    text-shadow: 0 0 10px rgba(255,255,255,0.65), 0 0 24px rgba(255,255,255,0.30);
-  }
+  0%,100% { color: rgba(255,255,255,.50); text-shadow: none; }
+  50%      { color: rgba(255,255,255,.95);
+             text-shadow: 0 0 10px rgba(255,255,255,.56), 0 0 24px rgba(255,255,255,.20); }
 }
 
-/* ── Hard attract blink ── */
-@keyframes blink-hard {
-  0%,  49.9% { opacity: 1; }
-  50%, 100%  { opacity: 0; }
+/* — Attract prompt: authentic 1 Hz coin-op blink — */
+@keyframes coin-blink {
+  0%,49.9%  { opacity: 1; }
+  50%,100%  { opacity: 0; }
 }
 
-/* ── Spark fall — 4px comet tail ── */
+/* — Pixel dots: hard blink — */
+@keyframes dot-blink {
+  0%,49.9%  { opacity: 1; }
+  50%,100%  { opacity: 0; }
+}
+
+/* — Falling sparks: top → bottom comet — */
 @keyframes spark-fall {
-  0%   { transform: translateY(-40px) scaleY(1.0); opacity: 0;    }
+  0%   { transform: translateY(-40px) scaleY(1);    opacity: 0;   }
   6%   { opacity: 1; }
-  80%  { opacity: 0.85; }
-  100% { transform: translateY(100vh) scaleY(3.0);  opacity: 0;    }
+  82%  { opacity: .78; }
+  100% { transform: translateY(100vh)  scaleY(2.5); opacity: 0;   }
 }
 
-/* ── Play button glow — pink ── */
-@keyframes btn-glow-pink {
-  0%,  100% {
-    box-shadow:
-      0 0  6px #FF2D78, 0 0 16px #FF2D78,
-      inset 0 0 22px rgba(255, 45, 120, 0.06);
-  }
-  50% {
-    box-shadow:
-      0 0 10px #FF2D78, 0 0 30px #FF2D78,
-      0 0 60px rgba(255, 45, 120, 0.60),
-      inset 0 0 32px rgba(255, 45, 120, 0.12);
-  }
+/* — Play button glow pulses — */
+@keyframes glow-pink {
+  0%,100% { box-shadow: 0 0 6px #FF2D78, 0 0 18px #FF2D78,
+              inset 0 0 18px rgba(255,45,120,.05); }
+  50%      { box-shadow: 0 0 10px #FF2D78, 0 0 32px #FF2D78,
+              0 0 56px rgba(255,45,120,.52),
+              inset 0 0 26px rgba(255,45,120,.10); }
+}
+@keyframes glow-green {
+  0%,100% { box-shadow: 0 0 6px #C8FF00, 0 0 16px #C8FF00; }
+  50%      { box-shadow: 0 0 10px #C8FF00, 0 0 28px #C8FF00,
+              0 0 52px rgba(200,255,0,.48); }
 }
 
-/* ── Play button glow — green ── */
-@keyframes btn-glow-green {
-  0%,  100% { box-shadow: 0 0  6px #C8FF00, 0 0 14px #C8FF00; }
-  50% {
-    box-shadow:
-      0 0  8px #C8FF00, 0 0 24px #C8FF00,
-      0 0 48px rgba(200, 255, 0, 0.55);
-  }
-}
-
-/* ── Score value count-up glow — used on scoreValueHi ── */
-@keyframes score-hi-throb {
-  0%,  100% { color: rgba(255,255,255,0.55); text-shadow: none; }
-  50%        { color: #ffffff; text-shadow: 0 0 12px rgba(255,255,255,0.70), 0 0 28px rgba(255,255,255,0.30); }
-}
-
-/* ── Controls label blink — subtle ── */
-@keyframes label-flicker {
-  0%,   94%,  100% { opacity: 0.55; }
-  95%               { opacity: 0.20; }
-  96%               { opacity: 0.55; }
-  97%               { opacity: 0.35; }
-  98%               { opacity: 0.55; }
+/* — Separator star: continuous spin + palette cycle — */
+@keyframes star-spin {
+  0%,100% { color: #00F0FF; text-shadow: 0 0 6px #00F0FF, 0 0 14px #00F0FF; transform: rotate(0deg)   scale(1.0); }
+  25%      { color: #FF2D78; text-shadow: 0 0 6px #FF2D78, 0 0 14px #FF2D78; transform: rotate(90deg)  scale(1.3); }
+  50%      { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 14px #C8FF00; transform: rotate(180deg) scale(1.0); }
+  75%      { color: #00F0FF; text-shadow: 0 0 8px #00F0FF, 0 0 18px #00F0FF; transform: rotate(270deg) scale(1.2); }
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   SCREEN — full viewport stage
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   SCREEN — hard viewport lock
+   ═══════════════════════════════════════════════════════════ */
+
 .screen {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100dvh;
-  max-height: 100dvh;
-  background: var(--color-bg);
+  background: #000;
   overflow: hidden;
 }
 
-/* Scattered deep phosphor points */
+/* Scattered phosphor point sources — CRT surface noise */
 .screen::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(1px 1px at 12% 18%, rgba(0, 240, 255, 0.40) 0%, transparent 100%),
-    radial-gradient(1px 1px at 28% 44%, rgba(255, 45, 120, 0.28) 0%, transparent 100%),
-    radial-gradient(1px 1px at 55% 22%, rgba(200, 255, 0,  0.32) 0%, transparent 100%),
-    radial-gradient(1px 1px at 72% 68%, rgba(0, 240, 255, 0.25) 0%, transparent 100%),
-    radial-gradient(1px 1px at 88% 35%, rgba(255, 45, 120, 0.33) 0%, transparent 100%),
-    radial-gradient(1px 1px at 18% 78%, rgba(200, 255, 0,  0.24) 0%, transparent 100%),
-    radial-gradient(1px 1px at 44% 90%, rgba(255, 45, 120, 0.22) 0%, transparent 100%),
-    radial-gradient(1px 1px at 90% 82%, rgba(0, 240, 255, 0.22) 0%, transparent 100%),
-    radial-gradient(1px 1px at 65% 50%, rgba(200, 255, 0,  0.20) 0%, transparent 100%),
-    radial-gradient(1px 1px at 35% 60%, rgba(255, 255, 255, 0.18) 0%, transparent 100%);
+    radial-gradient(1px 1px at 12% 18%, rgba(0,240,255,.36)   0%, transparent 100%),
+    radial-gradient(1px 1px at 28% 44%, rgba(255,45,120,.24)  0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 22%, rgba(200,255,0,.26)   0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 68%, rgba(0,240,255,.20)   0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 35%, rgba(255,45,120,.26)  0%, transparent 100%),
+    radial-gradient(1px 1px at 18% 78%, rgba(200,255,0,.20)   0%, transparent 100%),
+    radial-gradient(1px 1px at 44% 90%, rgba(255,45,120,.16)  0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 82%, rgba(0,240,255,.16)   0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 50%, rgba(200,255,0,.14)   0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 60%, rgba(255,255,255,.12) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   BACKGROUND PIXEL MATRIX
-   Very faint dot grid — suggests the arcade display raster.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   BACKGROUND: PIXEL MATRIX · SPARKS · DOTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Raster dot grid — physical display phosphor matrix */
 .bgGrid {
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(0, 240, 255, 0.045) 1px, transparent 1px);
-  background-size: 36px 36px;
+  background-image: radial-gradient(circle, rgba(0,240,255,.038) 1px, transparent 1px);
+  background-size: 32px 32px;
   pointer-events: none;
   z-index: 0;
 }
 
-
-/* ─────────────────────────────────────────────────────────────
-   FALLING SPARKS
-   ───────────────────────────────────────────────────────────── */
+/* Falling pixel sparks — color/shadow/timing set by inline style */
 .spark {
   position: absolute;
   top: 0;
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   pointer-events: none;
   z-index: 2;
   animation: spark-fall linear infinite;
 }
 
-
-/* ─────────────────────────────────────────────────────────────
-   PIXEL DOTS
-   ───────────────────────────────────────────────────────────── */
+/* Edge-scattered pixel accent dots */
 .pxDot {
   position: absolute;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   pointer-events: none;
   z-index: 4;
-  animation: dot-blink 1.8s step-end infinite;
+  animation: dot-blink 1.6s step-end infinite;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   BEZEL CORNERS — 30×30px diamonds, enlarged.
-   Outer glow ring makes them read like neon rivets.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   BEZEL: CORNER DIAMONDS
+   TL=pink  TR=cyan  BL=cyan  BR=pink  (arcade convention)
+   ═══════════════════════════════════════════════════════════ */
+
 .corner {
   position: absolute;
   display: block;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border: 3px solid;
   transform-origin: center;
   pointer-events: none;
   z-index: 6;
 }
-
-.cornerTL {
-  top: 14px; left: 14px;
-  border-color: var(--color-pink);
-  box-shadow:
-    var(--glow-pink-sm),
-    inset 0 0 8px rgba(255, 45, 120, 0.20);
-  animation: cpop-tl 4.2s linear 0.0s infinite;
-}
-.cornerTR {
-  top: 14px; right: 14px;
-  border-color: var(--color-cyan);
-  box-shadow:
-    var(--glow-cyan-sm),
-    inset 0 0 8px rgba(0, 240, 255, 0.20);
-  animation: cpop-tr 4.2s linear 0.6s infinite;
-}
-.cornerBL {
-  bottom: 14px; left: 14px;
-  border-color: var(--color-cyan);
-  box-shadow:
-    var(--glow-cyan-sm),
-    inset 0 0 8px rgba(0, 240, 255, 0.20);
-  animation: cpop-bl 4.2s linear 1.2s infinite;
-}
-.cornerBR {
-  bottom: 14px; right: 14px;
-  border-color: var(--color-pink);
-  box-shadow:
-    var(--glow-pink-sm),
-    inset 0 0 8px rgba(255, 45, 120, 0.20);
-  animation: cpop-br 4.2s linear 1.8s infinite;
-}
+.cornerTL { top: 14px; left: 14px;     border-color: #FF2D78; box-shadow: 0 0 5px #FF2D78, 0 0 14px #FF2D78; animation: cpop-tl 4.2s step-end 0.0s infinite; }
+.cornerTR { top: 14px; right: 14px;    border-color: #00F0FF; box-shadow: 0 0 5px #00F0FF, 0 0 14px #00F0FF; animation: cpop-tr 4.2s step-end 0.6s infinite; }
+.cornerBL { bottom: 14px; left: 14px;  border-color: #00F0FF; box-shadow: 0 0 5px #00F0FF, 0 0 14px #00F0FF; animation: cpop-bl 4.2s step-end 1.2s infinite; }
+.cornerBR { bottom: 14px; right: 14px; border-color: #FF2D78; box-shadow: 0 0 5px #FF2D78, 0 0 14px #FF2D78; animation: cpop-br 4.2s step-end 1.8s infinite; }
 
 
-/* ─────────────────────────────────────────────────────────────
-   BEZEL RAILS — double weight, animated comet shimmer.
-   Horizontal: top=cyan, bottom=pink.
-   Vertical:   left=pink, right=cyan.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   BEZEL: RAILS
+   Horizontal top=cyan · bottom=pink
+   Vertical   left=pink · right=cyan
+   ═══════════════════════════════════════════════════════════ */
+
 .edgeLine {
   position: absolute;
-  left: 50px;
-  right: 50px;
+  left: 46px; right: 46px;
   height: 2px;
   display: block;
   overflow: visible;
+  z-index: 4;
 }
 
 .edgeLineTop {
-  top: 28px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(0, 240, 255, 0.20) 8%,
-    rgba(0, 240, 255, 0.80) 50%,
-    rgba(0, 240, 255, 0.20) 92%,
-    transparent
-  );
-  box-shadow:
-    0 0  4px rgba(0, 240, 255, 0.60),
-    0 0 10px rgba(0, 240, 255, 0.30),
-    0 -1px 0  rgba(0, 240, 255, 0.22),
-    0  1px 0  rgba(0, 240, 255, 0.22);
+  top: 26px;
+  background: linear-gradient(to right,
+    transparent, rgba(0,240,255,.22) 8%, rgba(0,240,255,.88) 50%, rgba(0,240,255,.22) 92%, transparent);
+  box-shadow: 0 0 4px rgba(0,240,255,.55), 0 0 10px rgba(0,240,255,.22);
 }
-
-/* Comet overlay — second, brighter line that marches across */
+/* Comet shimmer overlay on top rail */
 .edgeLineTop::after {
   content: '';
   position: absolute;
-  top: -1px;
-  left: 0; right: 0;
-  height: 4px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    transparent 10%,
-    rgba(0, 240, 255, 0.00) 30%,
-    rgba(255, 255, 255, 0.90) 48%,
-    rgba(0, 240, 255, 0.90) 50%,
-    rgba(0, 240, 255, 0.00) 70%,
-    transparent 90%
-  );
+  top: -1px; left: 0; right: 0; height: 4px;
+  background: linear-gradient(to right,
+    transparent 0%, transparent 18%,
+    rgba(0,240,255,0) 34%, rgba(255,255,255,.90) 49%, rgba(0,240,255,.90) 51%,
+    rgba(0,240,255,0) 66%, transparent 82%);
   background-size: 200% 100%;
-  animation: rail-comet-h 5.0s ease-in-out 0.5s infinite;
+  animation: comet-h 4.8s ease-in-out 0.5s infinite;
 }
 
 .edgeLineBottom {
-  bottom: 28px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 45, 120, 0.20) 8%,
-    rgba(255, 45, 120, 0.80) 50%,
-    rgba(255, 45, 120, 0.20) 92%,
-    transparent
-  );
-  box-shadow:
-    0 0  4px rgba(255, 45, 120, 0.60),
-    0 0 10px rgba(255, 45, 120, 0.30),
-    0 -1px 0  rgba(255, 45, 120, 0.22),
-    0  1px 0  rgba(255, 45, 120, 0.22);
+  bottom: 26px;
+  background: linear-gradient(to right,
+    transparent, rgba(255,45,120,.22) 8%, rgba(255,45,120,.88) 50%, rgba(255,45,120,.22) 92%, transparent);
+  box-shadow: 0 0 4px rgba(255,45,120,.55), 0 0 10px rgba(255,45,120,.22);
 }
-
 .edgeLineBottom::after {
   content: '';
   position: absolute;
-  top: -1px;
-  left: 0; right: 0;
-  height: 4px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    transparent 10%,
-    rgba(255, 45, 120, 0.00) 30%,
-    rgba(255, 255, 255, 0.90) 48%,
-    rgba(255, 45, 120, 0.90) 50%,
-    rgba(255, 45, 120, 0.00) 70%,
-    transparent 90%
-  );
+  top: -1px; left: 0; right: 0; height: 4px;
+  background: linear-gradient(to right,
+    transparent 0%, transparent 18%,
+    rgba(255,45,120,0) 34%, rgba(255,255,255,.90) 49%, rgba(255,45,120,.90) 51%,
+    rgba(255,45,120,0) 66%, transparent 82%);
   background-size: 200% 100%;
-  animation: rail-comet-h 5.8s ease-in-out 2.2s infinite;
+  animation: comet-h 5.6s ease-in-out 2.4s infinite;
 }
 
 .vline {
   position: absolute;
-  top: 50px;
-  bottom: 50px;
+  top: 46px; bottom: 46px;
   width: 2px;
   display: block;
+  z-index: 4;
 }
-
 .vlineL {
-  left: 28px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(255, 45, 120, 0.20) 10%,
-    rgba(255, 45, 120, 0.65) 50%,
-    rgba(255, 45, 120, 0.20) 90%,
-    transparent
-  );
-  box-shadow: 0 0 6px rgba(255, 45, 120, 0.35);
+  left: 26px;
+  background: linear-gradient(to bottom,
+    transparent, rgba(255,45,120,.18) 10%, rgba(255,45,120,.62) 50%, rgba(255,45,120,.18) 90%, transparent);
+  box-shadow: 0 0 6px rgba(255,45,120,.28);
 }
-
 .vlineR {
-  right: 28px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(0, 240, 255, 0.20) 10%,
-    rgba(0, 240, 255, 0.65) 50%,
-    rgba(0, 240, 255, 0.20) 90%,
-    transparent
-  );
-  box-shadow: 0 0 6px rgba(0, 240, 255, 0.35);
+  right: 26px;
+  background: linear-gradient(to bottom,
+    transparent, rgba(0,240,255,.18) 10%, rgba(0,240,255,.62) 50%, rgba(0,240,255,.18) 90%, transparent);
+  box-shadow: 0 0 6px rgba(0,240,255,.28);
 }
 
-/* ── Inner rails — second groove, 16px inset from outer ── */
+/* Inner groove — second machined channel, 10px inset */
 .innerRailTop {
   position: absolute;
-  top: 38px;
-  left: 64px;
-  right: 64px;
-  height: 1px;
-  display: block;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(0, 240, 255, 0.18) 8%,
-    rgba(0, 240, 255, 0.38) 50%,
-    rgba(0, 240, 255, 0.18) 92%,
-    transparent
-  );
+  top: 36px; left: 60px; right: 60px; height: 1px;
+  background: linear-gradient(to right,
+    transparent, rgba(0,240,255,.14) 8%, rgba(0,240,255,.32) 50%, rgba(0,240,255,.14) 92%, transparent);
   pointer-events: none;
   z-index: 4;
 }
-
 .innerRailBottom {
   position: absolute;
-  bottom: 38px;
-  left: 64px;
-  right: 64px;
-  height: 1px;
-  display: block;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 45, 120, 0.18) 8%,
-    rgba(255, 45, 120, 0.38) 50%,
-    rgba(255, 45, 120, 0.18) 92%,
-    transparent
-  );
+  bottom: 36px; left: 60px; right: 60px; height: 1px;
+  background: linear-gradient(to right,
+    transparent, rgba(255,45,120,.14) 8%, rgba(255,45,120,.32) 50%, rgba(255,45,120,.14) 92%, transparent);
   pointer-events: none;
   z-index: 4;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   TOP SCORE STRIP — position:absolute, top:44px.
-   Larger presentation. Score values at 14px for arcade LED feel.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   TOP SCORE STRIP — absolute top:44px
+   1UP=pink · HI-SCORE=white · 2UP=cyan (classic arcade)
+   ═══════════════════════════════════════════════════════════ */
+
 .topStrip {
   position: absolute;
-  top: 44px;
-  left: 0;
-  right: 0;
+  top: 44px; left: 0; right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   z-index: 5;
-  animation: fade-in-flat 1.2s ease both;
+  animation: fade-flat 1.2s ease both;
 }
 
 .scoreRow {
   display: flex;
   width: 100%;
-  max-width: 600px;
+  max-width: 560px;
   justify-content: space-between;
   padding: 0 var(--space-8);
   align-items: baseline;
@@ -649,70 +432,42 @@
 
 .scoreLabel {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  font-size: 8px;
+  letter-spacing: .14em;
   text-transform: uppercase;
   flex: 1;
   text-align: center;
 }
-.scoreLabel:nth-child(1) {
-  color: var(--color-pink);
-  text-shadow: var(--glow-pink-sm);
-}
-.scoreLabel:nth-child(2) {
-  color: rgba(255, 255, 255, 0.45);
-}
-.scoreLabel:nth-child(3) {
-  color: var(--color-cyan);
-  text-shadow: var(--glow-cyan-sm);
-}
+.scoreLabel:nth-child(1) { color: #FF2D78; text-shadow: 0 0 4px #FF2D78, 0 0 12px #FF2D78; }
+.scoreLabel:nth-child(2) { color: rgba(255,255,255,.42); }
+.scoreLabel:nth-child(3) { color: #00F0FF; text-shadow: 0 0 4px #00F0FF, 0 0 12px #00F0FF; }
 
 .scoreValue {
   font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: 0.10em;
+  font-size: 13px;
+  letter-spacing: .08em;
   flex: 1;
   text-align: center;
 }
-.scoreValueP1 {
-  color: var(--color-pink);
-  text-shadow: var(--glow-pink-sm);
-  animation: score-blink-p1 6.0s linear 1.5s infinite;
-}
-.scoreValueHi {
-  animation: score-hi-throb 3.2s ease-in-out infinite;
-}
-.scoreValueP2 {
-  color: var(--color-cyan);
-  text-shadow: var(--glow-cyan-sm);
-  animation: score-blink-p2 6.0s linear infinite;
-}
-
-/* ── Score column separator pipes ── */
-.scoreSep {
-  color: rgba(255, 255, 255, 0.12);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  align-self: center;
-  flex-shrink: 0;
-}
+.scoreValueP1 { color: #FF2D78; text-shadow: 0 0 4px #FF2D78, 0 0 10px #FF2D78; animation: blink-p1 6.0s linear 1.5s infinite; }
+.scoreValueHi { animation: hi-throb 3.2s ease-in-out infinite; }
+.scoreValueP2 { color: #00F0FF; text-shadow: 0 0 4px #00F0FF, 0 0 10px #00F0FF; animation: blink-p2 6.0s linear infinite; }
 
 
-/* ─────────────────────────────────────────────────────────────
-   MARQUEE BAND — scrolling attract text below score strip.
-   Pink/dim text cycling across. Classic coin-op attract.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   MARQUEE BAND — absolute top:96px
+   Coin-op attract ticker, 30s scroll cycle
+   ═══════════════════════════════════════════════════════════ */
+
 .marqueeBand {
   position: absolute;
-  top: 102px;
-  left: 0;
-  right: 0;
-  height: 22px;
+  top: 96px; left: 0; right: 0;
+  height: 20px;
   overflow: hidden;
-  border-top: 1px solid rgba(255, 45, 120, 0.18);
-  border-bottom: 1px solid rgba(0, 240, 255, 0.14);
+  border-top:    1px solid rgba(255,45,120,.15);
+  border-bottom: 1px solid rgba(0,240,255,.12);
   z-index: 5;
-  animation: fade-in-flat 1.4s ease 0.3s both;
+  animation: fade-flat 1.4s ease .3s both;
 }
 
 .marqueeText {
@@ -720,44 +475,39 @@
   white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 7px;
-  letter-spacing: 0.26em;
-  color: rgba(255, 45, 120, 0.50);
-  text-shadow: 0 0 10px rgba(255, 45, 120, 0.35);
+  letter-spacing: .24em;
+  color: rgba(255,45,120,.42);
+  text-shadow: 0 0 8px rgba(255,45,120,.28);
   text-transform: uppercase;
-  line-height: 22px;
-  animation: marquee-scroll 28s linear 2.0s infinite;
+  line-height: 20px;
+  animation: marquee-scroll 30s linear 2.0s infinite;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   BOTTOM ATTRACT STRIP — position:absolute, bottom:44px.
-   Bigger, more authoritative. Pink blink + dim credits.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   BOTTOM ATTRACT STRIP — absolute bottom:44px
+   ═══════════════════════════════════════════════════════════ */
+
 .bottomStrip {
   position: absolute;
-  bottom: 44px;
-  left: 0;
-  right: 0;
+  bottom: 44px; left: 0; right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   z-index: 5;
-  animation: fade-in-flat 1.4s ease 0.8s both;
+  animation: fade-flat 1.4s ease .8s both;
 }
 
 .prompt {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.26em;
-  color: var(--color-pink);
-  text-shadow:
-    0 0  6px #FF2D78,
-    0 0 18px #FF2D78,
-    0 0 36px rgba(255, 45, 120, 0.55);
+  letter-spacing: .26em;
+  color: #FF2D78;
+  text-shadow: 0 0 6px #FF2D78, 0 0 18px #FF2D78, 0 0 36px rgba(255,45,120,.48);
   text-transform: uppercase;
   text-align: center;
-  animation: blink-hard 0.86s step-end infinite;
+  animation: coin-blink 1.0s step-end infinite;
 }
 
 .creditsRow {
@@ -769,30 +519,32 @@
 .creditItem {
   font-family: var(--font-mono);
   font-size: 7px;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.28);
+  letter-spacing: .14em;
+  color: rgba(255,255,255,.24);
   text-transform: uppercase;
 }
 
 .creditVal {
   font-family: var(--font-mono);
   font-size: 7px;
-  letter-spacing: 0.14em;
-  color: var(--color-green);
-  text-shadow: var(--glow-green-sm);
+  letter-spacing: .14em;
+  color: #C8FF00;
+  text-shadow: 0 0 4px #C8FF00, 0 0 10px #C8FF00;
   text-transform: uppercase;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   MAIN CONTENT COLUMN
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   CONTENT COLUMN
+   clamp() padding guards absolute strip clearance at all heights
+   ═══════════════════════════════════════════════════════════ */
+
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0;
-  padding: 118px var(--space-8) 76px;
+  padding: clamp(106px, 14vh, 118px) var(--space-8) clamp(62px, 9vh, 72px);
   width: 100%;
   max-width: min(96vw, 760px);
   overflow: visible;
@@ -801,57 +553,64 @@
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   MARQUEE ZONE — header, title, tagline.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   HEADER — title + tagline
+   ═══════════════════════════════════════════════════════════ */
+
 .header {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
-  animation: fade-in-flat 0.55s ease both;
   overflow: visible;
+  animation: fade-flat .55s ease both;
 }
 
-/* h1 — stacked; each .titleWord carries its own glow + shake. */
+/* h1: two words stacked as flex column */
 .title {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  line-height: 1;
+  line-height: 1; /* explicit: prevents word-row collapse */
   overflow: visible;
 }
 
-/* Each word — strong scale, wide tracking, pink base. */
+/*
+ * Each word — the hero piece.
+ *
+ * font-size: clamp(2.4rem, 7.5vw, 4.2rem)
+ *   floor  2.4rem (38px)  — tiny viewports
+ *   fluid  7.5vw          — 57.6px at 768px width
+ *   cap    4.2rem (67px)  — large screens, safe for layout
+ *
+ * Two animations run simultaneously:
+ *   title-pulse — neon glow cycle, staggered .45s between words
+ *   title-shake — sync-loss tremor, staggered 3.4s between words
+ */
 .titleWord {
   position: relative;
   display: block;
   font-family: var(--font-mono);
-  font-size: clamp(2.8rem, 10vw, 5.5rem);
+  font-size: clamp(2.4rem, 7.5vw, 4.2rem);
   font-weight: 900;
-  letter-spacing: 0.4em;
+  letter-spacing: .38em;
   text-transform: uppercase;
-  color: var(--color-pink);
+  color: #FF2D78;
   overflow: visible;
   animation:
-    title-glow-pulse 3.4s ease-in-out infinite,
-    title-shake      7.8s linear      0.5s infinite;
+    title-pulse 3.4s ease-in-out       infinite,
+    title-shake 7.8s linear      .5s   infinite;
 }
+.titleWord:nth-child(2) { animation-delay: .45s, 3.4s; }
 
-.titleWord:nth-child(2) {
-  animation-delay: 0.45s, 3.9s;
-}
-
-/* Red ghost — left chromatic offset with snap glitch */
+/* Red chromatic ghost — ::before — left offset, linear snap glitch */
 .titleWord::before {
   content: attr(data-text);
   position: absolute;
   top: 0; left: 0;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
+  font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
   line-height: inherit;
@@ -862,15 +621,14 @@
   text-shadow: none;
   animation: ghost-red 4.5s linear infinite;
 }
+.titleWord:nth-child(2)::before { animation-delay: 2.2s; }
 
-/* Cyan ghost — right chromatic offset, staggered 0.3s */
+/* Cyan chromatic ghost — ::after — right offset, staggered .3s */
 .titleWord::after {
   content: attr(data-text);
   position: absolute;
   top: 0; left: 0;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
+  font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
   line-height: inherit;
@@ -879,196 +637,149 @@
   mix-blend-mode: screen;
   pointer-events: none;
   text-shadow: none;
-  animation: ghost-cyan 4.5s linear 0.3s infinite;
+  animation: ghost-cyan 4.5s linear .3s infinite;
 }
+.titleWord:nth-child(2)::after { animation-delay: 2.5s; }
 
-.titleWord:nth-child(2)::before { animation-delay: 2.2s; }
-.titleWord:nth-child(2)::after  { animation-delay: 2.5s; }
-
-/* Tagline — color cycles through all three palette hues. */
+/* Tagline: hard step-end color cycle through all three hues */
 .tagline {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.32em;
+  font-size: 8px;
+  letter-spacing: .30em;
   text-transform: uppercase;
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   animation:
-    tagline-color-cycle 9s  step-end   infinite,
-    tagline-jitter      6s  step-end   infinite;
+    tagline-cycle  9s step-end infinite,
+    tagline-jitter 6s step-end infinite;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   SEPARATOR — flex row with center star ornament.
-   Lines gradient to transparent. Star spins + color-cycles.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   SEPARATOR — neon rule with spinning star ornament
+   First separator: cyan. Second (last-of-type): pink.
+   ═══════════════════════════════════════════════════════════ */
+
 .separator {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 10px;
   width: 100%;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .sepLine {
   display: block;
   flex: 1;
   height: 2px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(0, 240, 255, 0.55) 20%,
-    rgba(0, 240, 255, 0.80) 50%,
-    rgba(0, 240, 255, 0.55) 80%,
-    transparent
-  );
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
+  background: linear-gradient(to right,
+    transparent, rgba(0,240,255,.50) 20%, rgba(0,240,255,.82) 50%, rgba(0,240,255,.50) 80%, transparent);
+  box-shadow: 0 0 7px rgba(0,240,255,.30);
 }
-
-/* Second separator in the layout — pink tone */
 .separator:last-of-type .sepLine {
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 45, 120, 0.40) 20%,
-    rgba(255, 45, 120, 0.65) 50%,
-    rgba(255, 45, 120, 0.40) 80%,
-    transparent
-  );
-  box-shadow: 0 0 8px rgba(255, 45, 120, 0.30);
+  background: linear-gradient(to right,
+    transparent, rgba(255,45,120,.38) 20%, rgba(255,45,120,.62) 50%, rgba(255,45,120,.38) 80%, transparent);
+  box-shadow: 0 0 7px rgba(255,45,120,.26);
 }
 
 .sepStar {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 12px;
   flex-shrink: 0;
   display: inline-block;
-  animation: sep-star-pulse 4.0s ease-in-out infinite;
+  animation: star-spin 4.0s ease-in-out infinite;
 }
 
 
-/* ─────────────────────────────────────────────────────────────
-   MASCOT — pixel-grid tank.
-   20px cells, stronger multi-colour glow. Heartbeat filter.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   TANK MASCOT — pixel-grid, multi-colour heartbeat
+   12×12px cells / 2px gap → 12 rows × 14px = 168px + 22px = 190px grid height
+   ═══════════════════════════════════════════════════════════ */
+
 .tankWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
   animation:
-    fade-in-flat   0.7s  ease 0.2s both,
-    tank-heartbeat 2.2s  ease-in-out 1s infinite;
+    fade-flat  .7s ease .2s both,
+    tank-beat  2.2s ease-in-out 1s infinite;
 }
 
 .tankGrid {
   display: grid;
-  grid-template-columns: repeat(7, 14px);
-  grid-template-rows: repeat(12, 14px);
+  grid-template-columns: repeat(7, 12px);
+  grid-template-rows:    repeat(12, 12px);
   gap: 2px;
 }
 
-.tankCell {
-  width: 14px;
-  height: 14px;
-  background: transparent;
-}
-
-.tankCellBarrel {
-  background: #00F0FF;
-  box-shadow: 0 0 10px #00F0FF, 0 0 22px #00F0FF, 0 0 4px #ffffff;
-}
-
-.tankCellTrack {
-  background: #C8FF00;
-  box-shadow: 0 0 8px #C8FF00, 0 0 18px #C8FF00;
-}
-
-.tankCellHull {
-  background: #FF2D78;
-  box-shadow: 0 0 10px #FF2D78, 0 0 22px #FF2D78, 0 0 4px #ffffff;
-}
+.tankCell       { width: 12px; height: 12px; background: transparent; }
+.tankCellBarrel { background: #00F0FF; box-shadow: 0 0 8px #00F0FF, 0 0 18px #00F0FF; }
+.tankCellTrack  { background: #C8FF00; box-shadow: 0 0 6px #C8FF00, 0 0 14px #C8FF00; }
+.tankCellHull   { background: #FF2D78; box-shadow: 0 0 8px #FF2D78, 0 0 18px #FF2D78; }
 
 
-/* ─────────────────────────────────────────────────────────────
-   PLAY SURFACE — controls + play button.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   CONTROLS — mode select + play button
+   ═══════════════════════════════════════════════════════════ */
+
 .controls {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  animation: fade-in-up 0.5s ease 0.32s both;
-}
-
-/* Section header above mode buttons */
-.controlsLabel {
-  font-family: var(--font-mono);
-  font-size: 7px;
-  letter-spacing: 0.30em;
-  color: rgba(255, 255, 255, 0.45);
-  text-transform: uppercase;
-  text-align: center;
-  animation: label-flicker 8s step-end infinite;
+  animation: fade-up .5s ease .32s both;
 }
 
 .joinSection {
   width: 100%;
   display: flex;
   justify-content: center;
-  animation: fade-up 0.22s ease both;
+  animation: fade-up .22s ease both;
 }
 
 .inlineError {
   font-family: var(--font-mono);
   font-size: 8px;
-  letter-spacing: 0.12em;
-  color: var(--color-error);
-  text-shadow: var(--glow-pink-sm);
+  letter-spacing: .12em;
+  color: #FF2D78;
+  text-shadow: 0 0 4px #FF2D78, 0 0 10px #FF2D78;
   text-transform: uppercase;
-  animation: fade-in-flat 0.18s ease both;
+  animation: fade-flat .18s ease both;
 }
 
-
-/* ─────────────────────────────────────────────────────────────
-   PLAY BUTTON — monumental action trigger.
-   Bigger at 20px/52px padding and 11px font.
-   ───────────────────────────────────────────────────────────── */
+/* Play button — primary action CTA */
 .playBtn {
   position: relative;
   padding: 14px 44px;
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.26em;
+  letter-spacing: .24em;
   text-transform: uppercase;
   background: transparent;
   cursor: pointer;
   margin-top: var(--space-2);
-  image-rendering: pixelated;
   transition: background var(--transition-fast);
 }
+.playBtn:disabled { opacity: .50; cursor: not-allowed; }
 
-.playBtn:disabled {
-  opacity: 0.50;
-  cursor: not-allowed;
-}
+.playBtnPink  { color: #FF2D78; border: 2px solid #FF2D78; animation: glow-pink  2.5s ease-in-out infinite; }
+.playBtnGreen { color: #C8FF00; border: 2px solid #C8FF00; animation: glow-green 2.5s ease-in-out infinite; }
 
-.playBtnPink {
-  color: var(--color-pink);
-  border: 2px solid var(--color-pink);
-  animation: btn-glow-pink 2.5s ease-in-out infinite;
-}
-.playBtnPink:hover:not(:disabled) {
-  background: rgba(255, 45, 120, 0.08);
-}
+.playBtnPink:hover:not(:disabled)  { background: rgba(255,45,120,.08); }
+.playBtnGreen:hover:not(:disabled) { background: rgba(200,255,0,.06); }
 
-.playBtnGreen {
-  color: var(--color-green);
-  border: 2px solid var(--color-green);
-  animation: btn-glow-green 2.5s ease-in-out infinite;
-}
-.playBtnGreen:hover:not(:disabled) {
-  background: rgba(200, 255, 0, 0.06);
+
+/* ═══════════════════════════════════════════════════════════
+   SMALL VIEWPORT BREAKPOINT — max-height: 640px
+   Hide marquee, tighten tank, reduce padding
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-height: 640px) {
+  .marqueeBand { display: none; }
+  .topStrip    { top: 36px; }
+  .bottomStrip { bottom: 36px; }
+  .content     { padding: 82px var(--space-8) 54px; }
+  .tankGrid    { grid-template-columns: repeat(7, 10px); grid-template-rows: repeat(12, 10px); }
+  .tankCell, .tankCellBarrel, .tankCellTrack, .tankCellHull { width: 10px; height: 10px; }
 }

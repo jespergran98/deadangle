@@ -1,84 +1,70 @@
 /* ============================================================
-   ModeSelector.module.css
+   ModeSelector.module.css  ·  DEAD ANGLE
+   Arcade mode select buttons — 1 PLAYER / 2 PLAYER + HOST / JOIN
 
-   Phosphor persistence model (original):
-     Mouse-in  → 40ms  (tube fires fast — instant strike)
-     Mouse-out → 320ms (slow afterglow decay)
+   Phosphor persistence model:
+     Mouse-in  → 40ms  (tube fires instantly — zero delay)
+     Mouse-out → 280ms (afterglow decay — slow fade)
 
-   Sizes from JSX:
-     Mode buttons: padding 14px 30px, font-size 9px, tracking .22em
-     Sub buttons:  padding 10px 26px, font-size 8px, tracking .22em
-     Mode row gap: 16px. Sub row gap: 12px.
-
-   All @keyframes declared locally.
+   Active state: cyan neon border + continuous pulse.
+   Inactive:     dim white, clearly readable — like a dark lamp.
    ============================================================ */
 
-/* ── Local @keyframes ─────────────────────────────────────── */
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0);   }
+/* — Active mode button: neon cyan pulse — */
+@keyframes neon-cyan {
+  0%,100% { box-shadow: 0 0 4px #00F0FF, 0 0 12px #00F0FF, inset 0 0 14px rgba(0,240,255,.05); }
+  50%      { box-shadow: 0 0 7px #00F0FF, 0 0 22px #00F0FF, 0 0 40px rgba(0,240,255,.48), inset 0 0 22px rgba(0,240,255,.10); }
 }
 
-@keyframes neon-pulse-cyan {
-  0%, 100% {
-    box-shadow:
-      0 0  4px #00F0FF,
-      0 0 10px #00F0FF,
-      inset 0 0 16px rgba(0, 240, 255, 0.05);
-  }
-  50% {
-    box-shadow:
-      0 0  6px #00F0FF,
-      0 0 18px #00F0FF,
-      0 0 36px rgba(0, 240, 255, 0.50),
-      inset 0 0 24px rgba(0, 240, 255, 0.10);
-  }
+/* — Sub row entrance — */
+@keyframes sub-drop {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 
 /* ── Root ─────────────────────────────────────────────────── */
+
 .root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
   width: 100%;
 }
 
 
-/* ── Primary mode buttons ─────────────────────────────────── */
+/* ── Primary mode buttons — 1 PLAYER / 2 PLAYER ──────────── */
+
 .modeRow {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .modeBtn {
   position: relative;
-  padding: 14px 30px;
+  padding: 12px 28px;
   font-family: var(--font-mono);
   font-size: 9px;
-  letter-spacing: 0.22em;
+  letter-spacing: .22em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, .36);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, .16);
   box-shadow: none;
-  image-rendering: pixelated;
-
-  /* BASE = slow OUT (afterglow decay) */
-  transition:
-    color        320ms ease,
-    border-color 320ms ease,
-    box-shadow   320ms ease,
-    background   320ms ease;
-
   cursor: pointer;
+
+  /* Base = slow OUT (afterglow decay) */
+  transition:
+    color        280ms ease,
+    border-color 280ms ease,
+    box-shadow   280ms ease,
+    background   280ms ease;
 }
 
-/* Fast IN — phosphor fires instantly */
+/* Fast IN — phosphor fires instantly on hover */
 .modeBtn:hover:not(.modeBtnActive),
 .modeBtn:focus-visible:not(.modeBtnActive) {
   transition:
@@ -86,56 +72,52 @@
     border-color 40ms ease,
     box-shadow   40ms ease,
     background   40ms ease;
-  color: var(--color-white);
-  border-color: rgba(255, 255, 255, 0.50);
-  box-shadow:
-    0 0  8px rgba(255, 255, 255, 0.14),
-    inset 0 0 18px rgba(255, 255, 255, 0.03);
-  background: rgba(255, 255, 255, 0.025);
+  color: #fff;
+  border-color: rgba(255, 255, 255, .52);
+  box-shadow: 0 0 8px rgba(255,255,255,.14), inset 0 0 16px rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, .025);
   outline: none;
 }
 
-/* Active — cyan neon outline + pulse */
+/* Active — cyan neon border, continuous pulse */
 .modeBtnActive {
-  color: var(--color-cyan);
-  border: 2px solid var(--color-cyan);
-  animation: neon-pulse-cyan 2.4s ease-in-out infinite;
+  color: #00F0FF;
+  border: 2px solid #00F0FF;
+  animation: neon-cyan 2.4s ease-in-out infinite;
 }
-
 .modeBtnActive:hover,
 .modeBtnActive:focus-visible {
-  transition: background 40ms ease, box-shadow 40ms ease;
-  background: rgba(0, 240, 255, 0.05);
+  background: rgba(0, 240, 255, .06);
   outline: none;
 }
 
 
-/* ── Sub-mode buttons (HOST / JOIN) ───────────────────────── */
+/* ── Sub-mode buttons — HOST / JOIN ──────────────────────── */
+
 .subRow {
   display: flex;
   gap: 12px;
-  animation: fade-up 0.20s ease both;
+  animation: sub-drop .20s ease both;
 }
 
 .subBtn {
-  padding: 10px 26px;
+  padding: 9px 24px;
   font-family: var(--font-mono);
   font-size: 8px;
-  letter-spacing: 0.22em;
+  letter-spacing: .22em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, .32);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, .14);
   box-shadow: none;
-
-  /* BASE = slow OUT */
-  transition:
-    color        320ms ease,
-    border-color 320ms ease,
-    box-shadow   320ms ease,
-    background   320ms ease;
-
   cursor: pointer;
+
+  /* Base = slow OUT */
+  transition:
+    color        280ms ease,
+    border-color 280ms ease,
+    box-shadow   280ms ease,
+    background   280ms ease;
 }
 
 /* Fast IN */
@@ -146,29 +128,27 @@
     border-color 40ms ease,
     box-shadow   40ms ease,
     background   40ms ease;
-  color: var(--color-cyan);
-  border-color: rgba(0, 240, 255, 0.55);
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.18);
-  background: rgba(0, 240, 255, 0.025);
+  color: #00F0FF;
+  border-color: rgba(0, 240, 255, .55);
+  box-shadow: 0 0 8px rgba(0,240,255,.18);
+  background: rgba(0, 240, 255, .025);
   outline: none;
 }
 
 /* Active */
 .subBtnActive {
-  color: var(--color-cyan);
-  border-color: var(--color-cyan);
-  box-shadow: 0 0 4px #00F0FF, 0 0 10px #00F0FF;
+  color: #00F0FF;
+  border-color: #00F0FF;
+  box-shadow: 0 0 4px #00F0FF, 0 0 12px #00F0FF;
 }
-
 .subBtnActive:hover,
 .subBtnActive:focus-visible {
-  transition: background 40ms ease, box-shadow 40ms ease;
-  background: rgba(0, 240, 255, 0.05);
-  box-shadow: var(--glow-cyan-md);
+  background: rgba(0, 240, 255, .06);
+  box-shadow: 0 0 6px #00F0FF, 0 0 18px #00F0FF, 0 0 36px rgba(0,240,255,.48);
   outline: none;
 }
 
 .subBtn:disabled {
-  opacity: 0.38;
+  opacity: .36;
   cursor: not-allowed;
 }

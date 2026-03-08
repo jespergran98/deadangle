@@ -526,8 +526,33 @@ The layout should feel like a physical bezel — consider the full structure of 
 
 ---
 
+Now update this prompt. I will deliver this prompt to a new AI in a new conversation with the attached files, with the goal of ensuring this start screen now is truly visually amazing, leave the visual updates up to the creativity of the AI:
+
 Update the visual design of this 1980s inspired startscreen.
 
 Build the most visually stunning 1980s arcade cabinet attract screen possible. Hot pink, cyan, neon green on pure black. Loud, maximalist, slightly unstable. Every element must feel alive — nothing static, nothing that reads as a webpage.
 
 The layout should feel like a physical bezel — consider the full structure of a real arcade screen. Scale, spacing, and rhythm should be monumental. This game would have competed with Tetris and PacMan.
+
+---
+
+Here's the updated prompt:
+
+---
+
+Update the visual design of this 1980s arcade cabinet attract screen.
+
+The goal is a pixel-perfect recreation of what a 1984 coin-op machine would have looked like in a dark arcade — competing directly with Pac-Man, Donkey Kong, and Galaga for a player's quarter. Every design decision should be justified by that context.
+
+**Palette:** `#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on pure `#000000`. No other colors. No gradients between hues — real arcade hardware couldn't render them.
+
+**Non-negotiables:**
+- The screen must fit entirely within the viewport with zero scrolling — `height: 100dvh; overflow: hidden` is a hard requirement
+- The DEAD ANGLE title must have clear vertical separation between the two stacked words — no overlap
+- The design must not shift when different menues are opened (It currently shift up when 2 players are selected because a 3rd row appears with host room/ join room)
+- All blinking and state-change animations must use `step-end` timing — real CRT hardware had no easing.
+- Nothing should feel static.
+
+**What to push creatively:** The visual treatment of every layer — the bezel geometry, the title rendering, the mascot, the ambient atmosphere, the structural rhythm between zones. Make bold choices. Reference real arcade attract screens: the score strip, the INSERT COIN blink, the scrolling ticker, the corner diamonds. Make them feel physical, not decorative.
+
+The code quality matters as much as the visuals. Deliver a single clean `page.module.css` and updated `page.tsx`. All `@keyframes` declared locally in the CSS module. No dead rules. Sections clearly commented. Color values as hex literals inside keyframes (CSS variables don't interpolate reliably in all `@keyframes` contexts).
