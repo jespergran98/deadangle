@@ -5,14 +5,12 @@
 
    Palette (authentic arcade, no cross-hue gradients):
      #FF2D78  pink   — P1, title, error, TL/BR corners, bottom rail
-     #00F0FF  cyan   — P2, active UI, top rail, TR/BL corners
-     #C8FF00  green  — CTA, credits, tank tracks
+     #00F0FF  cyan   — separators, active UI, top rail, TR/BL corners
+     #C8FF00  green  — CTA, credits, P2 tank
      #000000  black  — all backgrounds
 
-   Color assignment (arcade convention):
-     Pink  = title, P1 score, error, bottom rail, left vline
-     Cyan  = mode-select active, P2 score, top rail, right vline
-     Green = play CTA, credit counter, tank track
+   Font: 'Press Start 2P' — 1980s pixel arcade typeface.
+   Imported globally in globals.css; referenced via var(--font-mono).
 
    Animation timing rule:
      Hard digital state  (blink, corner pop) → step-end
@@ -62,26 +60,26 @@
 
 /* — Chromatic aberration ghosts — linear: sub-frame gaps = instant snap — */
 @keyframes ghost-red {
-  0%,83.8%   { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  83.9%       { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
-  84.9%       { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
-  85.0%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  85.9%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  86.0%       { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
-  87.0%       { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
-  87.1%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
-  100%        { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  0%,83.8%  { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  83.9%      { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
+  84.9%      { transform: translate(-28px,4px) skewX(-20deg);  opacity: 1;   }
+  85.0%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  85.9%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  86.0%      { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
+  87.0%      { transform: translate(-34px,2px) skewX(-12deg);  opacity: .88; }
+  87.1%      { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
+  100%       { transform: translate(-4px, 1px) skewX(0);       opacity: .70; }
 }
 @keyframes ghost-cyan {
-  0%,80.8%   { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  80.9%       { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
-  81.9%       { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
-  82.0%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  82.9%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  83.0%       { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
-  84.0%       { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
-  84.1%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
-  100%        { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  0%,80.8%  { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  80.9%      { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
+  81.9%      { transform: translate(28px,-5px) skewX( 20deg);  opacity: 1;   }
+  82.0%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  82.9%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  83.0%      { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
+  84.0%      { transform: translate(34px,-3px) skewX( 12deg);  opacity: .84; }
+  84.1%      { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
+  100%       { transform: translate( 4px,-1px) skewX(0);       opacity: .65; }
 }
 
 /* — Tagline: hard step-end palette cycle green→cyan→pink — */
@@ -100,23 +98,175 @@
   74%                       { opacity: .50; }
 }
 
-/* — Tank: multi-colour phosphor lub-dub — */
-@keyframes tank-beat {
-  0%       { filter: brightness(.30) drop-shadow(0 0 1px rgba(200,255,0,.48)); }
-  6%       { filter: brightness(2.60)
-               drop-shadow(0 0 10px #FF2D78)
-               drop-shadow(0 0 20px #00F0FF)
-               drop-shadow(0 0 44px #C8FF00); }
-  13%      { filter: brightness(.44) drop-shadow(0 0 2px rgba(200,255,0,.42)); }
-  21%      { filter: brightness(2.10)
-               drop-shadow(0 0  7px #FF2D78)
-               drop-shadow(0 0 16px #00F0FF)
-               drop-shadow(0 0 30px rgba(200,255,0,.78)); }
-  34%,100% { filter: brightness(.30) drop-shadow(0 0 1px rgba(200,255,0,.48)); }
+/* — P1 tank fires when bullet appears at 2% of the 5s bullet-duel cycle — */
+@keyframes tank-fire-pink {
+  0%, 1.9% { filter: brightness(.32) drop-shadow(0 0 1px rgba(255,45,120,.44)); }
+  2%        { filter: brightness(2.80)
+                drop-shadow(0 0 12px #FF2D78)
+                drop-shadow(0 0 28px #00F0FF)
+                drop-shadow(0 0 48px rgba(255,45,120,.80)); }
+  4%        { filter: brightness(1.20)
+                drop-shadow(0 0  6px #FF2D78)
+                drop-shadow(0 0 14px rgba(255,45,120,.55)); }
+  7%        { filter: brightness(.38) drop-shadow(0 0 2px rgba(255,45,120,.36)); }
+  8%, 100%  { filter: brightness(.32) drop-shadow(0 0 1px rgba(255,45,120,.44)); }
+}
+
+/* — P2 tank fires when bullet appears at 52% of the 5s bullet-duel cycle — */
+@keyframes tank-fire-green {
+  0%, 51.9% { filter: brightness(.32) drop-shadow(0 0 1px rgba(200,255,0,.44)); }
+  52%        { filter: brightness(2.80)
+                 drop-shadow(0 0 12px #C8FF00)
+                 drop-shadow(0 0 28px #00F0FF)
+                 drop-shadow(0 0 48px rgba(200,255,0,.80)); }
+  54%        { filter: brightness(1.20)
+                 drop-shadow(0 0  6px #C8FF00)
+                 drop-shadow(0 0 14px rgba(200,255,0,.55)); }
+  57%        { filter: brightness(.38) drop-shadow(0 0 2px rgba(200,255,0,.36)); }
+  58%, 100%  { filter: brightness(.32) drop-shadow(0 0 1px rgba(200,255,0,.44)); }
+}
+
+/* — Duel bullet: alternates pink→right, then green→left on a 5s cycle.
+   6 box-shadow values kept CONSTANT across every stop — identical count
+   is required for the browser to interpolate without snapping.
+
+   Trail direction:
+     Phase 1 (L→R): trail offsets are negative-x (falling behind to left).
+     Phase 2 (R→L): trail offsets are positive-x (falling behind to right).
+
+   opacity:0 windows (45–50% and 95–100%) hide the invisible resets.    — */
+@keyframes bullet-duel {
+  /* ── Phase 1: Pink fires LEFT → RIGHT ── */
+  0%, 1% {
+    left: -4px;
+    opacity: 0;
+    background: #FF2D78;
+    box-shadow:
+       -4px 0 0 0 rgba(255, 45,120,.80),
+       -8px 0 0 0 rgba(255, 45,120,.50),
+      -12px 0 0 0 rgba(255, 45,120,.24),
+      -16px 0 0 0 rgba(255, 45,120,.08),
+         0  0 8px rgba(255, 45,120,.90),
+         0  0 20px rgba(255, 45,120,.42);
+  }
+  2% {
+    left: -4px;
+    opacity: 1;
+    background: #FF2D78;
+    box-shadow:
+       -4px 0 0 0 rgba(255, 45,120,.80),
+       -8px 0 0 0 rgba(255, 45,120,.50),
+      -12px 0 0 0 rgba(255, 45,120,.24),
+      -16px 0 0 0 rgba(255, 45,120,.08),
+         0  0 8px rgba(255, 45,120,.90),
+         0  0 20px rgba(255, 45,120,.42);
+  }
+  /* midfield — through cyan */
+  25% {
+    left: calc(50% - 2px);
+    opacity: 1;
+    background: #00F0FF;
+    box-shadow:
+       -4px 0 0 0 rgba(255, 45,120,.28),
+       -8px 0 0 0 rgba(255, 45,120,.10),
+      -12px 0 0 0 rgba(200,255,  0,.10),
+      -16px 0 0 0 rgba(200,255,  0,.04),
+         0  0 8px rgba(  0,240,255,.92),
+         0  0 20px rgba(  0,240,255,.50);
+  }
+  /* impact at P2 barrel */
+  44% {
+    left: calc(100% + 4px);
+    opacity: 1;
+    background: #C8FF00;
+    box-shadow:
+       -4px 0 0 0 rgba(200,255,  0,.80),
+       -8px 0 0 0 rgba(200,255,  0,.50),
+      -12px 0 0 0 rgba(200,255,  0,.24),
+      -16px 0 0 0 rgba(200,255,  0,.08),
+         0  0 8px rgba(200,255,  0,.90),
+         0  0 20px rgba(200,255,  0,.42);
+  }
+  /* vanish right */
+  45%, 49% {
+    left: calc(100% + 4px);
+    opacity: 0;
+    background: #C8FF00;
+    box-shadow:
+       -4px 0 0 0 rgba(200,255,  0,.80),
+       -8px 0 0 0 rgba(200,255,  0,.50),
+      -12px 0 0 0 rgba(200,255,  0,.24),
+      -16px 0 0 0 rgba(200,255,  0,.08),
+         0  0 8px rgba(200,255,  0,.90),
+         0  0 20px rgba(200,255,  0,.42);
+  }
+  /* ── Phase 2: Green fires RIGHT → LEFT — trail at positive x ── */
+  50%, 51% {
+    left: calc(100% + 4px);
+    opacity: 0;
+    background: #C8FF00;
+    box-shadow:
+        4px 0 0 0 rgba(200,255,  0,.80),
+        8px 0 0 0 rgba(200,255,  0,.50),
+       12px 0 0 0 rgba(200,255,  0,.24),
+       16px 0 0 0 rgba(200,255,  0,.08),
+          0 0 8px rgba(200,255,  0,.90),
+          0 0 20px rgba(200,255,  0,.42);
+  }
+  52% {
+    left: calc(100% + 4px);
+    opacity: 1;
+    background: #C8FF00;
+    box-shadow:
+        4px 0 0 0 rgba(200,255,  0,.80),
+        8px 0 0 0 rgba(200,255,  0,.50),
+       12px 0 0 0 rgba(200,255,  0,.24),
+       16px 0 0 0 rgba(200,255,  0,.08),
+          0 0 8px rgba(200,255,  0,.90),
+          0 0 20px rgba(200,255,  0,.42);
+  }
+  /* midfield return — through cyan */
+  75% {
+    left: calc(50% - 2px);
+    opacity: 1;
+    background: #00F0FF;
+    box-shadow:
+        4px 0 0 0 rgba(200,255,  0,.28),
+        8px 0 0 0 rgba(200,255,  0,.10),
+       12px 0 0 0 rgba(255, 45,120,.10),
+       16px 0 0 0 rgba(255, 45,120,.04),
+          0 0 8px rgba(  0,240,255,.92),
+          0 0 20px rgba(  0,240,255,.50);
+  }
+  /* impact at P1 barrel */
+  94% {
+    left: -4px;
+    opacity: 1;
+    background: #FF2D78;
+    box-shadow:
+        4px 0 0 0 rgba(255, 45,120,.80),
+        8px 0 0 0 rgba(255, 45,120,.50),
+       12px 0 0 0 rgba(255, 45,120,.24),
+       16px 0 0 0 rgba(255, 45,120,.08),
+          0 0 8px rgba(255, 45,120,.90),
+          0 0 20px rgba(255, 45,120,.42);
+  }
+  /* vanish left — reset */
+  95%, 100% {
+    left: -4px;
+    opacity: 0;
+    background: #FF2D78;
+    box-shadow:
+       -4px 0 0 0 rgba(255, 45,120,.80),
+       -8px 0 0 0 rgba(255, 45,120,.50),
+      -12px 0 0 0 rgba(255, 45,120,.24),
+      -16px 0 0 0 rgba(255, 45,120,.08),
+         0  0 8px rgba(255, 45,120,.90),
+         0  0 20px rgba(255, 45,120,.42);
+  }
 }
 
 /* — Bezel corners: L-bracket marquee-light strobe, 4-corner sequential — */
-/* step-end: these are hard digital flashes, not phosphor glow */
 @keyframes cpop-tl {
   0%,70%,100%  { opacity: .52; box-shadow: none; }
   71%           { opacity: 1.0; box-shadow: -4px -4px 18px #FF2D78, 0 0 36px rgba(255,45,120,.60); }
@@ -154,7 +304,7 @@
   100% { background-position: 160% 0; opacity: 0; }
 }
 
-/* — Seamless attract marquee — track contains text doubled — */
+/* — Seamless attract marquee — */
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -177,19 +327,19 @@
              text-shadow: 0 0 10px rgba(255,255,255,.56), 0 0 24px rgba(255,255,255,.20); }
 }
 
-/* — Attract prompt: authentic 1 Hz coin-op blink, step-end — */
+/* — INSERT COIN blink: authentic 1 Hz step-end — */
 @keyframes coin-blink {
   0%,49.9%  { opacity: 1; }
   50%,100%  { opacity: 0; }
 }
 
-/* — Pixel dots: hard step-end blink — */
+/* — Pixel dots: step-end — */
 @keyframes dot-blink {
   0%,49.9%  { opacity: 1; }
   50%,100%  { opacity: 0; }
 }
 
-/* — Falling sparks: top → bottom comet — */
+/* — Falling sparks — */
 @keyframes spark-fall {
   0%   { transform: translateY(-40px) scaleY(1);    opacity: 0;   }
   6%   { opacity: 1; }
@@ -199,33 +349,21 @@
 
 /* — Play button glow pulses — */
 @keyframes glow-pink {
-  0%,100% { box-shadow: 0 0 6px #FF2D78, 0 0 18px #FF2D78,
-              inset 0 0 18px rgba(255,45,120,.05); }
-  50%      { box-shadow: 0 0 10px #FF2D78, 0 0 32px #FF2D78,
-              0 0 56px rgba(255,45,120,.52),
-              inset 0 0 26px rgba(255,45,120,.10); }
+  0%,100% { box-shadow: 0 0 6px #FF2D78, 0 0 18px #FF2D78, inset 0 0 18px rgba(255,45,120,.05); }
+  50%      { box-shadow: 0 0 10px #FF2D78, 0 0 32px #FF2D78, 0 0 56px rgba(255,45,120,.52), inset 0 0 26px rgba(255,45,120,.10); }
 }
 @keyframes glow-green {
   0%,100% { box-shadow: 0 0 6px #C8FF00, 0 0 16px #C8FF00; }
-  50%      { box-shadow: 0 0 10px #C8FF00, 0 0 28px #C8FF00,
-              0 0 52px rgba(200,255,0,.48); }
+  50%      { box-shadow: 0 0 10px #C8FF00, 0 0 28px #C8FF00, 0 0 52px rgba(200,255,0,.48); }
 }
 
-/* — Separator star: continuous spin + palette cycle — */
-@keyframes star-spin {
-  0%,100% { color: #00F0FF; text-shadow: 0 0 6px #00F0FF, 0 0 14px #00F0FF; transform: rotate(0deg)   scale(1.0); }
-  25%      { color: #FF2D78; text-shadow: 0 0 6px #FF2D78, 0 0 14px #FF2D78; transform: rotate(90deg)  scale(1.3); }
-  50%      { color: #C8FF00; text-shadow: 0 0 6px #C8FF00, 0 0 14px #C8FF00; transform: rotate(180deg) scale(1.0); }
-  75%      { color: #00F0FF; text-shadow: 0 0 8px #00F0FF, 0 0 18px #00F0FF; transform: rotate(270deg) scale(1.2); }
-}
-
-/* — Score column divider pulse — subtle breathing — */
+/* — Score column divider pulse — */
 @keyframes divider-breathe {
   0%,100% { opacity: .18; }
   50%      { opacity: .40; }
 }
 
-/* — Score rule: double-channel bottom flash synced to hi-throb — */
+/* — Score rule flash — */
 @keyframes rule-flash {
   0%,100% { opacity: .55; }
   50%      { opacity: .90; }
@@ -246,7 +384,6 @@
   overflow: hidden;
 }
 
-/* Scattered phosphor point sources — surface noise */
 .screen::before {
   content: '';
   position: absolute;
@@ -271,7 +408,6 @@
    BACKGROUND: PIXEL MATRIX · SPARKS · DOTS
    ═══════════════════════════════════════════════════════════ */
 
-/* Physical phosphor-dot matrix — every real CRT had this structure */
 .bgGrid {
   position: absolute;
   inset: 0;
@@ -281,7 +417,6 @@
   z-index: 0;
 }
 
-/* Falling pixel sparks — color/shadow/timing set via inline style */
 .spark {
   position: absolute;
   top: 0;
@@ -292,7 +427,6 @@
   animation: spark-fall linear infinite;
 }
 
-/* Edge-scattered phosphor accent dots */
 .pxDot {
   position: absolute;
   width: 4px;
@@ -305,14 +439,7 @@
 
 /* ═══════════════════════════════════════════════════════════
    BEZEL: CORNER ORNAMENTS
-   L-bracket corners + inner vertex diamonds.
-
    Arcade convention: TL=pink, TR=cyan, BL=cyan, BR=pink.
-   The L-bracket references the physical cabinet's aluminum
-   corner guard. Diamond marks the exact outer bezel vertex.
-
-   cpop animations: step-end marquee-light strobe,
-   4-corner sequential stagger on a 4.2s cycle.
    ═══════════════════════════════════════════════════════════ */
 
 .corner {
@@ -324,13 +451,11 @@
   z-index: 6;
 }
 
-/* The L-bracket — two sides bordered */
 .cornerTL { top: 14px; left: 14px;     border-top: 3px solid #FF2D78; border-left:  3px solid #FF2D78; animation: cpop-tl 4.2s step-end 0.0s infinite; }
 .cornerTR { top: 14px; right: 14px;    border-top: 3px solid #00F0FF; border-right: 3px solid #00F0FF; animation: cpop-tr 4.2s step-end 0.6s infinite; }
 .cornerBL { bottom: 14px; left: 14px;  border-bottom: 3px solid #00F0FF; border-left:  3px solid #00F0FF; animation: cpop-bl 4.2s step-end 1.2s infinite; }
 .cornerBR { bottom: 14px; right: 14px; border-bottom: 3px solid #FF2D78; border-right: 3px solid #FF2D78; animation: cpop-br 4.2s step-end 1.8s infinite; }
 
-/* Vertex diamond — placed at the outer corner of each L bracket */
 .corner::before {
   content: '';
   position: absolute;
@@ -344,7 +469,6 @@
 .cornerBL::before { background: #00F0FF; box-shadow: 0 0 7px #00F0FF, 0 0 18px #00F0FF; bottom: -5px; left: -5px; }
 .cornerBR::before { background: #FF2D78; box-shadow: 0 0 7px #FF2D78, 0 0 18px #FF2D78; bottom: -5px; right: -5px; }
 
-/* Inner corner tick — small inward extension suggesting machined depth */
 .corner::after {
   content: '';
   position: absolute;
@@ -356,35 +480,25 @@
 
 /* ═══════════════════════════════════════════════════════════
    BEZEL: RAILS
-   Horizontal top=cyan · bottom=pink
-   Vertical   left=pink · right=cyan
-
-   Each rail: outer 2px neon line + periodic 8px tick marks
-   via ::before repeating-gradient — physical machined channels.
-   Comet shimmer overlay via ::after — the phosphor sweep.
    ═══════════════════════════════════════════════════════════ */
 
 .edgeLine {
   position: absolute;
   left: 46px; right: 46px;
-  height: 10px;            /* expanded from 2px to contain tick marks */
+  height: 10px;
   display: block;
   overflow: visible;
   z-index: 4;
 }
 
-/* Top rail: cyan — tick marks below the main line */
 .edgeLineTop {
   top: 22px;
-  /* Main 2px rail line at top + tick marks below */
   background:
-    /* Tick marks — 2px wide every 40px, full 10px height */
     repeating-linear-gradient(
       to right,
       transparent 0px, transparent 38px,
       rgba(0,240,255,.40) 38px, rgba(0,240,255,.40) 40px
     ),
-    /* Main rail line — 2px at top of the 10px block */
     linear-gradient(
       to bottom,
       rgba(0,240,255,.88) 0px, rgba(0,240,255,.88) 2px,
@@ -393,7 +507,6 @@
   box-shadow: 0 0 5px rgba(0,240,255,.40), 0 0 12px rgba(0,240,255,.15);
 }
 
-/* Comet shimmer — traverses full rail width */
 .edgeLineTop::after {
   content: '';
   position: absolute;
@@ -408,7 +521,6 @@
   animation: comet-h 4.8s ease-in-out 0.5s infinite;
 }
 
-/* Bottom rail: pink — tick marks upward (above the line) */
 .edgeLineBottom {
   bottom: 22px;
   background:
@@ -425,7 +537,6 @@
   box-shadow: 0 0 5px rgba(255,45,120,.40), 0 0 12px rgba(255,45,120,.15);
 }
 
-/* Comet shimmer — pink */
 .edgeLineBottom::after {
   content: '';
   position: absolute;
@@ -440,11 +551,10 @@
   animation: comet-h 5.6s ease-in-out 2.4s infinite;
 }
 
-/* Vertical rails */
 .vline {
   position: absolute;
   top: 46px; bottom: 46px;
-  width: 10px;             /* expanded for tick marks */
+  width: 10px;
   display: block;
   z-index: 4;
 }
@@ -452,13 +562,11 @@
 .vlineL {
   left: 22px;
   background:
-    /* Tick marks — 2px tall every 36px, full 10px width */
     repeating-linear-gradient(
       to bottom,
       transparent 0px, transparent 34px,
       rgba(255,45,120,.36) 34px, rgba(255,45,120,.36) 36px
     ),
-    /* Main line at left edge */
     linear-gradient(to right, rgba(255,45,120,.80) 0px, rgba(255,45,120,.80) 2px, transparent 2px);
   box-shadow: -2px 0 6px rgba(255,45,120,.22);
 }
@@ -477,15 +585,6 @@
 
 /* ═══════════════════════════════════════════════════════════
    TOP SCORE STRIP — absolute top:42px
-   Three-column grid with vertical separators.
-
-   1UP=pink · HI-SCORE=white · 2UP=cyan
-   (exact Pac-Man / Galaga color-column assignment)
-
-   scorePanel:  3 data cols + 2 divider cols → CSS Grid
-   scoreRule:   double-channel horizontal bar below scores,
-                modelled on the physical glass-etch line
-                that real CRT bezels had above the play field.
    ═══════════════════════════════════════════════════════════ */
 
 .topStrip {
@@ -495,7 +594,6 @@
   animation: fade-flat 1.2s ease both;
 }
 
-/* 5-column grid: data · sep · data · sep · data */
 .scorePanel {
   display: grid;
   grid-template-columns: 1fr 1px 1.3fr 1px 1fr;
@@ -504,7 +602,6 @@
   padding: 0 52px;
 }
 
-/* Each score column: label on top, value below */
 .scoreCol {
   display: flex;
   flex-direction: column;
@@ -513,43 +610,27 @@
   padding: 6px 0 8px;
 }
 
-/* Vertical column separator — dim hairline */
 .scoreSep {
   background: rgba(255,255,255,.14);
   margin: 6px 0;
   animation: divider-breathe 3.2s ease-in-out infinite;
 }
 
-/* Score labels — small caps above the number */
 .scoreLabel {
   font-family: var(--font-mono);
   font-size: 7px;
   letter-spacing: .20em;
   text-transform: uppercase;
 }
-.scoreLabelP1 {
-  color: #FF2D78;
-  text-shadow: 0 0 5px #FF2D78;
-  animation: blink-p1 6.0s step-end 1.5s infinite;
-}
+.scoreLabelP1 { color: #FF2D78; text-shadow: 0 0 5px #FF2D78; animation: blink-p1 6.0s step-end 1.5s infinite; }
 .scoreLabelHi { color: rgba(255,255,255,.42); }
-.scoreLabelP2 {
-  color: #00F0FF;
-  text-shadow: 0 0 5px #00F0FF;
-  animation: blink-p2 6.0s step-end 0.0s infinite;
-}
+.scoreLabelP2 { color: #00F0FF; text-shadow: 0 0 5px #00F0FF; animation: blink-p2 6.0s step-end 0.0s infinite; }
 
-/* Score values — the hero numbers */
-.scoreValue {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: .10em;
-}
+.scoreValue { font-family: var(--font-mono); font-size: 13px; letter-spacing: .10em; }
 .scoreValueP1 { color: #FF2D78; text-shadow: 0 0 5px #FF2D78, 0 0 14px #FF2D78; }
 .scoreValueHi { animation: hi-throb 3.2s ease-in-out infinite; }
 .scoreValueP2 { color: #00F0FF; text-shadow: 0 0 5px #00F0FF, 0 0 14px #00F0FF; }
 
-/* Double-channel rule below scores — physical glass-etched bezel line */
 .scoreRule {
   position: relative;
   max-width: min(96vw, 680px);
@@ -559,7 +640,6 @@
   box-shadow: 0 0 6px rgba(0,240,255,.35);
   animation: rule-flash 3.2s ease-in-out infinite;
 }
-/* Second, thinner channel 5px below the main line */
 .scoreRule::after {
   content: '';
   position: absolute;
@@ -571,9 +651,6 @@
 
 /* ═══════════════════════════════════════════════════════════
    MARQUEE BAND — absolute top:96px
-   Coin-op attract ticker, seamless 28s scroll.
-   Content is doubled in JSX for a seamless loop:
-     animation translateX(0) → translateX(-50%)
    ═══════════════════════════════════════════════════════════ */
 
 .marqueeBand {
@@ -587,7 +664,6 @@
   animation: fade-flat 1.4s ease .3s both;
 }
 
-/* Track: inline-flex, holds two identical copies for seamless loop */
 .marqueeTrack {
   display: inline-flex;
   white-space: nowrap;
@@ -608,7 +684,6 @@
 
 /* ═══════════════════════════════════════════════════════════
    BOTTOM ATTRACT STRIP — absolute bottom:42px
-   INSERT COIN blink + credits counter.
    ═══════════════════════════════════════════════════════════ */
 
 .bottomStrip {
@@ -633,11 +708,7 @@
   animation: coin-blink 1.0s step-end infinite;
 }
 
-.creditsRow {
-  display: flex;
-  gap: 28px;
-  align-items: center;
-}
+.creditsRow { display: flex; gap: 28px; align-items: center; }
 
 .creditItem {
   font-family: var(--font-mono);
@@ -659,7 +730,6 @@
 
 /* ═══════════════════════════════════════════════════════════
    CONTENT COLUMN
-   clamp() padding clears the absolute strips at all heights.
    ═══════════════════════════════════════════════════════════ */
 
 .content {
@@ -690,7 +760,6 @@
   animation: fade-flat .55s ease both;
 }
 
-/* h1: two words stacked — explicit gap prevents overlap */
 .title {
   display: flex;
   flex-direction: column;
@@ -700,13 +769,6 @@
   overflow: visible;
 }
 
-/*
- * Each title word.
- * font-size: clamp(2.4rem, 7.5vw, 4.2rem)
- *   floor 2.4rem — tiny viewports
- *   fluid 7.5vw  — 57.6px at 768px width
- *   cap   4.2rem — large screens, safe for layout
- */
 .titleWord {
   position: relative;
   display: block;
@@ -723,7 +785,6 @@
 }
 .titleWord:nth-child(2) { animation-delay: .45s, 3.4s; }
 
-/* Red chromatic ghost — ::before — left offset */
 .titleWord::before {
   content: attr(data-text);
   position: absolute;
@@ -741,7 +802,6 @@
 }
 .titleWord:nth-child(2)::before { animation-delay: 2.2s; }
 
-/* Cyan chromatic ghost — ::after — right offset */
 .titleWord::after {
   content: attr(data-text);
   position: absolute;
@@ -759,7 +819,6 @@
 }
 .titleWord:nth-child(2)::after { animation-delay: 2.5s; }
 
-/* Tagline: hard step-end palette cycle */
 .tagline {
   font-family: var(--font-mono);
   font-size: 8px;
@@ -773,81 +832,140 @@
 
 
 /* ═══════════════════════════════════════════════════════════
-   SEPARATOR — neon rule with spinning star ornament
-   First separator: cyan. Second (.separator + .separator): pink.
+   BATTLE ARENA — P1 (pink) vs P2 (green) with duel bullet
+
+   Tank geometry — derived from original 7×12 upward-facing grid
+   via 90° clockwise rotation then horizontal mirror:
+
+   Original (7 col × 12 row, barrel UP at col 3):
+     Row 11 [2,2,2,2,2,2,2] ← bottom track
+     Row 10 [2,0,0,0,0,0,2]
+     Row 5–9[2,0,3,3,3,0,2] ← hull (3×5 block)
+     Row 4  [2,0,0,1,0,0,2]
+     Row 3  [2,2,0,1,0,2,2]
+     Row 0–2[0,0,0,1,0,0,0] ← barrel tip
+
+   After 90° CW → 12 wide × 7 tall (barrel points RIGHT, row 3):
+     Row 0: [1,1,1,1,1,1,1,1,1,0,0,0]   ← top track spine
+     Row 1: [1,0,0,0,0,0,0,0,1,0,0,0]
+     Row 2: [1,0,1,1,1,1,1,0,0,0,0,0]   ← hull top
+     Row 3: [1,0,1,1,1,1,1,1,1,1,1,1]   ← hull mid + barrel
+     Row 4: [1,0,1,1,1,1,1,0,0,0,0,0]   ← hull bottom
+     Row 5: [1,0,0,0,0,0,0,0,1,0,0,0]
+     Row 6: [1,1,1,1,1,1,1,1,1,0,0,0]   ← bottom track spine
+
+   Horizontal mirror of above → 12 wide × 7 tall (barrel LEFT, row 3):
+     Row 0: [0,0,0,1,1,1,1,1,1,1,1,1]
+     Row 1: [0,0,0,1,0,0,0,0,0,0,0,1]
+     Row 2: [0,0,0,0,0,1,1,1,1,1,0,1]
+     Row 3: [1,1,1,1,1,1,1,1,1,1,0,1]   ← barrel + hull mid
+     Row 4: [0,0,0,0,0,1,1,1,1,1,0,1]
+     Row 5: [0,0,0,1,0,0,0,0,0,0,0,1]
+     Row 6: [0,0,0,1,1,1,1,1,1,1,1,1]
+
+   Cell: 5px, gap: 1px → tank = 71px × 41px
+
+   Arena rules: double cyan lines (two 2px bars, 5px void between)
+   + tick marks every 40px — identical pitch to the bezel rails.
+   Inspired by Combat, Battlezone, and Robotron HUD dividers.
    ═══════════════════════════════════════════════════════════ */
 
-.separator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.arenaWrap {
   width: 100%;
-  margin-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-bottom: var(--space-4);
+  animation: fade-flat .7s ease .18s both;
 }
 
-.sepLine {
-  display: block;
-  flex: 1;
-  height: 2px;
-  background: linear-gradient(to right,
-    transparent, rgba(0,240,255,.48) 20%, rgba(0,240,255,.82) 50%, rgba(0,240,255,.48) 80%, transparent);
-  box-shadow: 0 0 7px rgba(0,240,255,.28);
-}
-.separator:last-of-type .sepLine {
-  background: linear-gradient(to right,
-    transparent, rgba(255,45,120,.36) 20%, rgba(255,45,120,.60) 50%, rgba(255,45,120,.36) 80%, transparent);
-  box-shadow: 0 0 7px rgba(255,45,120,.24);
-}
-
-.sepStar {
-  font-family: var(--font-mono);
-  font-size: 12px;
+/* Double cyan ladder rule — no fade, full edge-to-edge.
+   Two 2px lines at top and bottom of a 9px block, with
+   1px tick marks every 40px spanning the full height.     */
+.arenaRule {
+  width: 100%;
+  height: 9px;
   flex-shrink: 0;
-  display: inline-block;
-  animation: star-spin 4.0s ease-in-out infinite;
+  background:
+    repeating-linear-gradient(
+      to right,
+      transparent          0px, transparent          39px,
+      rgba(0,240,255,.55) 39px, rgba(0,240,255,.55) 40px
+    ),
+    linear-gradient(
+      to bottom,
+      #00F0FF  0px, #00F0FF  2px,
+      transparent  2px, transparent  7px,
+      #00F0FF  7px, #00F0FF  9px
+    );
+  box-shadow: 0 0 8px rgba(0,240,255,.42), 0 0 20px rgba(0,240,255,.14);
 }
 
-
-/* ═══════════════════════════════════════════════════════════
-   TANK MASCOT — pixel-grid, multi-colour heartbeat
-   Cell: 12×12px / 2px gap → 12 rows × 14px = 168px grid height
-   ═══════════════════════════════════════════════════════════ */
-
-.tankWrap {
+/* Arena field row — left tank | bullet channel | right tank */
+.arenaField {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-3);
-  animation:
-    fade-flat  .7s ease .2s both,
-    tank-beat  2.2s ease-in-out 1s infinite;
+  padding: 14px 0;
 }
 
+/* ── P1 pink tank (facing right) ── */
+.tankLeft {
+  flex-shrink: 0;
+  animation:
+    fade-flat       .7s  ease        .18s both,
+    tank-fire-pink  5.0s linear      0.6s infinite;
+}
+
+/* ── P2 green tank (facing left) ── */
+.tankRight {
+  flex-shrink: 0;
+  animation:
+    fade-flat        .7s  ease        .26s both,
+    tank-fire-green  5.0s linear      0.6s infinite;
+}
+
+/* ── 12 × 7 pixel grid — 10px cells, 1px gap ── */
 .tankGrid {
   display: grid;
-  grid-template-columns: repeat(7, 12px);
-  grid-template-rows:    repeat(12, 12px);
-  gap: 2px;
+  grid-template-columns: repeat(12, 10px);
+  grid-template-rows:    repeat(7,  10px);
+  gap: 1px;
 }
 
-.tankCell       { width: 12px; height: 12px; background: transparent; }
-.tankCellBarrel { background: #00F0FF; box-shadow: 0 0 8px #00F0FF, 0 0 18px #00F0FF; }
-.tankCellTrack  { background: #C8FF00; box-shadow: 0 0 6px #C8FF00, 0 0 14px #C8FF00; }
-.tankCellHull   { background: #FF2D78; box-shadow: 0 0 8px #FF2D78, 0 0 18px #FF2D78; }
+/* Base cell */
+.cell  { width: 10px; height: 10px; background: transparent; }
+
+/* Flat single-colour cells — all filled pixels identical within each tank */
+.pink  { background: #FF2D78; box-shadow: 0 0 6px #FF2D78, 0 0 14px rgba(255,45,120,.55); }
+.green { background: #C8FF00; box-shadow: 0 0 6px #C8FF00, 0 0 14px rgba(200,255,0,.55); }
+
+/* ── Bullet channel ──
+   flex:1 fills the gap between barrels.
+   height:10px aligns with one cell row, centred via align-items
+   on .arenaField — which places it exactly at barrel row 3.
+   overflow:visible lets the 16px glow trail bleed into tanks.  */
+.bulletTrack {
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+  height: 10px;
+  overflow: visible;
+}
+
+/* 10×10px square projectile — matches one tank cell */
+.bullet {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  animation: bullet-duel 5.0s linear 0.6s infinite;
+}
 
 
 /* ═══════════════════════════════════════════════════════════
-   CONTROLS — mode select + play button
-
-   min-height: 200px HARD RESERVE.
-   This prevents layout shift when the multiplayer sub-row
-   or room code input appears. The .content container stays
-   at the same height regardless of which state is active:
-
-     singleplayer:         mode(42) + gap(12) + btn(48)          = 102px  ✓
-     multiplayer + host:   mode + sub(40) + gap + btn            = 158px  ✓
-     multiplayer + join:   mode + sub + gap + input(52) + err    = 182px  ✓
-     All states fit within 200px — centering never shifts.
+   CONTROLS
+   min-height:200px — hard reserve prevents layout shift.
    ═══════════════════════════════════════════════════════════ */
 
 .controls {
@@ -878,7 +996,6 @@
   animation: fade-flat .18s ease both;
 }
 
-/* Play button — the primary CTA */
 .playBtn {
   position: relative;
   padding: 14px 44px;
@@ -901,8 +1018,8 @@
 
 
 /* ═══════════════════════════════════════════════════════════
-   SMALL VIEWPORT BREAKPOINT — max-height: 640px
-   Hide marquee band, tighten all sections, reduce tank cells.
+   SMALL VIEWPORT — max-height: 640px
+   Hide marquee, tighten spacing, shrink tank cells 5px→4px.
    ═══════════════════════════════════════════════════════════ */
 
 @media (max-height: 640px) {
@@ -912,9 +1029,10 @@
   .content     { padding: 84px var(--space-8) 56px; gap: 0; }
   .header      { margin-bottom: var(--space-2); gap: var(--space-1); }
   .title       { gap: 3px; }
-  .separator   { margin-bottom: var(--space-2); }
-  .tankWrap    { margin-bottom: var(--space-2); }
+  .arenaWrap   { margin-bottom: var(--space-2); }
+  .arenaField  { padding: 10px 0; }
   .controls    { min-height: 180px; }
-  .tankGrid    { grid-template-columns: repeat(7, 10px); grid-template-rows: repeat(12, 10px); }
-  .tankCell, .tankCellBarrel, .tankCellTrack, .tankCellHull { width: 10px; height: 10px; }
+  .tankGrid    { grid-template-columns: repeat(12, 8px); grid-template-rows: repeat(7, 8px); gap: 1px; }
+  .cell, .pink, .green { width: 8px; height: 8px; }
+  .bulletTrack { height: 8px; }
 }

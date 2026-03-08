@@ -9,56 +9,63 @@ import styles from './page.module.css';
 /**
  * /  — Dead Angle start screen.
  *
- * Layout (all absolute strips clear .content padding):
- *   .screen        height:100dvh, overflow:hidden — hard viewport lock
- *   .bgGrid        fixed phosphor-dot matrix background texture
- *   .topStrip      absolute top:42px — score header (3-col grid + double-rule)
- *   .marqueeBand   absolute top:96px — seamless coin-op attract ticker
- *   .content       flex-column centred, clamp padding clears strips
- *   .bottomStrip   absolute bottom:42px — INSERT COIN blink + credits
+ * Tank geometry — original 7×12 grid rotated 90° CW then mirrored:
  *
- * Score strip (3-column grid):
- *   .scorePanel    grid-template-columns: 1fr 1px 1.3fr 1px 1fr
- *   .scoreSep      1px vertical hairlines between columns
- *   .scoreRule     double-channel horizontal bar (physical glass-etch line)
+ *   Original (7 col × 12 row, barrel pointing UP at col 3):
+ *     Rows  0–2: [0,0,0,1,0,0,0]   barrel tip
+ *     Row   3:   [2,2,0,1,0,2,2]   track corners + barrel
+ *     Row   4:   [2,0,0,1,0,0,2]
+ *     Rows  5–9: [2,0,3,3,3,0,2]   hull (3×5 block)
+ *     Row  10:   [2,0,0,0,0,0,2]
+ *     Row  11:   [2,2,2,2,2,2,2]   bottom track
  *
- * Seamless marquee:
- *   .marqueeTrack  inline-flex, text duplicated — animation translateX(0→-50%)
+ *   Right-facing (90° CW, 12 col × 7 row, barrel points RIGHT at row 3):
+ *     Row 0: [1,1,1,1,1,1,1,1,1,0,0,0]
+ *     Row 1: [1,0,0,0,0,0,0,0,1,0,0,0]
+ *     Row 2: [1,0,1,1,1,1,1,0,0,0,0,0]
+ *     Row 3: [1,0,1,1,1,1,1,1,1,1,1,1]  ← barrel extends right
+ *     Row 4: [1,0,1,1,1,1,1,0,0,0,0,0]
+ *     Row 5: [1,0,0,0,0,0,0,0,1,0,0,0]
+ *     Row 6: [1,1,1,1,1,1,1,1,1,0,0,0]
  *
- * No-layout-shift guarantee:
- *   .controls      min-height:200px hard reserve — see CSS comment for math.
+ *   Left-facing (horizontal mirror, 12 col × 7 row, barrel points LEFT):
+ *     Row 0: [0,0,0,1,1,1,1,1,1,1,1,1]
+ *     Row 1: [0,0,0,1,0,0,0,0,0,0,0,1]
+ *     Row 2: [0,0,0,0,0,1,1,1,1,1,0,1]
+ *     Row 3: [1,1,1,1,1,1,1,1,1,1,0,1]  ← barrel extends left
+ *     Row 4: [0,0,0,0,0,1,1,1,1,1,0,1]
+ *     Row 5: [0,0,0,1,0,0,0,0,0,0,0,1]
+ *     Row 6: [0,0,0,1,1,1,1,1,1,1,1,1]
  *
- * Bezel corners: L-bracket (2-sided border) + vertex diamond (::before).
- * Bezel rails: 10px height for tick marks via repeating-gradient + comet.
- *
- * CRTOverlay mounted once in layout.tsx.
+ *   Cell: 5px, gap: 1px → tank = 71px × 41px
+ *   All filled pixels are a single flat colour per tank.
  */
 
 const PINK  = '#FF2D78';
 const CYAN  = '#00F0FF';
 const GREEN = '#C8FF00';
 
-/* ── Tank grid ────────────────────────────────────────────── */
-const TANK_GRID: number[][] = [
-  [0, 0, 0, 1, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0],
-  [2, 2, 0, 1, 0, 2, 2],
-  [2, 0, 0, 1, 0, 0, 2],
-  [2, 0, 3, 3, 3, 0, 2],
-  [2, 0, 3, 3, 3, 0, 2],
-  [2, 0, 3, 3, 3, 0, 2],
-  [2, 0, 3, 3, 3, 0, 2],
-  [2, 0, 3, 3, 3, 0, 2],
-  [2, 0, 0, 0, 0, 0, 2],
-  [2, 2, 2, 2, 2, 2, 2],
+/* ── P1 tank — faces RIGHT — all filled pixels = pink ── */
+const PINK_TANK: number[][] = [
+  [1,1,1,1,1,1,1,1,1,0,0,0],
+  [1,0,0,0,0,0,0,0,1,0,0,0],
+  [1,0,1,1,1,1,1,0,0,0,0,0],
+  [1,0,1,1,1,1,1,1,1,1,1,1],
+  [1,0,1,1,1,1,1,0,0,0,0,0],
+  [1,0,0,0,0,0,0,0,1,0,0,0],
+  [1,1,1,1,1,1,1,1,1,0,0,0],
 ];
 
-const CELL_CLASS: Record<number, string> = {
-  1: styles.tankCellBarrel,
-  2: styles.tankCellTrack,
-  3: styles.tankCellHull,
-};
+/* ── P2 tank — faces LEFT — all filled pixels = green ── */
+const GREEN_TANK: number[][] = [
+  [0,0,0,1,1,1,1,1,1,1,1,1],
+  [0,0,0,1,0,0,0,0,0,0,0,1],
+  [0,0,0,0,0,1,1,1,1,1,0,1],
+  [1,1,1,1,1,1,1,1,1,1,0,1],
+  [0,0,0,0,0,1,1,1,1,1,0,1],
+  [0,0,0,1,0,0,0,0,0,0,0,1],
+  [0,0,0,1,1,1,1,1,1,1,1,1],
+];
 
 /* ── Falling sparks ───────────────────────────────────────── */
 const COLORS = [PINK, CYAN, GREEN];
@@ -84,7 +91,7 @@ function fmt(n: number): string {
   return String(Math.floor(n)).padStart(5, '0');
 }
 
-/* ── Attract ticker text — duplicated for seamless loop ───── */
+/* ── Attract ticker — doubled for seamless loop ───────────── */
 const TICKER =
   '◆ DEAD ANGLE \u00B7 NEON MAZE COMBAT \u00B7 © 1984 DEAD ANGLE SYSTEMS \u00B7 ' +
   'INSERT COIN TO START \u00B7 P1 VS P2 \u00B7 DEFEAT ALL ENEMIES \u00B7 ' +
@@ -119,11 +126,9 @@ export default function StartPage() {
   function handleModeButton(mode: 'singleplayer' | 'multiplayer') {
     flow.selectMode(mode);
   }
-
   function handleSubMode(sub: 'host' | 'join') {
     flow.selectSubMode(sub);
   }
-
   function handlePlayButton() {
     if (flow.mode === 'singleplayer') flow.handleSingleplayer();
     else if (flow.subMode === 'host') flow.handleHost();
@@ -167,47 +172,40 @@ export default function StartPage() {
         />
       ))}
 
-      {/* ── Bezel corner L-brackets + vertex diamonds ── */}
+      {/* ── Bezel corner L-brackets ── */}
       <span className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerTR}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBR}`} aria-hidden="true" />
 
-      {/* ── Bezel rails with tick marks ── */}
+      {/* ── Bezel rails ── */}
       <span className={`${styles.edgeLine} ${styles.edgeLineTop}`}    aria-hidden="true" />
       <span className={`${styles.edgeLine} ${styles.edgeLineBottom}`} aria-hidden="true" />
       <span className={`${styles.vline} ${styles.vlineL}`}            aria-hidden="true" />
       <span className={`${styles.vline} ${styles.vlineR}`}            aria-hidden="true" />
 
-      {/* ── Top score strip — 3-column with dividers ── */}
+      {/* ── Top score strip ── */}
       <div className={styles.topStrip} aria-hidden="true">
         <div className={styles.scorePanel}>
-
           <div className={styles.scoreCol}>
             <span className={`${styles.scoreLabel} ${styles.scoreLabelP1}`}>1UP</span>
             <span className={`${styles.scoreValue} ${styles.scoreValueP1}`}>{fmt(scores.p1)}</span>
           </div>
-
           <div className={styles.scoreSep} />
-
           <div className={styles.scoreCol}>
             <span className={`${styles.scoreLabel} ${styles.scoreLabelHi}`}>HI-SCORE</span>
             <span className={`${styles.scoreValue} ${styles.scoreValueHi}`}>{fmt(scores.hi)}</span>
           </div>
-
           <div className={styles.scoreSep} />
-
           <div className={styles.scoreCol}>
             <span className={`${styles.scoreLabel} ${styles.scoreLabelP2}`}>2UP</span>
             <span className={`${styles.scoreValue} ${styles.scoreValueP2}`}>{fmt(scores.p2)}</span>
           </div>
-
         </div>
-        {/* Double-channel glass-etch line below score block */}
         <div className={styles.scoreRule} />
       </div>
 
-      {/* ── Attract marquee ticker — text doubled for seamless loop ── */}
+      {/* ── Attract marquee ticker ── */}
       <div className={styles.marqueeBand} aria-hidden="true">
         <div className={styles.marqueeTrack}>
           <span className={styles.marqueeText}>{TICKER}</span>
@@ -215,10 +213,10 @@ export default function StartPage() {
         </div>
       </div>
 
-      {/* ── Main content — centred ── */}
+      {/* ── Main content ── */}
       <div className={styles.content}>
 
-        {/* MARQUEE ZONE */}
+        {/* TITLE */}
         <header className={styles.header}>
           <h1 className={styles.title} aria-label="Dead Angle">
             <span className={styles.titleWord} data-text="DEAD">DEAD</span>
@@ -227,32 +225,55 @@ export default function StartPage() {
           <p className={styles.tagline}>NEON MAZE COMBAT</p>
         </header>
 
-        {/* SEPARATOR */}
-        <div className={styles.separator} aria-hidden="true">
-          <span className={styles.sepLine} />
-          <span className={styles.sepStar}>✦</span>
-          <span className={styles.sepLine} />
-        </div>
+        {/* BATTLE ARENA
+            Top double cyan rule
+            Left: P1 pink tank (barrel facing right)
+            Centre: bullet channel — single bullet alternates directions
+            Right: P2 green tank (barrel facing left)
+            Bottom double cyan rule                                      */}
+        <div className={styles.arenaWrap} aria-hidden="true">
 
-        {/* MASCOT — pixel-grid tank */}
-        <div className={styles.tankWrap} aria-hidden="true">
-          <div className={styles.tankGrid}>
-            {TANK_GRID.map((row, ri) =>
-              row.map((cell, ci) => (
-                <div
-                  key={`${ri}-${ci}`}
-                  className={`${styles.tankCell}${cell !== 0 ? ` ${CELL_CLASS[cell]}` : ''}`}
-                />
-              ))
-            )}
+          <div className={styles.arenaRule} />
+
+          <div className={styles.arenaField}>
+
+            {/* P1 — pink, 12 col × 7 row, barrel pointing right */}
+            <div className={styles.tankLeft}>
+              <div className={styles.tankGrid}>
+                {PINK_TANK.map((row, ri) =>
+                  row.map((filled, ci) => (
+                    <div
+                      key={`p${ri}-${ci}`}
+                      className={filled ? `${styles.cell} ${styles.pink}` : styles.cell}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Bullet channel — single element, bullet-duel animates L↔R */}
+            <div className={styles.bulletTrack}>
+              <div className={styles.bullet} />
+            </div>
+
+            {/* P2 — green, 12 col × 7 row, barrel pointing left */}
+            <div className={styles.tankRight}>
+              <div className={styles.tankGrid}>
+                {GREEN_TANK.map((row, ri) =>
+                  row.map((filled, ci) => (
+                    <div
+                      key={`g${ri}-${ci}`}
+                      className={filled ? `${styles.cell} ${styles.green}` : styles.cell}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
           </div>
-        </div>
 
-        {/* SEPARATOR */}
-        <div className={styles.separator} aria-hidden="true">
-          <span className={styles.sepLine} />
-          <span className={styles.sepStar}>✦</span>
-          <span className={styles.sepLine} />
+          <div className={styles.arenaRule} />
+
         </div>
 
         {/* PLAY SURFACE */}
@@ -302,7 +323,7 @@ export default function StartPage() {
 
       </div>
 
-      {/* ── Bottom attract strip — absolute ── */}
+      {/* ── Bottom attract strip ── */}
       <div className={styles.bottomStrip}>
         <span className={styles.prompt}>— INSERT COIN TO CONTINUE —</span>
         <div className={styles.creditsRow} aria-hidden="true">
