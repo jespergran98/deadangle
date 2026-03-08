@@ -1,0 +1,252 @@
+/* ============================================================
+   GameCanvas.module.css
+   Canvas wrapper + HUD panels rendered below the canvas.
+
+   Layout hierarchy:
+     canvasOuter   self-contained sizing via viewport-unit caps
+       canvasWrap  aspect-ratio box matching the 560×320 buffer (7:4)
+         canvas    drawing buffer scaled to 100 × 100 %
+       hud         flex row below canvas, same width as canvasOuter
+         hudPanel  one panel per player
+   ============================================================ */
+
+/* ── HUD height budget (local token, only used in this file) ─ */
+:root {
+  --hud-height: 6.5rem; /* vertical space reserved for the HUD strip */
+}
+
+/* ── Canvas outer container ──────────────────────────────── */
+
+.canvasOuter {
+  width: 100%;
+
+  /*
+   * Viewport-unit caps guarantee VISIBLE breathing room on all four
+   * sides regardless of screen aspect ratio — no dependency on parent
+   * padding values or sibling CSS Module variables.
+   *
+   * Two simultaneous constraints:
+   *
+   *   (a) 92vw
+   *       Canvas is never wider than 92 % of the viewport width.
+   *       On every screen this leaves at least 4 vw (≥ 2 vw per side)
+   *       of horizontal breathing room before flex centering adds more.
+   *
+   *   (b) calc((88dvh − --hud-height) × 7/4)
+   *       Canvas assembly (canvas + HUD) is capped at 88 % of the
+   *       viewport height.  The remaining 12 dvh is distributed by the
+   *       flex-centering in .screen: ~6 dvh top and ~6 dvh bottom.
+   *       Subtracting --hud-height first converts the height budget to
+   *       a canvas-only height, then multiplies by the 7:4 aspect ratio
+   *       to get the equivalent maximum width.
+   *
+   * The binding constraint depends on screen aspect ratio:
+   *   16:9  (1920×1080): vertical binds → 1 481 px wide, 220 px each side ✓
+   *   16:10 (1440×900):  vertical binds → 1 227 px wide, 107 px each side ✓
+   *   3:2   (1280×800):  vertical binds → 1 078 px wide, 101 px each side ✓
+   *   4:3   (1024×768):  vertical binds →   936 px wide,  44 px each side ✓
+   */
+  max-width: min(
+    92vw,
+    calc((88dvh - var(--hud-height)) * 7 / 4)
+  );
+  margin: 0 auto;
+}
+
+/* ── Aspect-ratio box ─────────────────────────────────────── */
+
+.canvasWrap {
+  position: relative;
+  width: 100%;
+  /*
+   * 560 / 320 = 7 / 4.
+   * No outline or box-shadow — the full 14×8 rectangle is the canvas
+   * element but removed cells are transparent in the drawing buffer.
+   * A rectangular CSS decoration would frame inactive corner cells.
+   * Maze walls carry their own per-pixel cyan glow from drawMaze.
+   */
+  aspect-ratio: 7 / 4;
+  overflow: hidden;
+}
+
+/* ── Canvas element ───────────────────────────────────────── */
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /*
+   * transparent so clearRect-ed pixels show the page --color-bg through,
+   * giving removed/inactive maze cells the correct dark appearance
+   * without a separate fill pass in the game loop.
+   */
+  background: transparent;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* Firefox */
+}
+
+/* ── HUD strip below canvas ──────────────────────────────── */
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-4);
+  width: 100%;
+  height: var(--hud-height);
+  box-sizing: border-box;
+}
+
+/* ── Individual player panel ─────────────────────────────── */
+
+.hudPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  /*
+   * Press Start 2P renders wide — clamp keeps text readable on all
+   * screen sizes without overflowing the panel.
+   */
+  font-size: clamp(0.5rem, 1.6vw, 0.875rem);
+  letter-spacing: var(--letter-spacing-base);
+}
+
+.hudLabel {
+  font-size: clamp(0.45rem, 1.2vw, 0.75rem);
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: 1;
+  opacity: 0.65;
+}
+
+/* Player 1 — pink */
+.hudPanelP1 {
+  color: var(--color-pink);
+  text-shadow: var(--glow-pink-sm);
+  text-align: left;
+}
+
+/* Player 2 / CPU — green */
+.hudPanelP2 {
+  color: var(--color-green);
+  text-shadow: var(--glow-green-sm);
+  text-align: right;
+}
+
+/* ── Bullet row ──────────────────────────────────────────── */
+
+.bulletRow {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.hudPanelP2 .bulletRow {
+  justify-content: flex-end;
+}
+
+.bullet {
+  width:  clamp(8px, 1.4vw, 13px);
+  height: clamp(8px, 1.4vw, 13px);
+  flex-shrink: 0;
+  transition: opacity var(--transition-base);
+}
+
+.bulletFull  {
+  opacity: 1;
+  /* text-shadow does not propagate into SVG — use filter drop-shadow for the neon glow */
+  filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 0 6px currentColor);
+}
+.bulletEmpty { opacity: 0.18; }
+
+/* ── Reload bar ──────────────────────────────────────────── */
+
+.reloadRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.reloadBar {
+  height: clamp(3px, 0.55vw, 6px);
+  border-radius: 2px;
+  flex: 1;
+  max-width: clamp(70px, 11vw, 120px);
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.reloadFill {
+  height: 100%;
+  transition: width 120ms linear;
+}
+
+.reloadFillP1 { background: var(--color-pink);  box-shadow: var(--glow-pink-sm),  0 0 8px var(--color-pink);  }
+.reloadFillP2 { background: var(--color-green); box-shadow: var(--glow-green-sm), 0 0 8px var(--color-green); }
+
+.reloadLabel {
+  font-size: clamp(0.4rem, 1.0vw, 0.7rem);
+  letter-spacing: var(--letter-spacing-wide);
+  animation: hud-blink 0.9s step-end infinite;
+}
+
+/* Redeclared locally — globals.css @keyframes are not in scope here */
+@keyframes hud-blink {
+  0%,  49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── Portrait / narrow-viewport rotation ─────────────────── */
+/*
+ * When the viewport is narrower than 5:4 (portrait phones, tall tablets),
+ * rotate canvasOuter 90° clockwise so the landscape canvas fills the screen.
+ * Gameplay logic and world coordinates are unchanged — pure CSS transform.
+ *
+ * Geometry (verified for 390×844 iPhone portrait):
+ *
+ *   After rotate(90deg) the DOM axes map as:
+ *     DOM width  → visual height   (fills the screen's long axis)
+ *     DOM height → visual width    (fills the screen's short axis)
+ *
+ *   Constraint: visual width ≤ 100vw (screen short axis).
+ *     visual width = DOM height = canvasOuter_width × 4/7
+ *     → canvasOuter_width ≤ 100vw × 7/4
+ *   Also fill visual height as much as possible:
+ *     → canvasOuter_width = min(100dvh, 100vw × 7/4)
+ *
+ *   For 390×844: min(844, 682.5) = 682.5 px
+ *     DOM height = 390 px → visual width  = 390 px = 100vw  (exact fit, no overflow)
+ *     DOM width  = 682.5 px → visual height = 682.5 px (≈81 px letterbox top & bottom)
+ *
+ *   Centering: flex align-items:center places DOM center at 50vw.
+ *   After rotation visual center stays at 50vw — NO manual left offset is needed.
+ *   The previous left:calc((100dvh−100vw)/2) was incorrect: it displaced the
+ *   DOM center to ~422 px on the 390 px-wide screen above, placing the canvas
+ *   entirely off-center.
+ *
+ *   HUD: display:none in portrait. height:var(--hud-height)=0px alone does not
+ *   clip children (overflow is not set on .hud), so explicit hiding is required.
+ */
+@media (max-aspect-ratio: 5/4) {
+  :root {
+    --hud-height: 0px;
+  }
+
+  .canvasOuter {
+    transform: rotate(90deg);
+    transform-origin: center center;
+    /* visual width = DOM height = width × 4/7  ≤  100vw  →  width ≤ 100vw × 7/4 */
+    /* visual height = DOM width = fill as much of screen long axis as possible    */
+    width:     min(100dvh, calc(100vw * 7 / 4));
+    max-width: min(100dvh, calc(100vw * 7 / 4));
+    /* No left offset — flex centres DOM at 50vw which after rotation keeps        */
+    /* visual centre at 50vw (canvas perfectly centred on the screen short axis).  */
+  }
+
+  /* Height:0 from --hud-height does not clip children without overflow:hidden.   */
+  /* display:none removes the HUD from the rotated assembly entirely.              */
+  .hud {
+    display: none;
+  }
+}

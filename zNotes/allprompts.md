@@ -2315,3 +2315,104 @@ The canvas is landscape (wider than tall). On slim viewports where the viewport 
 - No gradients, no blur — hard neon pixels on black
 
 Feel free to adjust and rework elements within game.types.ts
+
+---
+
+Create a new prompt I can attach with all the new files, with the goal of ensuring all the logic in all new files are as clean, refactored and perfect as possible. The maze size is logical, all collisions and trajectories make sense and work as intended, and all original goals are met: 
+
+---
+
+Review and refactor the attached files for the Dead Angle singleplayer MVP, ensuring all logic is clean, efficient, and perfectly implemented per the original spec in CLAUDE.md and the provided file structure. Focus on eliminating redundancy, optimizing performance, and fixing any bugs or inconsistencies in movement, firing, projectile simulation, wall reflections, hit detection, bot behavior (static), maze generation, rendering, and game loop order (simulate projectiles → tick bot → detect hits → draw). Verify that the maze uses a logical landscape grid size that scales responsively without hardcoded pixels, incorporates an irregular organic silhouette by removing corner/edge cells (treating them as solid), and guarantees no fully enclosed cells with at least one open passage per cell.
+
+Ensure collisions, projectile trajectories, and bounces are physically sensible and work flawlessly, with integer pixel coordinates and no smoothing. Confirm the magazine system (7 bullets, 3s reload), dual control schemes (WASD+Q and arrows+space active simultaneously), HUD rendering (pink/green panels with bullet count and reload animation using Press Start 2P and globals.css tokens), and responsive layout (CSS 90° rotation on slim viewports without altering logic) all meet the original goals. The game should run indefinitely as a playable singleplayer experience at /game, with the bot spawning opposite the player and hit detection logging only (no other effects).
+
+Update src/context/RoomContext.ts to include a working RoomProvider component while keeping the existing RoomState interface intact. Maintain visual rules: neon pixels on black, no gradients/blur, and perfect scaling across viewports like the startscreen. Output refactored versions of all files with improvements, preserving the overall structure and types in game.types.ts.
+
+---
+
+The tank is too big, and the maze is too big generating too complex maps, in corners 3 tiles are unable to be entered, but they're still a part of the map instead of being "chopped out", I don't want these 3 pixels in the sides anymore, I want random removal of random tiles around the entire canvas that are near walls. There has to be much more variation and smaller mazes. Ensure it fits perfectly on the screen (I need to scroll now). Do a major overhaul, while ensuring the code is clean, performant and streamlined.
+
+---
+
+Review and refactor the attached files for the Dead Angle singleplayer MVP, ensuring all logic is clean, efficient, and perfectly implemented per the original spec in CLAUDE.md and the provided file structure. Focus on eliminating redundancy, optimizing performance, and fixing any bugs or inconsistencies in movement, firing, projectile simulation, wall reflections, hit detection, bot behavior (static), maze generation, rendering, and game loop order (simulate projectiles → tick bot → detect hits → draw). Verify that the maze uses a logical landscape grid size that scales responsively without hardcoded pixels, incorporates an irregular organic silhouette by removing corner/edge cells (treating them as solid), and guarantees no fully enclosed cells with at least one open passage per cell.
+
+Remove the effect that pixelizes the tank as it turns.
+When a section near the wall is unplayable, do not render it's outer border (currently the full 14x8 area has an outer border, even if the area is not accessible).
+Make sure the playable area better fits on the screen, currently it fills almost the entire screen, it should be a bit smaller, and the HUD bigger.
+Ensure random wll segments miss throughout the map with clean logic, ensuring easy access and more map creativity and uniqueness.
+
+Ensure collisions, projectile trajectories, and bounces are physically sensible and work flawlessly, with integer pixel coordinates and no smoothing. Confirm the magazine system (7 bullets, 3s reload), dual control schemes (WASD+Q and arrows+space active simultaneously), HUD rendering (pink/green panels with bullet count and reload animation using Press Start 2P and globals.css tokens), and responsive layout (CSS 90° rotation on slim viewports without altering logic) all meet the original goals. The game should run indefinitely as a playable singleplayer experience at /game, with the bot spawning opposite the player and hit detection logging only (no other effects).
+
+---
+
+There is still a slight blue shadow behind the outer 14x8 canvas, instead of treating the outer walls as the now outer walls. (The 14x8 area is filled by a black square with a blue shadow, even though the background already is black and no shadow is needed).
+
+When the tank turns, it should keep the exact TANK_GRID visual design still with no warping or visual changes.
+
+The playable area fills the entire screen, there should be some padding/margins/gaps or whatever is the best that ensures there is a slight gap around the screen. The "Player" and "CPU" HUD underneath the canvas is too small.
+
+---
+
+
+Review and refactor the attached files for the Dead Angle singleplayer MVP, ensuring all logic is clean, efficient, and perfectly implemented per the original spec in CLAUDE.md and the provided file structure. Focus on eliminating redundancy, optimizing performance, and fixing any bugs or inconsistencies in movement, firing, projectile simulation, wall reflections, hit detection, bot behavior (static), maze generation, rendering, and game loop order (simulate projectiles → tick bot → detect hits → draw). Verify that the maze uses a logical landscape grid size that scales responsively without hardcoded pixels, incorporates an irregular organic silhouette by removing corner/edge cells (treating them as solid), and guarantees no fully enclosed cells with at least one open passage per cell.
+
+Ensure collisions, projectile trajectories, and bounces are physically sensible and work flawlessly, with integer pixel coordinates and no smoothing. Confirm the magazine system (7 bullets, 3s reload), dual control schemes (WASD+Q and arrows+space active simultaneously), HUD rendering (pink/green panels with bullet count and reload animation using Press Start 2P and globals.css tokens), and responsive layout (CSS 90° rotation on slim viewports without altering logic) all meet the original goals. The game should run indefinitely as a playable singleplayer experience at /game, with the bot spawning opposite the player and hit detection logging only (no other effects).
+
+---
+
+Go through all new logic one more time and ensure all logic now is perfectly meeting the criteria:
+Review and refactor the attached files for the Dead Angle singleplayer MVP, ensuring all logic is clean, efficient, and perfectly implemented per the original spec in CLAUDE.md and the provided file structure. Focus on eliminating redundancy, optimizing performance, and fixing any bugs or inconsistencies in movement, firing, projectile simulation, wall reflections, hit detection, bot behavior (static), maze generation and rendering. Verify that the maze uses a logical landscape grid size that scales responsively without hardcoded pixels, incorporates an irregular organic silhouette by removing corner/edge cells, and guarantees no fully enclosed cells with at least one open passage per cell.
+
+Ensure collisions, projectile trajectories, and bounces are physically sensible and work flawlessly. Confirm HUD rendering (pink/green panels with bullet count and reload animation) are visually perfect ant stunning with the 1980s retro aestetic, and responsive layout (CSS 90° rotation on slim viewports without altering logic) all meet the original goals. The game should run indefinitely as a playable singleplayer experience at /game, with the bot spawning opposite the player and hit detection logging only (no other effects).
+
+Provide only the files that are in need of improvements, if the changes are small, only do an str_replace.
+
+---
+
+This was the prompt I made to update the visual design of the start screen, create a similar, simple, clean straight to the point prompt that visually enhances the gameplay screen:
+
+Update the visual design of this 1980s arcade cabinet attract screen.
+
+The goal is a pixel-perfect recreation of what a 1984 coin-op machine would have looked like in a dark arcade — competing directly with Pac-Man, Donkey Kong, and Galaga for a player's quarter. Every design decision should be justified by that context.
+
+**Palette:** `#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on pure `#000000`. No other colors. No gradients between hues — real arcade hardware couldn't render them.
+
+**What to push creatively:** The visual treatment of every layer — the bezel geometry, the title rendering, the mascot, the ambient atmosphere, the structural rhythm between zones. Make bold choices. Reference real arcade attract screens: the score strip, the INSERT COIN blink, the scrolling ticker, the corner diamonds. Make them feel physical, not decorative.
+
+The code quality matters as much as the visuals. Deliver a single clean `page.module.css` and updated `page.tsx`. All `@keyframes` declared locally in the CSS module. No dead rules. Sections clearly commented. Color values as hex literals inside keyframes (CSS variables don't interpolate reliably in all `@keyframes` contexts).
+
+---
+
+Update the visual design of the Dead Angle gameplay screen.
+
+The goal is a pixel-perfect 1984 coin-op feel during active play — the same dark arcade cabinet context as the attract screen, now with a live game running inside it.
+
+**Palette:** `#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on pure `#000000`. No other colors. No gradients.
+
+**What to push creatively:** The HUD strip is the primary canvas — treat it like a real arcade status bar. Player labels, bullet pip icons, and the reload indicator should feel physically printed on the cabinet bezel, not floated over a webpage. Consider scan-line texture, corner accents, and a subtle vignette around the canvas — all period-accurate. The two-player asymmetry (pink left, green right) should be legible at a glance from across a room.
+
+The code quality matters as much as the visuals. Deliver a single clean `GameCanvas.module.css` and updated `GameCanvas.tsx` if markup changes are needed. All `@keyframes` declared locally in the CSS module. No dead rules. Sections clearly commented. Color values as hex literals inside keyframes.
+
+---
+
+Update the visual design of the Dead Angle gameplay screen and update existing files. (look at the attached page.tsx and page.module.css used to style the start screen for inspiration).
+
+The goal is a pixel-perfect 1984 coin-op feel during active play. A CRT overlay (scanlines, flicker, sweep, glitch bar) is already applied globally — do not add any further CRT simulation.
+
+**Palette:** `#FF2D78` pink · `#00F0FF` cyan · `#C8FF00` green on pure `#000000`. No other colors. No gradients between hues.
+
+**What to push creatively:**
+
+The canvas surround — frame the play field like a physical cabinet monitor bezel: a tight cyan border with a layered neon glow that makes the game area read as a phosphor tube burning inside a dark room. Corner accent marks (short L-shaped ticks in cyan) at all four corners of the canvas, as seen on real vector-display cabinets.
+
+The HUD strip below the canvas — treat it as a physical status panel silk-screened onto the bezel, not a floating UI element. Player labels (`PLAYER` left, `CPU` right) in dim uppercase with wide letter-spacing. Bullet pips rendered as solid filled squares when loaded, hollow when spent — arranged horizontally, matching each player's color. The reload progress bar should pulse with a neon glow as it fills. A vertical separator line in the center of the HUD divides the two sides cleanly.
+
+The two-player asymmetry (pink left, green right) must be immediately legible at a glance. Both panels should feel like they belong to the same physical strip, not two independent components.
+
+**Hard constraints:**
+- No CRT effects of any kind (no scanlines, no flicker, no sweep, no blur, no vignette — all handled globally).
+- No gradients between hues.
+- All `@keyframes` declared locally in the CSS module.
+- No dead rules. Sections clearly commented.
+- Color values as hex literals inside `@keyframes`.
+- Deliver `GameCanvas.module.css` and updated `GameCanvas.tsx` only if markup changes are needed.

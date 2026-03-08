@@ -1,0 +1,57 @@
+/* ============================================================
+   game/page.module.css
+   Full-viewport wrapper for the game screen.
+
+   This file uses only design tokens from globals.css — no
+   custom properties are defined or imported from sibling
+   module files, eliminating cross-file variable dependencies.
+
+   Layout responsibility:
+     .screen centres the canvasOuter assembly (canvas + HUD)
+     inside the viewport with consistent padding on every edge.
+     The canvasOuter component owns its own sizing via viewport-
+     unit max-width constraints — .screen just provides the
+     flex context and a physical edge buffer.
+   ============================================================ */
+
+.screen {
+  /* Geometry */
+  position: relative;
+  height: 100dvh;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  /* Background */
+  background: var(--color-bg);
+  z-index: var(--z-content);
+
+  /* Centre the canvas assembly */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /*
+   * Minimum physical edge buffer on all four sides.
+   * --space-5 (1.25 rem / 20 px from globals.css) keeps content
+   * off viewport edges on small screens where the flex-centering
+   * gap alone would be insufficient.
+   *
+   * This does NOT drive the canvas sizing formula — canvasOuter
+   * uses its own viewport-unit constraints (88dvh / 92vw) to
+   * guarantee visible breathing room independently of this padding.
+   */
+  padding: var(--space-5);
+}
+
+/*
+ * On portrait viewports the canvasOuter rotates 90°.
+ * overflow: hidden must be relaxed so the rotated canvas is not clipped.
+ * Padding removed because the rotated layout fills the screen directly.
+ */
+@media (max-aspect-ratio: 5/4) {
+  .screen {
+    overflow: visible;
+    padding: 0;
+  }
+}
