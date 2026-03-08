@@ -1,38 +1,38 @@
 /* ============================================================
    ModeSelector.module.css
 
-   Phosphor persistence model:
+   Phosphor persistence model (original):
      Mouse-in  → 40ms  (tube fires fast — instant strike)
-     Mouse-out → 320ms (slow afterglow decay — phosphor lingers)
+     Mouse-out → 320ms (slow afterglow decay)
 
-   Sizes match the JSX reference exactly:
+   Sizes from JSX:
      Mode buttons: padding 14px 30px, font-size 9px, tracking .22em
      Sub buttons:  padding 10px 26px, font-size 8px, tracking .22em
+     Mode row gap: 16px. Sub row gap: 12px.
 
-   All @keyframes declared locally (CSS Modules scope).
+   All @keyframes declared locally.
    ============================================================ */
 
 /* ── Local @keyframes ─────────────────────────────────────── */
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(7px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0);   }
 }
 
-/* Active mode button — cyan neon outline throb */
 @keyframes neon-pulse-cyan {
   0%, 100% {
     box-shadow:
       0 0  4px #00F0FF,
       0 0 10px #00F0FF,
-      inset 0 0 18px rgba(0, 240, 255, 0.05);
+      inset 0 0 16px rgba(0, 240, 255, 0.05);
   }
   50% {
     box-shadow:
       0 0  6px #00F0FF,
-      0 0 20px #00F0FF,
-      0 0 40px rgba(0, 240, 255, 0.52),
-      inset 0 0 28px rgba(0, 240, 255, 0.10);
+      0 0 18px #00F0FF,
+      0 0 36px rgba(0, 240, 255, 0.50),
+      inset 0 0 24px rgba(0, 240, 255, 0.10);
   }
 }
 
@@ -42,12 +42,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-5);
   width: 100%;
 }
 
 
-/* ── Primary mode buttons (1 PLAYER / 2 PLAYER) ───────────── */
+/* ── Primary mode buttons ─────────────────────────────────── */
 .modeRow {
   display: flex;
   gap: 16px;
@@ -62,7 +62,6 @@
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-
   color: rgba(255, 255, 255, 0.32);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -79,7 +78,7 @@
   cursor: pointer;
 }
 
-/* Fast IN — phosphor tube fires quickly */
+/* Fast IN — phosphor fires instantly */
 .modeBtn:hover:not(.modeBtnActive),
 .modeBtn:focus-visible:not(.modeBtnActive) {
   transition:
@@ -87,21 +86,20 @@
     border-color 40ms ease,
     box-shadow   40ms ease,
     background   40ms ease;
-
-  color: #fff;
+  color: var(--color-white);
   border-color: rgba(255, 255, 255, 0.50);
   box-shadow:
-    0 0 10px rgba(255, 255, 255, 0.16),
-    inset 0 0 20px rgba(255, 255, 255, 0.03);
-  background: rgba(255, 255, 255, 0.028);
+    0 0  8px rgba(255, 255, 255, 0.14),
+    inset 0 0 18px rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.025);
   outline: none;
 }
 
 /* Active — cyan neon outline + pulse */
 .modeBtnActive {
-  color: #00F0FF;
-  border: 2px solid #00F0FF;
-  animation: neon-pulse-cyan 2.5s ease-in-out infinite;
+  color: var(--color-cyan);
+  border: 2px solid var(--color-cyan);
+  animation: neon-pulse-cyan 2.4s ease-in-out infinite;
 }
 
 .modeBtnActive:hover,
@@ -116,7 +114,7 @@
 .subRow {
   display: flex;
   gap: 12px;
-  animation: fade-up 0.22s ease both;
+  animation: fade-up 0.20s ease both;
 }
 
 .subBtn {
@@ -125,10 +123,9 @@
   font-size: 8px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.34);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: none;
 
   /* BASE = slow OUT */
@@ -149,26 +146,25 @@
     border-color 40ms ease,
     box-shadow   40ms ease,
     background   40ms ease;
-
-  color: #00F0FF;
+  color: var(--color-cyan);
   border-color: rgba(0, 240, 255, 0.55);
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.22);
-  background: transparent;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.18);
+  background: rgba(0, 240, 255, 0.025);
   outline: none;
 }
 
 /* Active */
 .subBtnActive {
-  color: #00F0FF;
-  border-color: #00F0FF;
-  box-shadow: 0 0 4px #00F0FF, 0 0 12px #00F0FF;
+  color: var(--color-cyan);
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 4px #00F0FF, 0 0 10px #00F0FF;
 }
 
 .subBtnActive:hover,
 .subBtnActive:focus-visible {
   transition: background 40ms ease, box-shadow 40ms ease;
   background: rgba(0, 240, 255, 0.05);
-  box-shadow: 0 0 6px #00F0FF, 0 0 18px #00F0FF, 0 0 36px rgba(0, 240, 255, 0.55);
+  box-shadow: var(--glow-cyan-md);
   outline: none;
 }
 

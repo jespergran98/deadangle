@@ -526,22 +526,8 @@ The layout should feel like a physical bezel — consider the full structure of 
 
 ---
 
-Update the visual design of this 1980s inspired startscreen. Improve the font to a pixelated font, and update the tank to use this design:
-
-Col: 0 1 2 3 4 5 6
-Row  0:   . . . C . . .   ← Barrel (cannon)
-Row  1:   . . . C . . .
-Row  2:   . . . C . . .
-Row  3:   T T . C . T T   ← Track top border
-Row  4:   T . . C . . T   ← Gap row
-Row  5:   T . H H H . T   ← Hull rows
-Row  6:   T . H H H . T
-Row  7:   T . H H H . T
-Row  8:   T . H H H . T
-Row  9:   T . H H H . T
-Row 10:   T . . . . . T   ← Gap row
-Row 11:   T T T T T T T   ← Track bottom border
+Update the visual design of this 1980s inspired startscreen.
 
 Build the most visually stunning 1980s arcade cabinet attract screen possible. Hot pink, cyan, neon green on pure black. Loud, maximalist, slightly unstable. Every element must feel alive — nothing static, nothing that reads as a webpage.
 
-The layout should feel like a physical bezel — consider the full structure of a real arcade screen. Scale, spacing, and rhythm should be monumental.
+The layout should feel like a physical bezel — consider the full structure of a real arcade screen. Scale, spacing, and rhythm should be monumental. This game would have competed with Tetris and PacMan.

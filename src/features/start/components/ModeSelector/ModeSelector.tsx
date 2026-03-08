@@ -24,7 +24,7 @@ export default function ModeSelector({
   return (
     <div className={styles.root}>
 
-      {/* ── Primary mode buttons — 1 PLAYER / 2 PLAYER ── */}
+      {/* ── Primary mode buttons — arcade labels ── */}
       <div className={styles.modeRow} role="group" aria-label="Game mode">
         <button
           className={`${styles.modeBtn} ${mode === 'singleplayer' ? styles.modeBtnActive : ''}`}
@@ -42,7 +42,7 @@ export default function ModeSelector({
         </button>
       </div>
 
-      {/* ── Multiplayer sub-options — HOST / JOIN ── */}
+      {/* ── Multiplayer sub-options ── */}
       {mode === 'multiplayer' && (
         <div className={styles.subRow} role="group" aria-label="Multiplayer option">
           <button

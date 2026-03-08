@@ -9,70 +9,58 @@ import styles from './page.module.css';
 /**
  * /  — Dead Angle start screen.
  *
- * Layout (flex column, NOT vertically centred):
- *   SCREEN           flex column, noise ::before texture
- *   TOP STRIP        position:relative — flows above content
- *   CONTENT          flex:1
- *     HEADER         title (flex ROW) + tagline
- *     SEPARATOR      double cyan rule
- *     TANK           7×12 pixel grid, heartbeat
- *     SEPARATOR      second rule
- *     CONTROLS       ModeSelector + play button
- *   BOTTOM STRIP     absolute, bottom:28px — prompt + credits
+ * Layout:
+ *   .screen        display:flex; align-items:center; justify-content:center
+ *                  Full viewport, vertically + horizontally centred.
+ *   .topStrip      position:absolute; top:44px — classic arcade header
+ *   .content       max-width min(96vw,760px), padding 120px 32px 100px
+ *   .bottomStrip   position:absolute; bottom:44px — prompt + credits
  *
- * SCORE COUNT-UP:
- *   useEffect drives a rAF loop that eases scores from 0 to
- *   targets over 2400ms using a cubic ease-out curve.
+ * Entrance animations (staggered zone reveal from original):
+ *   .topStrip      fade-in-flat 1.2s
+ *   .header        fade-in-flat 0.55s
+ *   .tankWrap      fade-in-flat 0.7s 0.2s
+ *   .controls      fade-in-up   0.5s 0.32s
+ *   .bottomStrip   fade-in-flat 1.4s 0.8s
  *
- * TANK PIXEL GRID:
- *   TANK_GRID is a 12×7 number matrix:
- *     0 = empty   (transparent)
- *     1 = barrel  (cyan  — .tankCellBarrel)
- *     2 = track   (green — .tankCellTrack)
- *     3 = hull    (pink  — .tankCellHull)
+ * Score count-up:
+ *   useEffect rAF loop, cubic ease-out over 2400ms.
  *
- * FALLING SPARKS (SPARK_CONFIG):
- *   12 sparks. Color cycles pink → cyan → green.
- *   Spacing: left = 8 + i × 7.5%. Duration staggered by i % 5.
- *   animationDuration + animationDelay set inline; animationName
- *   comes from styles.spark (CSS Modules scoped).
+ * Tank pixel grid (TANK_GRID):
+ *   12×7 matrix. 0=empty, 1=barrel(cyan), 2=track(green), 3=hull(pink).
  *
- * PIXEL DOTS (PX_DOT_CONFIG):
- *   6 dots scattered at viewport edges. Color + boxShadow inline.
- *   animationDelay inline; animationName from styles.pxDot.
+ * Falling sparks (SPARK_CONFIG):
+ *   12 sparks. Color cycles pink→cyan→green.
+ *   animationDuration + animationDelay inline; animationName from styles.spark.
  *
- * CORNER ACCENTS (CORNER_ACCENT_CONFIG):
- *   4 small pixel accents near the corner L-brackets.
- *   animationDelay inline; animationName from styles.cornerAccent.
+ * Pixel dots (PX_DOT_CONFIG):
+ *   6 dots at viewport edges. All inline except animationName.
  *
- * PLAY BUTTON:
- *   Shown when mode === 'singleplayer' OR subMode === 'host'.
- *   Does NOT auto-navigate — user must press the play button.
- *   Pink variant for singleplayer, green for host.
+ * Play button:
+ *   Shown when mode==='singleplayer' OR subMode==='host'.
+ *   Pink for singleplayer, green for host.
  *
- * CRTOverlay mounted once in layout.tsx (scanlines, sweep, glitch bar).
+ * CRTOverlay mounted once in layout.tsx.
  */
 
-/* ── Colour constants (used in inline styles) ─────────────── */
 const PINK  = '#FF2D78';
 const CYAN  = '#00F0FF';
 const GREEN = '#C8FF00';
 
-/* ── Tank pixel grid ──────────────────────────────────────── */
-// 0=empty | 1=barrel(cyan) | 2=track(green) | 3=hull(pink)
+/* ── Tank grid ────────────────────────────────────────────── */
 const TANK_GRID: number[][] = [
-  [0, 0, 0, 1, 0, 0, 0],   // Row  0 — Barrel top
-  [0, 0, 0, 1, 0, 0, 0],   // Row  1
-  [0, 0, 0, 1, 0, 0, 0],   // Row  2
-  [2, 2, 0, 1, 0, 2, 2],   // Row  3 — Track top border
-  [2, 0, 0, 1, 0, 0, 2],   // Row  4 — Gap row
-  [2, 0, 3, 3, 3, 0, 2],   // Row  5 — Hull start
-  [2, 0, 3, 3, 3, 0, 2],   // Row  6
-  [2, 0, 3, 3, 3, 0, 2],   // Row  7
-  [2, 0, 3, 3, 3, 0, 2],   // Row  8
-  [2, 0, 3, 3, 3, 0, 2],   // Row  9
-  [2, 0, 0, 0, 0, 0, 2],   // Row 10 — Gap row
-  [2, 2, 2, 2, 2, 2, 2],   // Row 11 — Track bottom border
+  [0, 0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0, 0],
+  [2, 2, 0, 1, 0, 2, 2],
+  [2, 0, 0, 1, 0, 0, 2],
+  [2, 0, 3, 3, 3, 0, 2],
+  [2, 0, 3, 3, 3, 0, 2],
+  [2, 0, 3, 3, 3, 0, 2],
+  [2, 0, 3, 3, 3, 0, 2],
+  [2, 0, 3, 3, 3, 0, 2],
+  [2, 0, 0, 0, 0, 0, 2],
+  [2, 2, 2, 2, 2, 2, 2],
 ];
 
 const CELL_CLASS: Record<number, string> = {
@@ -91,9 +79,7 @@ const SPARK_CONFIG = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 /* ── Scattered pixel dots ─────────────────────────────────── */
-const PX_DOT_CONFIG: Array<{
-  top: string; left: string; color: string; delay: string;
-}> = [
+const PX_DOT_CONFIG = [
   { top: '15%', left:  '8%', color: CYAN,  delay:  '0s'  },
   { top: '25%', left: '92%', color: PINK,  delay:  '.7s' },
   { top: '55%', left:  '6%', color: GREEN, delay: '1.1s' },
@@ -102,22 +88,9 @@ const PX_DOT_CONFIG: Array<{
   { top: '80%', left: '89%', color: GREEN, delay:  '.9s' },
 ];
 
-/* ── Corner accent pixels ─────────────────────────────────── */
-// Four small pixels placed just outside the corner L-brackets.
-const CORNER_ACCENT_CONFIG: Array<{
-  top?: number; bottom?: number;
-  left?: number; right?: number;
-  color: string; delay: string;
-}> = [
-  { top:  18, left:  62, color: CYAN,  delay:  '0s'  },
-  { top:  62, left:  18, color: CYAN,  delay: '0.35s' },
-  { top:  18, right: 62, color: PINK,  delay: '0.70s' },
-  { top:  62, right: 18, color: PINK,  delay: '1.05s' },
-];
-
-/* ── Score number formatter ───────────────────────────────── */
+/* ── Score formatter ──────────────────────────────────────── */
 function fmt(n: number): string {
-  return String(Math.floor(n)).padStart(6, '0');
+  return String(Math.floor(n)).padStart(5, '0');
 }
 
 export default function StartPage() {
@@ -130,18 +103,14 @@ export default function StartPage() {
     let raf: number;
     let t0: number | null = null;
     const dur = 2400;
-    const run = (ts: number) => {
+    const tick = (ts: number) => {
       if (!t0) t0 = ts;
       const p = Math.min((ts - t0) / dur, 1);
-      const e = 1 - Math.pow(1 - p, 3); // cubic ease-out
-      setScores({
-        p1: targets.p1 * e,
-        hi: targets.hi * e,
-        p2: targets.p2 * e,
-      });
-      if (p < 1) raf = requestAnimationFrame(run);
+      const e = 1 - Math.pow(1 - p, 3);
+      setScores({ p1: targets.p1 * e, hi: targets.hi * e, p2: targets.p2 * e });
+      if (p < 1) raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(run);
+    raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
 
@@ -150,29 +119,23 @@ export default function StartPage() {
   const showPlayBtn   = flow.mode === 'singleplayer'
     || (flow.mode === 'multiplayer' && flow.subMode === 'host');
 
-  /* Selecting a mode no longer auto-navigates.
-     The play button is the explicit action trigger. */
   function handleModeButton(mode: 'singleplayer' | 'multiplayer') {
     flow.selectMode(mode);
   }
 
   function handleSubMode(sub: 'host' | 'join') {
     flow.selectSubMode(sub);
-    /* No auto-trigger for host — play button handles it */
   }
 
   function handlePlayButton() {
-    if (flow.mode === 'singleplayer') {
-      flow.handleSingleplayer();
-    } else if (flow.subMode === 'host') {
-      flow.handleHost();
-    }
+    if (flow.mode === 'singleplayer') flow.handleSingleplayer();
+    else if (flow.subMode === 'host') flow.handleHost();
   }
 
   return (
     <div className={styles.screen}>
 
-      {/* ── Falling sparks — behind all bezel chrome ── */}
+      {/* ── Falling sparks ── */}
       {SPARK_CONFIG.map((s, i) => (
         <span
           key={i}
@@ -188,7 +151,7 @@ export default function StartPage() {
         />
       ))}
 
-      {/* ── Scattered pixel dots at viewport edges ── */}
+      {/* ── Scattered pixel dots ── */}
       {PX_DOT_CONFIG.map((d, i) => (
         <div
           key={i}
@@ -204,39 +167,19 @@ export default function StartPage() {
         />
       ))}
 
-      {/* ── Corner L-brackets ── */}
+      {/* ── Bezel corner diamonds ── */}
       <span className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerTR}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBL}`} aria-hidden="true" />
       <span className={`${styles.corner} ${styles.cornerBR}`} aria-hidden="true" />
 
-      {/* ── Corner accent pixels (4 small dots near brackets) ── */}
-      {CORNER_ACCENT_CONFIG.map((d, i) => (
-        <div
-          key={i}
-          className={styles.cornerAccent}
-          style={{
-            top:    d.top,
-            bottom: d.bottom,
-            left:   d.left,
-            right:  d.right,
-            background: d.color,
-            boxShadow: `0 0 6px ${d.color}`,
-            animationDelay: d.delay,
-          }}
-          aria-hidden="true"
-        />
-      ))}
-
-      {/* ── Bezel horizontal rails (both CYAN) ── */}
+      {/* ── Bezel rails ── */}
       <span className={`${styles.edgeLine} ${styles.edgeLineTop}`}    aria-hidden="true" />
       <span className={`${styles.edgeLine} ${styles.edgeLineBottom}`} aria-hidden="true" />
+      <span className={`${styles.vline} ${styles.vlineL}`}            aria-hidden="true" />
+      <span className={`${styles.vline} ${styles.vlineR}`}            aria-hidden="true" />
 
-      {/* ── Bezel vertical rails (both PINK) ── */}
-      <span className={`${styles.vline} ${styles.vlineL}`} aria-hidden="true" />
-      <span className={`${styles.vline} ${styles.vlineR}`} aria-hidden="true" />
-
-      {/* ── Top score strip — flows in flex column (relative) ── */}
+      {/* ── Top score strip — absolute ── */}
       <div className={styles.topStrip} aria-hidden="true">
         <div className={styles.scoreRow}>
           <span className={styles.scoreLabel}>1UP</span>
@@ -250,12 +193,11 @@ export default function StartPage() {
         </div>
       </div>
 
-      {/* ── Main content column — flex:1 ── */}
+      {/* ── Main content — centred ── */}
       <div className={styles.content}>
 
         {/* MARQUEE ZONE */}
         <header className={styles.header}>
-          {/* h1: DEAD and ANGLE side by side (flex row) */}
           <h1 className={styles.title} aria-label="Dead Angle">
             <span className={styles.titleWord} data-text="DEAD">DEAD</span>
             <span className={styles.titleWord} data-text="ANGLE">ANGLE</span>
@@ -263,7 +205,7 @@ export default function StartPage() {
           <p className={styles.tagline}>NEON MAZE COMBAT</p>
         </header>
 
-        {/* SEPARATOR — first double rule */}
+        {/* SEPARATOR */}
         <div className={styles.separator} aria-hidden="true">
           <span className={styles.sepLine} />
           <span className={styles.sepLine} />
@@ -283,7 +225,7 @@ export default function StartPage() {
           </div>
         </div>
 
-        {/* SEPARATOR — second double rule */}
+        {/* SEPARATOR */}
         <div className={styles.separator} aria-hidden="true">
           <span className={styles.sepLine} />
           <span className={styles.sepLine} />
@@ -291,7 +233,6 @@ export default function StartPage() {
 
         {/* PLAY SURFACE */}
         <section className={styles.controls}>
-
           <ModeSelector
             mode={flow.mode}
             subMode={flow.subMode}
@@ -301,12 +242,10 @@ export default function StartPage() {
             onHost={flow.handleHost}
           />
 
-          {/* Host inline error */}
           {isMultiplayer && flow.subMode === 'host' && flow.error && (
             <p className={styles.inlineError} role="alert">{flow.error}</p>
           )}
 
-          {/* Room code input (join mode) */}
           {isJoin && (
             <div className={styles.joinSection}>
               <RoomCodeInput
@@ -319,13 +258,10 @@ export default function StartPage() {
             </div>
           )}
 
-          {/* Play / Host button — explicit action trigger */}
           {showPlayBtn && (
             <button
               className={`${styles.playBtn} ${
-                flow.mode === 'singleplayer'
-                  ? styles.playBtnPink
-                  : styles.playBtnGreen
+                flow.mode === 'singleplayer' ? styles.playBtnPink : styles.playBtnGreen
               }`}
               onClick={handlePlayButton}
               disabled={flow.loading}
@@ -338,7 +274,6 @@ export default function StartPage() {
                   : '▶ HOST ROOM'}
             </button>
           )}
-
         </section>
 
       </div>

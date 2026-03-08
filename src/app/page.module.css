@@ -1,36 +1,61 @@
 /* ============================================================
    page.module.css — Dead Angle start screen
-   1980s arcade cabinet attract-mode. Everything throbs.
+   Best of original + JSX redesign.
 
-   LAYOUT (flex column, NOT vertically centred):
-     SCREEN        position:relative, flex column, noise ::before
-     TOP STRIP     position:relative — flows in column above content
-     CONTENT       flex:1, fills remaining space, padding:0 68px 110px
-       HEADER      title + tagline
-         TITLE     h1 flex ROW (DEAD · ANGLE side by side, gap .3em)
-         TAGLINE   green, letter-spacing .50em, jitter animation
-       SEPARATOR   double 2px cyan rule, max-width 660px
-       TANK WRAP   pixel-grid heartbeat
-       SEPARATOR   second double rule
-       CONTROLS    mode buttons, sub-row, play button
-     BOTTOM STRIP  position:absolute, bottom:28px, flex column
+   LAYOUT:
+     .screen       flex, align-items:center, justify-content:center
+                   Vertically and horizontally centred viewport.
+     .topStrip     position:absolute, top:44px — classic arcade
+     .bottomStrip  position:absolute, bottom:44px — classic arcade
+     .content      max-width:min(96vw,760px), padding:120px 32px 100px
+                   Sits centred, guarded by the two absolute strips.
 
-   CORNERS: 40×40px L-brackets. Opacity pulse (not diamonds/scale).
-     TL=cyan, TR=pink, BL=pink, BR=cyan. Staggered 0.8s each.
+   ENTRANCE ANIMATIONS (staggered zone reveal):
+     topStrip     fade-in-flat 1.2s ease
+     header       fade-in-flat 0.55s ease
+     tankWrap     fade-in-flat 0.7s ease 0.2s
+     controls     fade-in-up   0.5s ease 0.32s
+     bottomStrip  fade-in-flat 1.4s ease 0.8s
+   Sparks and pixel dots: no entrance delay — always raining.
 
-   RAILS: All horizontal = CYAN, 2px, top:108px / bottom:86px.
-          All vertical   = PINK, 2px, opacity .45, left/right 30px.
+   CORNERS (original):
+     22×22px solid-border squares rotated 45° (diamonds).
+     cpop-* animations: violent scale+opacity pop staggered
+     around the frame like marquee lights. TL=pink, TR=cyan,
+     BL=cyan, BR=pink. (Original arcade convention.)
 
-   TITLE: flex-direction:row, color #fff, animation:title-throb on
-          the h1. text-shadow inherited by child word spans.
-          Ghost ::before = pink, ::after = cyan, translateX only.
+   RAILS (original):
+     Horizontal: top=cyan, bottom=PINK. Differentiated.
+     Vertical:   left=pink, right=cyan. Differentiated.
 
-   TAGLINE: #C8FF00 GREEN, letter-spacing .50em, tagline-jitter.
+   SCORE LABELS (original):
+     1UP = pink · HIGH SCORE = dim white · 2UP = cyan.
 
-   SCORE: All labels = dim white. P1+P2 values = cyan.
-          HIGH SCORE value = pink with hi-throb animation.
+   SCORE VALUES (hybrid):
+     P1 = pink (blink) · HI = dim white with hi-throb ·
+     P2 = cyan (blink). Count-up driven by useEffect in page.tsx.
 
-   PLAY BUTTON: .playBtnPink (singleplayer) / .playBtnGreen (host).
+   TITLE (original):
+     Two STACKED words (flex-direction:column). Each word span
+     has its own title-glow-pulse (staggered 0.45s). Ghost
+     pseudo-elements use the full skewX snap technique.
+     font-size: clamp(4.2rem, 16vw, 9rem). color: pink.
+
+   TAGLINE: green (#C8FF00) — completes the three-colour palette.
+            tagline-jitter for instability.
+
+   SEPARATOR (hybrid):
+     2px gradient lines (JSX visual quality) with original's
+     margin-bottom: var(--space-8) and gap: 4px.
+
+   TANK (JSX pixel grid):
+     7×12 cell grid, 16px cells, 2px gap.
+     Multi-colour heartbeat filter on .tankWrap.
+
+   PLAY BUTTON: .playBtnPink / .playBtnGreen.
+
+   BOTTOM STRIP (hybrid):
+     Flex column: prompt (pink, blink) + credits row.
 
    All @keyframes declared locally (CSS Modules scope).
    ============================================================ */
@@ -45,51 +70,64 @@
   to   { opacity: 1; }
 }
 
-/* Title glow throb — on h1.title, inherited to child word spans.
-   text-shadow is an inherited CSS property. */
-@keyframes title-throb {
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Title glow pulse — applied per .titleWord span.
+   Each word pulses independently; second staggered 0.45s.
+   Resting outer spread ~52px → peak ~210px. ── */
+@keyframes title-glow-pulse {
   0%, 100% {
     text-shadow:
       4px  4px  0   #00F0FF,
       5px  5px  0   #00F0FF,
-      0    0   14px #FF2D78,
-      0    0   36px #FF2D78,
-      0    0   70px rgba(255, 45, 120, 0.60),
-      4px  4px 20px rgba(0, 240, 255, 0.50);
+      0    0   10px #FF2D78,
+      0    0   28px #FF2D78,
+      0    0   52px rgba(255, 45, 120, 0.55),
+      4px  4px 14px rgba(0, 240, 255, 0.42);
   }
   50% {
     text-shadow:
       4px  4px  0   #00F0FF,
       5px  5px  0   #00F0FF,
-      0    0   20px #FF2D78,
-      0    0   55px #FF2D78,
-      0    0  110px rgba(255, 45, 120, 0.75),
-      0    0  160px rgba(255, 45, 120, 0.30),
-      4px  4px 28px rgba(0, 240, 255, 0.70);
+      0    0   22px #FF2D78,
+      0    0   68px #FF2D78,
+      0    0  130px rgba(255, 45, 120, 0.82),
+      0    0  210px rgba(255, 45, 120, 0.28),
+      4px  4px 26px rgba(0, 240, 255, 0.68);
   }
 }
 
-/* Ghost snap LEFT — pure translateX, linear timing.
-   Sub-frame keyframe gaps (0.06% ≈ 2.7ms) prevent CSS from
-   interpolating — creates a functional instantaneous snap. */
-@keyframes ghost-l {
-  0%,    88.9%  { transform: translateX(0);     }
-  89%,   89.05% { transform: translateX(-10px); }
-  89.06%, 93.9% { transform: translateX(-10px); }
-  94%,   94.05% { transform: translateX(0);     }
-  100%           { transform: translateX(0);     }
+/* ── Red ghost — translate+skewX snap. Linear timing, sub-frame
+   keyframes (0.1% ≈ 4.5ms) prevent CSS from interpolating. ── */
+@keyframes ghost-red {
+  0%,    83.8% { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.70; }
+  83.9%         { transform: translate(-24px, 4px) skewX(-20deg); opacity: 1.00; }
+  84.9%         { transform: translate(-24px, 4px) skewX(-20deg); opacity: 1.00; }
+  85.0%         { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.70; }
+  85.9%         { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.70; }
+  86.0%         { transform: translate(-30px, 2px) skewX(-12deg); opacity: 0.88; }
+  87.0%         { transform: translate(-30px, 2px) skewX(-12deg); opacity: 0.88; }
+  87.1%         { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.70; }
+  100%          { transform: translate(-4px,  1px) skewX(0deg);   opacity: 0.70; }
 }
 
-/* Ghost snap RIGHT — staggered 0.3s from left ghost */
-@keyframes ghost-r {
-  0%,    88.9%  { transform: translateX(0);    }
-  89%,   89.05% { transform: translateX(10px); }
-  89.06%, 93.9% { transform: translateX(10px); }
-  94%,   94.05% { transform: translateX(0);    }
-  100%           { transform: translateX(0);    }
+/* ── Cyan ghost — staggered 0.3s from red. ── */
+@keyframes ghost-cyan {
+  0%,    80.8% { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.65; }
+  80.9%         { transform: translate(26px, -5px) skewX(20deg); opacity: 1.00; }
+  81.9%         { transform: translate(26px, -5px) skewX(20deg); opacity: 1.00; }
+  82.0%         { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.65; }
+  82.9%         { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.65; }
+  83.0%         { transform: translate(32px, -3px) skewX(12deg); opacity: 0.84; }
+  84.0%         { transform: translate(32px, -3px) skewX(12deg); opacity: 0.84; }
+  84.1%         { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.65; }
+  100%          { transform: translate(4px,  -1px) skewX(0deg);  opacity: 0.65; }
 }
 
-/* Tagline jitter — brief opacity dips at irregular intervals */
+/* ── Tagline jitter — brief opacity dips at irregular intervals ── */
 @keyframes tagline-jitter {
   0%,  100% { opacity: 1;    }
   47%        { opacity: 1;    }
@@ -100,66 +138,78 @@
   76%        { opacity: 1;    }
 }
 
-/* Tank heartbeat — lub-dub, multi-colour drop-shadows */
-@keyframes tank-beat {
-  0%,  100% {
+/* ── Tank heartbeat — multi-colour drop-shadow lub-dub ── */
+@keyframes tank-heartbeat {
+  0% {
     filter:
-      brightness(0.60)
-      drop-shadow(0 0 3px rgba(255, 45, 120, 0.30));
+      brightness(0.30)
+      drop-shadow(0 0 1px rgba(200, 255, 0, 0.60));
   }
-  9% {
+  6% {
     filter:
-      brightness(1.35)
-      drop-shadow(0 0 18px rgba(255, 45, 120, 1.00))
-      drop-shadow(0 0 36px rgba(0, 240, 255, 0.65))
-      drop-shadow(0 0 60px rgba(255, 45, 120, 0.50));
+      brightness(2.40)
+      drop-shadow(0 0 8px  #FF2D78)
+      drop-shadow(0 0 18px #00F0FF)
+      drop-shadow(0 0 44px rgba(200, 255, 0, 1.00));
   }
-  18% {
+  13% {
     filter:
-      brightness(0.78)
-      drop-shadow(0 0 6px rgba(255, 45, 120, 0.42));
+      brightness(0.45)
+      drop-shadow(0 0 2px rgba(200, 255, 0, 0.50));
   }
-  32% {
+  21% {
     filter:
-      brightness(1.10)
-      drop-shadow(0 0 12px rgba(255, 45, 120, 0.75))
-      drop-shadow(0 0 24px rgba(0, 240, 255, 0.40));
+      brightness(2.00)
+      drop-shadow(0 0 6px  #FF2D78)
+      drop-shadow(0 0 16px #00F0FF)
+      drop-shadow(0 0 30px rgba(200, 255, 0, 0.80));
   }
-  52% {
+  34%, 100% {
     filter:
-      brightness(0.60)
-      drop-shadow(0 0 3px rgba(255, 45, 120, 0.30));
+      brightness(0.30)
+      drop-shadow(0 0 1px rgba(200, 255, 0, 0.60));
   }
 }
 
-/* Corner L-bracket opacity pulse — staggered per corner */
-@keyframes c-pulse {
-  0%,  100% { opacity: 1;    }
-  50%        { opacity: 0.45; }
+/* ── Corner pop — diamond scale+opacity stagger.
+   Four separate keyframes so each corner fires at a unique
+   phase, cycling around the frame like marquee lights. ── */
+@keyframes cpop-tl {
+  0%,  72%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  73%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  74%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  75%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  76%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+}
+@keyframes cpop-tr {
+  0%,  75%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  76%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  77%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  78%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  79%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+}
+@keyframes cpop-bl {
+  0%,  78%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  79%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  80%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  81%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  82%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+}
+@keyframes cpop-br {
+  0%,  81%,  100% { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  82%              { transform: rotate(45deg) scale(2.6); opacity: 1.00; }
+  83%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
+  84%              { transform: rotate(45deg) scale(1.8); opacity: 0.80; }
+  85%              { transform: rotate(45deg) scale(1.0); opacity: 0.45; }
 }
 
-/* Pixel dot blink — step-end, fully on / fully off */
+/* ── Pixel dot blink ── */
 @keyframes dot-blink {
   0%,  100% { opacity: 1; }
   50%        { opacity: 0; }
 }
 
-/* HIGH SCORE value — pink glow throb */
-@keyframes hi-throb {
-  0%,  100% {
-    text-shadow:
-      0 0  8px #FF2D78,
-      0 0 22px rgba(255, 45, 120, 0.55);
-  }
-  50% {
-    text-shadow:
-      0 0 14px #FF2D78,
-      0 0 40px #FF2D78,
-      0 0 70px rgba(255, 45, 120, 0.45);
-  }
-}
-
-/* Score P1/P2 blink — out of phase */
+/* ── Score value blink — P1 / P2 out of phase ── */
 @keyframes score-blink-p1 {
   0%,  89.9% { opacity: 1.0; }
   90%, 93.9% { opacity: 0.2; }
@@ -171,13 +221,20 @@
   88%, 100%  { opacity: 1.0; }
 }
 
-/* Attract prompt — hard blink, no dimming */
+/* ── HIGH SCORE gentle glow throb ── */
+@keyframes hi-throb {
+  0%,  100% { color: rgba(255, 255, 255, 0.55); text-shadow: none; }
+  50%        { color: rgba(255, 255, 255, 0.90);
+               text-shadow: 0 0 8px rgba(255,255,255,0.55), 0 0 20px rgba(255,255,255,0.25); }
+}
+
+/* ── Attract prompt — hard blink ── */
 @keyframes blink-hard {
   0%,  49.9% { opacity: 1; }
   50%, 100%  { opacity: 0; }
 }
 
-/* Falling sparks */
+/* ── Falling sparks — 3×3px pixels, top → bottom ── */
 @keyframes spark-fall {
   0%   { transform: translateY(-30px) scaleY(1.0); opacity: 0;   }
   8%   { opacity: 1;   }
@@ -185,72 +242,66 @@
   100% { transform: translateY(100vh)  scaleY(2.0); opacity: 0;   }
 }
 
-/* Play button glows */
-@keyframes btn-glow-cyan {
-  0%,  100% {
-    box-shadow:
-      0 0  4px #00F0FF,
-      0 0 10px #00F0FF,
-      inset 0 0 18px rgba(0, 240, 255, 0.05);
-  }
-  50% {
-    box-shadow:
-      0 0  6px #00F0FF,
-      0 0 20px #00F0FF,
-      0 0 40px rgba(0, 240, 255, 0.52),
-      inset 0 0 28px rgba(0, 240, 255, 0.10);
-  }
-}
+/* ── Play button glows ── */
 @keyframes btn-glow-pink {
   0%,  100% {
     box-shadow:
-      0 0  4px #FF2D78,
-      0 0 12px #FF2D78,
+      0 0  4px #FF2D78, 0 0 12px #FF2D78,
       inset 0 0 18px rgba(255, 45, 120, 0.05);
   }
   50% {
     box-shadow:
-      0 0  8px #FF2D78,
-      0 0 24px #FF2D78,
+      0 0  8px #FF2D78, 0 0 24px #FF2D78,
       0 0 50px rgba(255, 45, 120, 0.55),
       inset 0 0 28px rgba(255, 45, 120, 0.10);
   }
 }
 @keyframes btn-glow-green {
-  0%,  100% {
+  0%,  100% { box-shadow: 0 0  4px #C8FF00, 0 0 10px #C8FF00; }
+  50%        {
     box-shadow:
-      0 0  4px #C8FF00,
-      0 0 10px #C8FF00;
-  }
-  50% {
-    box-shadow:
-      0 0  6px #C8FF00,
-      0 0 18px #C8FF00,
+      0 0  6px #C8FF00, 0 0 18px #C8FF00,
       0 0 38px rgba(200, 255, 0, 0.50);
   }
 }
 
-/* Fade-up — entrance for sub-row and join section */
+/* ── Sub-row / join section entrance ── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(7px); }
   to   { opacity: 1; transform: translateY(0);   }
 }
 
+/* ── Active mode button pulse ── */
+@keyframes neon-pulse-cyan {
+  0%, 100% {
+    box-shadow:
+      0 0  4px #00F0FF, 0 0 10px #00F0FF,
+      inset 0 0 16px rgba(0, 240, 255, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0  6px #00F0FF, 0 0 18px #00F0FF,
+      0 0 36px rgba(0, 240, 255, 0.50),
+      inset 0 0 24px rgba(0, 240, 255, 0.10);
+  }
+}
+
 
 /* ─────────────────────────────────────────────────────────────
-   SCREEN — full-height flex column, items stack from top.
-   ::before = subtle noise pixel field (10 point sources).
+   SCREEN — centred viewport stage (original layout).
+   Noise texture via ::before. Overflow hidden for ghost bleed.
    ───────────────────────────────────────────────────────────── */
 .screen {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 100dvh;
   background: var(--color-bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   overflow: hidden;
 }
 
+/* Scattered phosphor noise — 10 coloured point sources */
 .screen::before {
   content: '';
   position: absolute;
@@ -272,9 +323,8 @@
 
 
 /* ─────────────────────────────────────────────────────────────
-   FALLING SPARKS — 3×3px pixels, travel top → bottom.
-   Color, box-shadow, animationDuration, animationDelay = inline.
-   animationName scoped from this class (CSS Modules).
+   FALLING SPARKS — 3×3px pixels, animationName scoped here.
+   Color, boxShadow, animationDuration, animationDelay = inline.
    ───────────────────────────────────────────────────────────── */
 .spark {
   position: absolute;
@@ -288,9 +338,8 @@
 
 
 /* ─────────────────────────────────────────────────────────────
-   PIXEL DOTS — 4×4px accent dots scattered at edges.
+   PIXEL DOTS — 4×4px accent dots scattered at viewport edges.
    Position, color, boxShadow, animationDelay = inline.
-   animationName (dot-blink) scoped from this class.
    ───────────────────────────────────────────────────────────── */
 .pxDot {
   position: absolute;
@@ -301,289 +350,302 @@
   animation: dot-blink 1.8s step-end infinite;
 }
 
-/* Corner accent pixels — same blink, tighter cycle */
-.cornerAccent {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  pointer-events: none;
-  z-index: 10;
-  animation: dot-blink 1.4s step-end infinite;
-}
-
 
 /* ─────────────────────────────────────────────────────────────
-   BEZEL CORNERS — 40×40px L-brackets, opacity pulse.
-   TL = cyan top+left.   TR = pink top+right.
-   BL = pink bottom+left. BR = cyan bottom+right.
+   BEZEL CORNERS — 22×22px squares, rotated 45° = diamonds.
+   Original arcade convention: TL=pink, TR=cyan, BL=cyan, BR=pink.
+   cpop-* scale+opacity stagger around the frame like lights.
    ───────────────────────────────────────────────────────────── */
 .corner {
   position: absolute;
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid;
+  transform-origin: center;
   pointer-events: none;
-  z-index: 10;
 }
 
 .cornerTL {
-  top: 18px; left: 18px;
-  border-top:  3px solid #00F0FF;
-  border-left: 3px solid #00F0FF;
-  box-shadow: -2px -2px 14px #00F0FF, inset 2px  2px 10px rgba(0, 240, 255, 0.15);
-  animation: c-pulse 3s ease-in-out 0.0s infinite;
+  top: 20px; left: 20px;
+  border-color: var(--color-pink);
+  box-shadow: var(--glow-pink-sm);
+  animation: cpop-tl 4.2s linear 0.0s infinite;
 }
 .cornerTR {
-  top: 18px; right: 18px;
-  border-top:   3px solid #FF2D78;
-  border-right: 3px solid #FF2D78;
-  box-shadow:  2px -2px 14px #FF2D78, inset -2px  2px 10px rgba(255, 45, 120, 0.15);
-  animation: c-pulse 3s ease-in-out 0.8s infinite;
+  top: 20px; right: 20px;
+  border-color: var(--color-cyan);
+  box-shadow: var(--glow-cyan-sm);
+  animation: cpop-tr 4.2s linear 0.6s infinite;
 }
 .cornerBL {
-  bottom: 18px; left: 18px;
-  border-bottom: 3px solid #FF2D78;
-  border-left:   3px solid #FF2D78;
-  box-shadow: -2px  2px 14px #FF2D78, inset  2px -2px 10px rgba(255, 45, 120, 0.15);
-  animation: c-pulse 3s ease-in-out 1.6s infinite;
+  bottom: 20px; left: 20px;
+  border-color: var(--color-cyan);
+  box-shadow: var(--glow-cyan-sm);
+  animation: cpop-bl 4.2s linear 1.2s infinite;
 }
 .cornerBR {
-  bottom: 18px; right: 18px;
-  border-bottom: 3px solid #00F0FF;
-  border-right:  3px solid #00F0FF;
-  box-shadow:  2px  2px 14px #00F0FF, inset -2px -2px 10px rgba(0, 240, 255, 0.15);
-  animation: c-pulse 3s ease-in-out 2.4s infinite;
+  bottom: 20px; right: 20px;
+  border-color: var(--color-pink);
+  box-shadow: var(--glow-pink-sm);
+  animation: cpop-br 4.2s linear 1.8s infinite;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   BEZEL RAILS — horizontal (CYAN) and vertical (PINK).
-   Both horizontal rails share the same CYAN gradient.
-   Both vertical rails share the same PINK gradient.
+   BEZEL RAILS — original color assignment retained.
+   Horizontal: top = CYAN, bottom = PINK. Differentiated.
+   Vertical:   left = PINK, right = CYAN. Differentiated.
    ───────────────────────────────────────────────────────────── */
 .edgeLine {
   position: absolute;
-  left: 68px;
-  right: 68px;
-  height: 2px;
+  left: 54px;
+  right: 54px;
+  height: 1px;
   display: block;
-  z-index: 5;
+}
+.edgeLineTop {
+  top: 31px;
   background: linear-gradient(
     to right,
     transparent,
-    #00F0FF 10%,
-    #00F0FF 90%,
+    rgba(0, 240, 255, 0.65) 10%,
+    rgba(0, 240, 255, 0.65) 90%,
     transparent
   );
-  box-shadow:
-    0 0 10px #00F0FF,
-    0 0 24px rgba(0, 240, 255, 0.40);
+  box-shadow: 0 0 6px rgba(0, 240, 255, 0.28);
 }
-.edgeLineTop    { top:    108px; }
-.edgeLineBottom { bottom:  86px; }
+.edgeLineBottom {
+  bottom: 31px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 45, 120, 0.65) 10%,
+    rgba(255, 45, 120, 0.65) 90%,
+    transparent
+  );
+  box-shadow: 0 0 6px rgba(255, 45, 120, 0.28);
+}
 
 .vline {
   position: absolute;
-  top: 64px;
-  bottom: 64px;
-  width: 2px;
+  top: 54px;
+  bottom: 54px;
+  width: 1px;
   display: block;
-  z-index: 5;
-  opacity: 0.45;
+}
+.vlineL {
+  left: 31px;
   background: linear-gradient(
     to bottom,
     transparent,
-    #FF2D78 15%,
-    #FF2D78 85%,
+    rgba(255, 45, 120, 0.40) 12%,
+    rgba(255, 45, 120, 0.40) 88%,
     transparent
   );
-  box-shadow:
-    0 0  8px #FF2D78,
-    0 0 20px rgba(255, 45, 120, 0.35);
 }
-.vlineL { left:  30px; }
-.vlineR { right: 30px; }
+.vlineR {
+  right: 31px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 240, 255, 0.40) 12%,
+    rgba(0, 240, 255, 0.40) 88%,
+    transparent
+  );
+}
 
 
 /* ─────────────────────────────────────────────────────────────
-   TOP SCORE STRIP — position:relative, flows in flex column.
-   All label text = dim white (no individual colour per label).
-   P1 + P2 score values = cyan. HI score value = pink + throb.
+   TOP SCORE STRIP — position:absolute, top:44px (original).
+   1UP = pink · HIGH SCORE = dim white · 2UP = cyan (original).
+   Score VALUES: P1=pink, HI=dim white throb, P2=cyan.
+   Count-up values driven by useEffect rAF in page.tsx.
+   Entrance: fade-in-flat 1.2s ease (original).
    ───────────────────────────────────────────────────────────── */
 .topStrip {
-  position: relative;
-  z-index: 5;
-  width: 100%;
-  padding: 22px 84px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 2px;
-}
-
-.scoreRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.scoreLabel {
-  font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.22em;
-  color: rgba(255, 255, 255, 0.38);
-  flex: 1;
-  text-align: center;
-}
-
-.scoreValue {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  flex: 1;
-  text-align: center;
-}
-
-.scoreValueP1 {
-  color: #00F0FF;
-  text-shadow: 0 0 8px #00F0FF, 0 0 22px rgba(0, 240, 255, 0.55);
-  animation: score-blink-p1 6.0s linear 1.5s infinite;
-}
-
-.scoreValueHi {
-  color: #FF2D78;
-  animation: hi-throb 2s ease-in-out infinite;
-}
-
-.scoreValueP2 {
-  color: #00F0FF;
-  text-shadow: 0 0 8px #00F0FF, 0 0 22px rgba(0, 240, 255, 0.55);
-  animation: score-blink-p2 6.0s linear infinite;
-}
-
-
-/* ─────────────────────────────────────────────────────────────
-   BOTTOM ATTRACT STRIP — absolute, bottom:28px.
-   Flex column: prompt on top, credits row below.
-   ───────────────────────────────────────────────────────────── */
-.bottomStrip {
   position: absolute;
-  bottom: 28px;
+  top: 44px;
   left: 0;
   right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 3px;
   z-index: 5;
+  animation: fade-in-flat 1.2s ease both;
+}
+
+.scoreRow {
+  display: flex;
+  width: 100%;
+  max-width: 520px;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+}
+
+.scoreLabel {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  flex: 1;
   text-align: center;
+}
+/* Original colour convention: 1UP=pink, HI=dim, 2UP=cyan */
+.scoreLabel:nth-child(1) { color: var(--color-pink);           text-shadow: var(--glow-pink-sm); }
+.scoreLabel:nth-child(2) { color: rgba(255, 255, 255, 0.45); }
+.scoreLabel:nth-child(3) { color: var(--color-cyan);           text-shadow: var(--glow-cyan-sm); }
+
+.scoreValue {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  flex: 1;
+  text-align: center;
+}
+.scoreValueP1 {
+  color: var(--color-pink);
+  text-shadow: var(--glow-pink-sm);
+  animation: score-blink-p1 6.0s linear 1.5s infinite;
+}
+.scoreValueHi {
+  animation: hi-throb 3.2s ease-in-out infinite;
+}
+.scoreValueP2 {
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan-sm);
+  animation: score-blink-p2 6.0s linear infinite;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   BOTTOM ATTRACT STRIP — position:absolute, bottom:44px.
+   Flex column: prompt (pink, fast blink) + credits row.
+   Entrance: fade-in-flat 1.4s ease 0.8s (original delay).
+   ───────────────────────────────────────────────────────────── */
+.bottomStrip {
+  position: absolute;
+  bottom: 44px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 5;
+  animation: fade-in-flat 1.4s ease 0.8s both;
 }
 
 .prompt {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.30em;
-  color: #FF2D78;
-  text-shadow:
-    0 0  8px #FF2D78,
-    0 0 22px rgba(255, 45, 120, 0.55);
+  font-size: 8px;
+  letter-spacing: 0.20em;
+  color: var(--color-pink);
+  text-shadow: var(--glow-pink-sm);
   text-transform: uppercase;
+  text-align: center;
   animation: blink-hard 0.90s step-end infinite;
 }
 
 .creditsRow {
   display: flex;
-  gap: 40px;
+  gap: 32px;
   align-items: center;
 }
 
 .creditItem {
   font-family: var(--font-mono);
   font-size: 7px;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.30);
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.28);
   text-transform: uppercase;
 }
 
 .creditVal {
   font-family: var(--font-mono);
   font-size: 7px;
-  letter-spacing: 0.18em;
-  color: #C8FF00;
-  text-shadow: 0 0 6px #C8FF00;
+  letter-spacing: 0.14em;
+  color: var(--color-green);
+  text-shadow: var(--glow-green-sm);
   text-transform: uppercase;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   MAIN CONTENT COLUMN — flex:1, no top padding.
-   Top padding not needed — topStrip flows above in flex column.
+   MAIN CONTENT COLUMN — centred between the two strips.
+   Original: max-width min(96vw,760px), padding 120px 32px 100px.
    ───────────────────────────────────────────────────────────── */
 .content {
-  position: relative;
-  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0;
+  padding: 120px var(--space-8) 100px;
   width: 100%;
-  padding: 0 68px 110px;
-  flex: 1;
+  max-width: min(96vw, 760px);
   overflow: visible;
+  position: relative;
+  z-index: 5;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   MARQUEE ZONE — header, title, tagline.
+   MARQUEE ZONE — header, stacked title words, tagline.
+   Entrance: fade-in-flat 0.55s ease both (original).
    ───────────────────────────────────────────────────────────── */
 .header {
-  text-align: center;
-  margin-top: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-3);
   margin-bottom: var(--space-8);
+  animation: fade-in-flat 0.55s ease both;
   overflow: visible;
 }
 
-/* h1 — flex ROW so DEAD and ANGLE sit side by side.
-   Color #fff (white). text-shadow + animation on the h1 itself.
-   In CSS, text-shadow IS an inherited property, so child
-   .titleWord spans render the shadow on their own glyphs.
-   No animation on .titleWord — inherited from h1. */
+/* h1 — STACKED layout (original): two words on separate lines.
+   No own animation or text-shadow — each .titleWord carries these. */
 .title {
-  font-family: var(--font-mono);
-  font-size: clamp(2.25rem, 7.5vw, 5.375rem); /* 36px → 86px */
-  line-height: 1.08;
-  color: #fff;
   display: flex;
-  gap: 0.3em;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.82;
   overflow: visible;
-  text-shadow:
-    4px  4px  0   #00F0FF,
-    5px  5px  0   #00F0FF,
-    0    0   14px #FF2D78,
-    0    0   36px #FF2D78,
-    0    0   70px rgba(255, 45, 120, 0.60),
-    4px  4px 20px rgba(0, 240, 255, 0.50);
-  animation: title-throb 3.8s ease-in-out infinite;
 }
 
-/* Word spans — relative container for ghost pseudo-elements.
-   display:inline-block needed for transform on ::before/::after.
-   No own text-shadow or animation — inherited from h1.title. */
+/* ── Each title word — original sizing and ghost technique.
+   font-size: clamp(4.2rem, 16vw, 9rem) — fills the column.
+   letter-spacing: 0.4em — wide tracking, original value.
+   color: var(--color-pink) — each word glows pink.
+   animation: title-glow-pulse — each word pulses independently.
+   ── */
 .titleWord {
   position: relative;
-  display: inline-block;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(4.2rem, 16vw, 9rem);
+  font-weight: 900;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-pink);
+  overflow: visible;
+  animation: title-glow-pulse 3.4s ease-in-out infinite;
 }
 
-/* PINK ghost — ::before, rests at left:-3px */
+/* Stagger second word's glow cycle by 0.45s */
+.titleWord:nth-child(2) {
+  animation-delay: 0.45s;
+}
+
+/* ── RED GHOST — ::before at left:0, offset via transform.
+   LINEAR timing — sub-frame gaps create functional snap.
+   skewX adds chromatic distortion at peak. ── */
 .titleWord::before {
   content: attr(data-text);
   position: absolute;
   top: 0;
-  left: -3px;
+  left: 0;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -591,21 +653,19 @@
   text-transform: inherit;
   line-height: inherit;
   white-space: nowrap;
-  color: #FF2D78;
+  color: #FF0036;
   mix-blend-mode: screen;
-  opacity: 0.75;
-  text-shadow: none;
   pointer-events: none;
-  /* LINEAR timing so sub-frame gaps produce functional snaps */
-  animation: ghost-l 4.5s linear infinite;
+  text-shadow: none;
+  animation: ghost-red 4.5s linear infinite;
 }
 
-/* CYAN ghost — ::after, rests at left:3px, staggered 0.3s */
+/* ── CYAN GHOST — ::after at left:0, staggered 0.3s. ── */
 .titleWord::after {
   content: attr(data-text);
   position: absolute;
   top: 0;
-  left: 3px;
+  left: 0;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -615,75 +675,73 @@
   white-space: nowrap;
   color: #00F0FF;
   mix-blend-mode: screen;
-  opacity: 0.65;
-  text-shadow: none;
   pointer-events: none;
-  animation: ghost-r 4.5s linear 0.3s infinite;
+  text-shadow: none;
+  animation: ghost-cyan 4.5s linear 0.3s infinite;
 }
 
-/* Second word's ghosts glitch at a different point in time */
+/* Second word's ghosts glitch at a different time */
 .titleWord:nth-child(2)::before { animation-delay: 2.2s; }
 .titleWord:nth-child(2)::after  { animation-delay: 2.5s; }
 
-/* Tagline — GREEN, wide tracking, irregular jitter */
+/* Tagline — GREEN, completing the three-colour palette.
+   Wide tracking. Irregular jitter for instability. */
 .tagline {
   font-family: var(--font-mono);
-  font-size: clamp(7px, 1.3vw, 12px);
-  letter-spacing: 0.50em;
-  color: #C8FF00;
-  text-shadow:
-    0 0  8px #C8FF00,
-    0 0 22px rgba(200, 255, 0, 0.55);
+  font-size: 8px;
+  letter-spacing: 0.30em;
+  color: var(--color-green);
+  text-shadow: var(--glow-green-sm);
   text-transform: uppercase;
+  margin-top: var(--space-4);
   animation: tagline-jitter 6s step-end infinite;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   SEPARATOR — double 2px cyan rule with gradient fade.
-   max-width 660px. margin 22px above and 18px below.
-   Appears twice: once after title, once after tank.
+   SEPARATOR — double gradient rule.
+   Two 1px lines, 4px gap. Gradient fade for panel polish.
+   margin-bottom: var(--space-8) — original spacing.
    ───────────────────────────────────────────────────────────── */
 .separator {
-  width: 100%;
-  max-width: 660px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  margin: 22px 0 18px;
+  gap: 4px;
+  width: 100%;
+  margin-bottom: var(--space-8);
 }
 
 .sepLine {
   display: block;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(
     to right,
     transparent,
-    #00F0FF 12%,
-    #00F0FF 88%,
+    rgba(0, 240, 255, 0.65) 10%,
+    rgba(0, 240, 255, 0.65) 90%,
     transparent
   );
-  box-shadow:
-    0 0  8px #00F0FF,
-    0 0 22px rgba(0, 240, 255, 0.38);
+  box-shadow: 0 0 7px rgba(0, 240, 255, 0.35);
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   MASCOT — pixel-grid tank.
-   .tankWrap: heartbeat animation at 1.45s cycle.
+   MASCOT — pixel-grid tank (JSX design).
+   .tankWrap: multi-colour heartbeat filter. Entrance fade.
    .tankGrid: 7 cols × 12 rows, 16px cells, 2px gap.
-   .tankCell: transparent base (empty cells).
-   .tankCellBarrel: cyan  (#00F0FF) — column 3
-   .tankCellTrack:  green (#C8FF00) — tread rows
-   .tankCellHull:   pink  (#FF2D78) — hull area
+   .tankCell: transparent base.
+   .tankCellBarrel: #00F0FF — cannon column
+   .tankCellTrack:  #C8FF00 — tread assembly
+   .tankCellHull:   #FF2D78 — main body
    ───────────────────────────────────────────────────────────── */
 .tankWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 2px 0 14px;
-  animation: tank-beat 1.45s ease-in-out infinite;
+  margin-bottom: var(--space-8);
+  animation:
+    fade-in-flat   0.7s  ease 0.2s both,
+    tank-heartbeat 2.2s  ease-in-out 1s infinite;
 }
 
 .tankGrid {
@@ -716,43 +774,39 @@
 
 
 /* ─────────────────────────────────────────────────────────────
-   PLAY SURFACE — controls, mode/sub buttons, play button.
+   PLAY SURFACE — controls + play button.
+   Entrance: fade-in-up 0.5s ease 0.32s both (original).
    ───────────────────────────────────────────────────────────── */
 .controls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-5);
   width: 100%;
-  max-width: 640px;
-  margin-top: 2px;
+  animation: fade-in-up 0.5s ease 0.32s both;
 }
 
 .joinSection {
   width: 100%;
   display: flex;
   justify-content: center;
-  animation: fade-up 0.25s ease both;
+  animation: fade-up 0.22s ease both;
 }
 
 .inlineError {
   font-family: var(--font-mono);
   font-size: 8px;
-  letter-spacing: 0.22em;
-  color: #FF2D78;
-  text-shadow:
-    0 0  8px #FF2D78,
-    0 0 20px rgba(255, 45, 120, 0.50);
+  letter-spacing: 0.12em;
+  color: var(--color-error);
+  text-shadow: var(--glow-pink-sm);
   text-transform: uppercase;
-  text-align: center;
-  animation: fade-up 0.2s ease both;
+  animation: fade-in-flat 0.18s ease both;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   PLAY BUTTON — rendered in page.tsx controls section.
-   .playBtnPink = singleplayer (pink glow).
-   .playBtnGreen = host (green glow).
+   PLAY BUTTON — explicit action trigger below mode/sub buttons.
+   .playBtnPink = singleplayer. .playBtnGreen = host.
    ───────────────────────────────────────────────────────────── */
 .playBtn {
   position: relative;
@@ -763,7 +817,7 @@
   text-transform: uppercase;
   background: transparent;
   cursor: pointer;
-  margin-top: 6px;
+  margin-top: var(--space-3);
   image-rendering: pixelated;
   transition: background var(--transition-fast);
 }
@@ -774,8 +828,8 @@
 }
 
 .playBtnPink {
-  color: #FF2D78;
-  border: 2px solid #FF2D78;
+  color: var(--color-pink);
+  border: 2px solid var(--color-pink);
   animation: btn-glow-pink 2.5s ease-in-out infinite;
 }
 .playBtnPink:hover:not(:disabled) {
@@ -783,8 +837,8 @@
 }
 
 .playBtnGreen {
-  color: #C8FF00;
-  border: 2px solid #C8FF00;
+  color: var(--color-green);
+  border: 2px solid var(--color-green);
   animation: btn-glow-green 2.5s ease-in-out infinite;
 }
 .playBtnGreen:hover:not(:disabled) {

@@ -1,16 +1,9 @@
 /* ============================================================
    DEAD ANGLE — globals.css
    Design tokens · CSS reset · Base document
-
-   @keyframes here are SHARED CANDIDATES ONLY:
-     fade-in, fade-in-flat, blink, cursor-blink
-   All component-specific animations live inside their own
-   .module.css files. Module files cannot reference global
-   @keyframes by name — CSS Modules scopes animation-name
-   to the local stylesheet.
    ============================================================ */
 
-/* ── Pixel font — loaded once, used everywhere ────────────── */
+/* ── Pixel font ───────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /* ── Design Tokens ────────────────────────────────────────── */
@@ -64,7 +57,7 @@
     0 0 24px #C8FF00,
     0 0 54px rgba(200, 255, 0, 0.60);
 
-  /* ── Title text-shadow resting token ── */
+  /* ── Title resting text-shadow token ── */
   --title-shadow:
     4px  4px  0   #00F0FF,
     5px  5px  0   #00F0FF,
@@ -74,9 +67,9 @@
     4px  4px 14px rgba(0, 240, 255, 0.42);
 
   /* ── Typography ──
-     Press Start 2P: authentic 1980s pixel font.
-     Antialiasing disabled on body to keep pixel edges sharp.
-     Letter-spacing tokens reduced — pixel font already reads wide. */
+     Press Start 2P: 1980s pixel arcade font.
+     Antialiasing disabled on body — pixel edges must stay sharp.
+     Letter-spacing tokens reduced because the font renders wide. */
   --font-mono:            'Press Start 2P', "Courier New", Courier, monospace;
   --font-size-base:       16px;
   --font-size-xs:         0.625rem;   /* 10px */
@@ -148,7 +141,7 @@ body {
   color: var(--color-white);
   line-height: 1.5;
   min-height: 100dvh;
-  /* Disable antialiasing — pixel fonts must stay sharp */
+  /* Pixel fonts must stay crisp — no antialiasing */
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
   image-rendering: pixelated;
@@ -171,12 +164,8 @@ input {
   color: inherit;
 }
 
-/* ──────────────────────────────────────────────────────────
-   @keyframes — SHARED ONLY.
-   IMPORTANT: Component .module.css files MUST redeclare any
-   animations they need locally — they cannot reference these
-   names. CSS Modules scopes animation-name to each stylesheet.
-   ────────────────────────────────────────────────────────── */
+/* ── Shared @keyframes ────────────────────────────────────── */
+/* Module CSS files MUST redeclare any they need locally. */
 
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(7px); }
