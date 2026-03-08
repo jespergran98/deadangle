@@ -1,0 +1,81 @@
+/* RoundTransition.module.css */
+
+@keyframes fade-in-local {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes pulse-count {
+  0%   { transform: scale(1);    }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1);    }
+}
+
+.overlay {
+  position:       absolute;
+  inset:          0;
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  background:     rgba(0, 0, 0, 0.72);
+  z-index:        10;
+  pointer-events: none;
+  animation:      fade-in-local 220ms ease;
+}
+
+.panel {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            var(--space-4);
+  font-family:    var(--font-mono);
+  padding:        var(--space-8) var(--space-10);
+  border:         var(--border-neon-cyan);
+  box-shadow:     var(--glow-cyan-md);
+  background:     rgba(0, 0, 0, 0.9);
+}
+
+.killLine {
+  font-size:   var(--font-size-md);
+  color:       var(--color-green);
+  text-shadow: var(--glow-green-md);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.hitLine {
+  font-size:   var(--font-size-lg);
+  color:       var(--color-pink);
+  text-shadow: var(--glow-pink-md);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.scoreLine {
+  font-size:   var(--font-size-xl);
+  color:       var(--color-white);
+  text-shadow: 0 0 8px #fff, 0 0 20px #fff;
+  letter-spacing: var(--letter-spacing-base);
+}
+
+.tierLine {
+  font-size:   var(--font-size-xs);
+  color:       var(--color-cyan);
+  text-shadow: var(--glow-cyan-sm);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.levelUp {
+  font-size:   var(--font-size-sm);
+  color:       var(--color-green);
+  text-shadow: var(--glow-green-md);
+  letter-spacing: var(--letter-spacing-xl);
+}
+
+.countdown {
+  font-size:   var(--font-size-3xl);
+  color:       var(--color-cyan);
+  text-shadow: var(--glow-cyan-lg);
+  letter-spacing: var(--letter-spacing-base);
+  animation:   pulse-count 1s ease-in-out infinite;
+  min-width:   3rem;
+  text-align:  center;
+}
