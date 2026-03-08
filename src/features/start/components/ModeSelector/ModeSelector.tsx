@@ -18,39 +18,36 @@ export default function ModeSelector({
   loading,
   onSelectMode,
   onSelectSubMode,
-  onHost,
 }: ModeSelectorProps) {
   const hostLoading = loading && subMode === 'host';
 
   return (
     <div className={styles.root}>
 
-      {/* ── Primary mode buttons ── */}
+      {/* ── Primary mode buttons — 1 PLAYER / 2 PLAYER ── */}
       <div className={styles.modeRow} role="group" aria-label="Game mode">
         <button
           className={`${styles.modeBtn} ${mode === 'singleplayer' ? styles.modeBtnActive : ''}`}
           onClick={() => onSelectMode('singleplayer')}
           aria-pressed={mode === 'singleplayer'}
         >
-          SINGLEPLAYER
+          1 PLAYER
         </button>
         <button
           className={`${styles.modeBtn} ${mode === 'multiplayer' ? styles.modeBtnActive : ''}`}
           onClick={() => onSelectMode('multiplayer')}
           aria-pressed={mode === 'multiplayer'}
         >
-          MULTIPLAYER
+          2 PLAYER
         </button>
       </div>
 
-      {/* ── Multiplayer sub-options ── */}
+      {/* ── Multiplayer sub-options — HOST / JOIN ── */}
       {mode === 'multiplayer' && (
         <div className={styles.subRow} role="group" aria-label="Multiplayer option">
           <button
             className={`${styles.subBtn} ${subMode === 'host' ? styles.subBtnActive : ''}`}
-            onClick={() => {
-              onSelectSubMode('host');
-            }}
+            onClick={() => onSelectSubMode('host')}
             disabled={hostLoading}
             aria-pressed={subMode === 'host'}
             aria-busy={hostLoading}

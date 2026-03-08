@@ -2,42 +2,37 @@
    ModeSelector.module.css
 
    Phosphor persistence model:
-     Mouse-in  → 40ms  (phosphor tube fires fast — instant strike)
+     Mouse-in  → 40ms  (tube fires fast — instant strike)
      Mouse-out → 320ms (slow afterglow decay — phosphor lingers)
 
-   Implementation pattern:
-     BASE selector defines the SLOW (320ms) transition, which
-     governs the OUT state. The :hover selector overrides with
-     FAST (40ms) transition, governing the IN state. The browser
-     applies whichever transition block is active at the moment
-     the state change occurs.
+   Sizes match the JSX reference exactly:
+     Mode buttons: padding 14px 30px, font-size 9px, tracking .22em
+     Sub buttons:  padding 10px 26px, font-size 8px, tracking .22em
 
-   All @keyframes declared locally — module files cannot reference
-   global @keyframes (CSS Modules scopes animation-name).
+   All @keyframes declared locally (CSS Modules scope).
    ============================================================ */
 
 /* ── Local @keyframes ─────────────────────────────────────── */
 
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
-/* neon-pulse-cyan: active button outline throb.
-   Declared locally — cannot use global keyframe name. */
+/* Active mode button — cyan neon outline throb */
 @keyframes neon-pulse-cyan {
   0%, 100% {
     box-shadow:
       0 0  4px #00F0FF,
       0 0 10px #00F0FF,
-      inset 0 0 16px rgba(0, 240, 255, 0.05);
+      inset 0 0 18px rgba(0, 240, 255, 0.05);
   }
   50% {
     box-shadow:
       0 0  6px #00F0FF,
-      0 0 18px #00F0FF,
-      0 0 36px rgba(0, 240, 255, 0.50),
-      inset 0 0 24px rgba(0, 240, 255, 0.10);
+      0 0 20px #00F0FF,
+      0 0 40px rgba(0, 240, 255, 0.52),
+      inset 0 0 28px rgba(0, 240, 255, 0.10);
   }
 }
 
@@ -47,34 +42,34 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-5);
+  gap: 14px;
   width: 100%;
 }
 
 
-/* ── Primary mode buttons ─────────────────────────────────── */
+/* ── Primary mode buttons (1 PLAYER / 2 PLAYER) ───────────── */
 .modeRow {
   display: flex;
-  gap: var(--space-5);
+  gap: 16px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .modeBtn {
   position: relative;
-  padding: var(--space-4) var(--space-10);
+  padding: 14px 30px;
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-wide);
+  font-size: 9px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 
-  color: rgba(255, 255, 255, 0.38);
+  color: rgba(255, 255, 255, 0.32);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: none;
+  image-rendering: pixelated;
 
-  /* BASE = slow OUT transition (afterglow decay) */
+  /* BASE = slow OUT (afterglow decay) */
   transition:
     color        320ms ease,
     border-color 320ms ease,
@@ -87,35 +82,31 @@
 /* Fast IN — phosphor tube fires quickly */
 .modeBtn:hover:not(.modeBtnActive),
 .modeBtn:focus-visible:not(.modeBtnActive) {
-  /* Override with fast in-transition */
   transition:
     color        40ms ease,
     border-color 40ms ease,
     box-shadow   40ms ease,
     background   40ms ease;
 
-  color: var(--color-white);
-  border-color: rgba(255, 255, 255, 0.55);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.50);
   box-shadow:
-    0 0  8px rgba(255, 255, 255, 0.14),
-    inset 0 0 18px rgba(255, 255, 255, 0.03);
-  background: rgba(255, 255, 255, 0.025);
+    0 0 10px rgba(255, 255, 255, 0.16),
+    inset 0 0 20px rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.028);
   outline: none;
 }
 
-/* Active state — cyan neon outline, pulsing throb */
+/* Active — cyan neon outline + pulse */
 .modeBtnActive {
-  color: var(--color-cyan);
-  border: var(--border-neon-cyan);
-  animation: neon-pulse-cyan 2.4s ease-in-out infinite;
+  color: #00F0FF;
+  border: 2px solid #00F0FF;
+  animation: neon-pulse-cyan 2.5s ease-in-out infinite;
 }
 
-/* Hovering an active button — fast-in only */
 .modeBtnActive:hover,
 .modeBtnActive:focus-visible {
-  transition:
-    background 40ms ease,
-    box-shadow 40ms ease;
+  transition: background 40ms ease, box-shadow 40ms ease;
   background: rgba(0, 240, 255, 0.05);
   outline: none;
 }
@@ -124,21 +115,20 @@
 /* ── Sub-mode buttons (HOST / JOIN) ───────────────────────── */
 .subRow {
   display: flex;
-  gap: var(--space-4);
-  animation: fade-in-up 0.20s ease both;
+  gap: 12px;
+  animation: fade-up 0.22s ease both;
 }
 
 .subBtn {
-  padding: var(--space-3) var(--space-8);
+  padding: 10px 26px;
   font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-wide);
+  font-size: 8px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 
-  color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, 0.28);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow: none;
 
   /* BASE = slow OUT */
@@ -160,26 +150,25 @@
     box-shadow   40ms ease,
     background   40ms ease;
 
-  color: var(--color-cyan);
+  color: #00F0FF;
   border-color: rgba(0, 240, 255, 0.55);
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.18);
-  background: rgba(0, 240, 255, 0.025);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.22);
+  background: transparent;
   outline: none;
 }
 
+/* Active */
 .subBtnActive {
-  color: var(--color-cyan);
-  border-color: var(--color-cyan);
-  box-shadow: 0 0 4px #00F0FF, 0 0 10px #00F0FF;
+  color: #00F0FF;
+  border-color: #00F0FF;
+  box-shadow: 0 0 4px #00F0FF, 0 0 12px #00F0FF;
 }
 
 .subBtnActive:hover,
 .subBtnActive:focus-visible {
-  transition:
-    background 40ms ease,
-    box-shadow 40ms ease;
+  transition: background 40ms ease, box-shadow 40ms ease;
   background: rgba(0, 240, 255, 0.05);
-  box-shadow: var(--glow-cyan-md);
+  box-shadow: 0 0 6px #00F0FF, 0 0 18px #00F0FF, 0 0 36px rgba(0, 240, 255, 0.55);
   outline: none;
 }
 

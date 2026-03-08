@@ -476,9 +476,9 @@ Rethink the layout — scale, spacing, and rhythm should feel like a cabinet bez
 1UP / 2UP — the final round counts from the last completed session (e.g. 00007 / 00004). In singleplayer, 2UP stays zeroed. These come from the sessionEnded event payload which already contains finalScores, so no extra backend work is needed.
 HIGH SCORE — the highest single-session score across all games on this device, stored in localStorage. Just one number, one key — trivial to implement.
 
-That's not it, I want the design to be pixel based, and not be rounded corners, here is the exact design:
+That's not it, I want the design of the tank to be pixel based, and not be rounded corners, here is the exact design:
 
-a 3x5 base square, around this square is a 1 pixel gap (5x7 are missing), followed by a 7x9 square that is 1 pixel wide. In the petruding/cannon part, the outer 7x9 pixels are missing.
+a 3x5 base square, around this square is a 1 pixel gap (5x7 are missing), followed by a 7x9 square that is 1 pixel wide. In the petruding/cannon part, the outer 7x9 pixels are missing. Also update the font to a pixel font.
 
 ---
 
@@ -523,3 +523,25 @@ The layout should feel like a physical bezel — consider the full structure of 
 **Buttons** — Phosphor persistence: 40ms transition on mouse-in (instant strike), 320ms on mouse-out (afterglow decay). Define the slow transition on the base selector; override with the fast one inside `:hover`.
 
 **Everything throbs** — heartbeats, blinks, pulses should feel visceral and physical. `opacity: 0` to `opacity: 1` with no in-between. Glow should bloom noticeably, not drift. Corner ornaments should pop in scale, not fade.
+
+---
+
+Update the visual design of this 1980s inspired startscreen. Improve the font to a pixelated font, and update the tank to use this design:
+
+Col: 0 1 2 3 4 5 6
+Row  0:   . . . C . . .   ← Barrel (cannon)
+Row  1:   . . . C . . .
+Row  2:   . . . C . . .
+Row  3:   T T . C . T T   ← Track top border
+Row  4:   T . . C . . T   ← Gap row
+Row  5:   T . H H H . T   ← Hull rows
+Row  6:   T . H H H . T
+Row  7:   T . H H H . T
+Row  8:   T . H H H . T
+Row  9:   T . H H H . T
+Row 10:   T . . . . . T   ← Gap row
+Row 11:   T T T T T T T   ← Track bottom border
+
+Build the most visually stunning 1980s arcade cabinet attract screen possible. Hot pink, cyan, neon green on pure black. Loud, maximalist, slightly unstable. Every element must feel alive — nothing static, nothing that reads as a webpage.
+
+The layout should feel like a physical bezel — consider the full structure of a real arcade screen. Scale, spacing, and rhythm should be monumental.

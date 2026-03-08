@@ -1,43 +1,33 @@
 /* ============================================================
    CRTOverlay.module.css
-   Phosphor CRT simulation — CSS only, three layers.
+   Phosphor CRT simulation — CSS only, four layers.
 
    Layer 1: .overlay wrapper
-     - Edge darkening: four directional inset box-shadow values
-       (top, bottom, left, right) — NOT a radial vignette.
-       Each shadow pushes inward from its respective edge,
-       modelling electron beam falloff at the screen perimeter.
-     - border-radius + overflow: hidden clips children and
-       suggests the curved glass of a CRT cabinet monitor.
-     - Phosphor flicker via crt-flicker animation.
+     - Edge darkening: four directional inset box-shadows.
+     - border-radius + overflow:hidden suggests curved CRT glass.
+     - Phosphor flicker: crt-flicker animation.
 
    Layer 2: .scanlines
-     - Dark bands scrolled downward via translateY.
-     - Pitch = 6px: 4px transparent + 2px dark (opacity 0.48).
-     - 0.10s per pitch ≈ 60 px/s — clearly visible, looks like
-       active screen redraw.
+     - Dark bands drifting downward via translateY.
+     - Pitch 6px: 4px transparent + 2px dark (opacity 0.48).
+     - 0.10s/pitch ≈ 60px/s — clearly visible active redraw.
 
    Layer 3: .sweep
-     - 280px tall, feathered bright band.
-     - Drifts top → bottom, 10s cycle.
-     - Clearly visible as a ripple as it passes.
+     - 280px feathered bright band, top → bottom, 10s cycle.
 
-   All @keyframes declared locally — module files never
-   reference global keyframe names.
+   Layer 4: .glitchBar
+     - 2px horizontal cyan tear, solid (not gradient).
+     - Snaps to three vertical positions on an ~8s cycle.
+     - Animation: linear timing so 'top' sweeps smoothly during
+       the brief window the bar is visible, then disappears
+       instantly at the adjacent keyframe. Models a real
+       horizontal sync artefact on aging CRT hardware.
 
-   Hard constraints:
-     pointer-events: none on every element
-     position: fixed on overlay, absolute on children
-     z-index: var(--z-overlay) — above all page content
-     No canvas, no JS, no animation libraries
-     No startup / mount animation
+   All @keyframes declared locally (CSS Modules scope).
    ============================================================ */
 
 /* ── Local @keyframes ─────────────────────────────────────── */
 
-/* Phosphor tube warm-up irregularity — brief, asymmetric
-   opacity drops at uneven intervals. Models real CRT power
-   fluctuation without being distracting to gameplay. */
 @keyframes crt-flicker {
   0%     { opacity: 1;    }
   1.1%   { opacity: 0.87; }
@@ -67,19 +57,35 @@
   100%   { opacity: 1;    }
 }
 
-/* Drifting scanlines — translateY exactly one pitch (6px) per
-   cycle creates a mathematically seamless loop. */
 @keyframes scanlines-drift {
   from { transform: translateY(0px); }
   to   { transform: translateY(6px); }
 }
 
-/* Vertical-sync sweep — starts above viewport, drifts to below. */
 @keyframes crt-sweep {
-  0%   { transform: translateY(-280px); opacity: 0;   }
-  6%   { opacity: 1;   }
-  92%  { opacity: 1;   }
-  100% { transform: translateY(100vh);  opacity: 0;   }
+  0%   { transform: translateY(-280px); opacity: 0; }
+  6%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(100vh);  opacity: 0; }
+}
+
+/* Glitch bar — horizontal sync tear.
+   linear timing: 'top' sweeps smoothly while opacity is 1,
+   then snaps to invisible at the adjacent keyframe.
+   Appears at three heights: ~18%, ~55%, ~38% of viewport.
+   This exactly matches the JSX g-bar keyframes. */
+@keyframes glitch-bar-slide {
+  0%           { top: -2px; opacity: 0;    }
+  9.9%         { top: -2px; opacity: 0;    }
+  10%          { top: 18%;  opacity: 1;    }
+  10.1%        { top: 20%;  opacity: 0;    }
+  39.9%        {            opacity: 0;    }
+  40%          { top: 55%;  opacity: 0.90; }
+  40.1%        { top: 58%;  opacity: 0;    }
+  69.9%        {            opacity: 0;    }
+  70%          { top: 38%;  opacity: 0.70; }
+  70.1%        { top: 42%;  opacity: 0;    }
+  100%         {            opacity: 0;    }
 }
 
 
@@ -90,18 +96,13 @@
   z-index: var(--z-overlay);
   pointer-events: none;
 
-  /* Curved glass suggestion */
   border-radius: 14px;
   overflow: hidden;
 
-  /* Four-directional edge darkening.
-     inset shadows push in from each edge independently.
-     Top and bottom are darker (beam loses energy fastest there).
-     Left and right are slightly lighter. */
   box-shadow:
     inset 0      90px  110px -55px rgba(0, 0, 0, 0.96),
     inset 0    -90px   110px -55px rgba(0, 0, 0, 0.96),
-    inset 90px    0    110px -55px rgba(0, 0, 0, 0.86),
+    inset  90px   0    110px -55px rgba(0, 0, 0, 0.86),
     inset -90px   0    110px -55px rgba(0, 0, 0, 0.86);
 
   animation: crt-flicker 9s step-end infinite;
@@ -109,9 +110,6 @@
 
 
 /* ── Layer 2: Drifting scanlines ──────────────────────────── */
-/* Pitch = 6px (4px transparent + 2px dark).
-   Opacity 0.48 on the dark band — intentionally visible,
-   the screen should look like it is actively being redrawn. */
 .scanlines {
   position: absolute;
   inset: 0;
@@ -119,20 +117,17 @@
 
   background: repeating-linear-gradient(
     to bottom,
-    transparent           0px,
-    transparent           4px,
-    rgba(0, 0, 0, 0.48)   4px,
-    rgba(0, 0, 0, 0.48)   6px
+    transparent          0px,
+    transparent          4px,
+    rgba(0, 0, 0, 0.48)  4px,
+    rgba(0, 0, 0, 0.48)  6px
   );
 
-  /* 0.10s per 6px pitch = 60px/s — clearly visible drift */
   animation: scanlines-drift 0.10s linear infinite;
 }
 
 
 /* ── Layer 3: Vertical-sync sweep ────────────────────────── */
-/* 280px feathered band, clearly visible as it passes.
-   10s cycle — unhurried, like a real vsync artefact. */
 .sweep {
   position: absolute;
   left: 0;
@@ -153,4 +148,21 @@
   );
 
   animation: crt-sweep 10s linear infinite;
+}
+
+
+/* ── Layer 4: Horizontal glitch bar ──────────────────────── */
+/* Solid cyan background (not a gradient) — matches JSX exactly.
+   position:absolute inside position:fixed overlay = same as fixed.
+   'top' is animated by the keyframes. */
+.glitchBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  pointer-events: none;
+
+  background: rgba(0, 240, 255, 0.40);
+
+  animation: glitch-bar-slide 8s linear infinite;
 }

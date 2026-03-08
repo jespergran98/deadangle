@@ -10,6 +10,9 @@
    to the local stylesheet.
    ============================================================ */
 
+/* ── Pixel font — loaded once, used everywhere ────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 /* ── Design Tokens ────────────────────────────────────────── */
 :root {
   /* ── Core palette ── */
@@ -61,10 +64,7 @@
     0 0 24px #C8FF00,
     0 0 54px rgba(200, 255, 0, 0.60);
 
-  /* ── Title text-shadow token — for reference.
-     Actual pulse animation declared locally in page.module.css.
-     Keeping this token so other screens (lobby, summary) can
-     reference a resting title shadow if needed. ── */
+  /* ── Title text-shadow resting token ── */
   --title-shadow:
     4px  4px  0   #00F0FF,
     5px  5px  0   #00F0FF,
@@ -73,8 +73,11 @@
     0    0   52px rgba(255, 45, 120, 0.55),
     4px  4px 14px rgba(0, 240, 255, 0.42);
 
-  /* ── Typography ── */
-  --font-mono:            "Courier New", Courier, "Lucida Console", monospace;
+  /* ── Typography ──
+     Press Start 2P: authentic 1980s pixel font.
+     Antialiasing disabled on body to keep pixel edges sharp.
+     Letter-spacing tokens reduced — pixel font already reads wide. */
+  --font-mono:            'Press Start 2P', "Courier New", Courier, monospace;
   --font-size-base:       16px;
   --font-size-xs:         0.625rem;   /* 10px */
   --font-size-sm:         0.75rem;    /* 12px */
@@ -84,10 +87,10 @@
   --font-size-2xl:        2rem;       /* 32px */
   --font-size-3xl:        3rem;       /* 48px */
   --font-size-4xl:        5rem;       /* 80px */
-  --letter-spacing-base:  0.1em;
-  --letter-spacing-wide:  0.2em;
-  --letter-spacing-xl:    0.35em;
-  --letter-spacing-2xl:   0.5em;
+  --letter-spacing-base:  0.06em;
+  --letter-spacing-wide:  0.12em;
+  --letter-spacing-xl:    0.20em;
+  --letter-spacing-2xl:   0.30em;
 
   /* ── Borders ── */
   --border-neon-pink:     2px solid #FF2D78;
@@ -145,8 +148,10 @@ body {
   color: var(--color-white);
   line-height: 1.5;
   min-height: 100dvh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Disable antialiasing — pixel fonts must stay sharp */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: auto;
+  image-rendering: pixelated;
 }
 
 ul, ol { list-style: none; }
@@ -168,13 +173,9 @@ input {
 
 /* ──────────────────────────────────────────────────────────
    @keyframes — SHARED ONLY.
-   These four animations are used by multiple components or
-   are simple enough to warrant a single canonical definition.
-
    IMPORTANT: Component .module.css files MUST redeclare any
    animations they need locally — they cannot reference these
-   names. These definitions exist for components that are NOT
-   using CSS Modules (e.g. global utility classes, or legacy).
+   names. CSS Modules scopes animation-name to each stylesheet.
    ────────────────────────────────────────────────────────── */
 
 @keyframes fade-in {
